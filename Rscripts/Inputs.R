@@ -26,13 +26,11 @@ measurements<-2 # Number of wind vs. height sets of measurements
 
 if (measurements==1){
   # This first part is when we have only one wind v. elevation measurement.
-  # Inputs are lambda (fraction vegetation), canopy height (inches), boom height (inches), and wind speed (mph)/height (feet)
+  # Inputs are crop height (inches), wind elevation measurement (feet), and wind speed (mph)/height (feet)
   # User Input:
-  lambda<-0.08  # Project area ratio of vegetation in wind direction per area of ground surfaca
-  hcin<-4 # canopy height, inches
-  h0in<-20 #boom height above canopy, inches
-  zft<-6.6 # elevation of wind velocity in ft
-  Vmph<-12.8 # mph wind velocity at elevation
+  ch<-4 # crop height, inches
+  z1<-6.6 # elevation of wind velocity in ft
+  ux1<-12.8 # mph wind velocity at elevation
   
 }else if (measurements==2){
   # Part for when we have two wind v. elevation measurements.
@@ -79,7 +77,7 @@ FD<-240.16 # Downwind field depth, ft
 PL<-787.4 # Crosswind field width, ft
 NozzleSpacing<-20 # Space between nozzles on Boom, inches
 psipsipsi<-10.7 # Horizontal variation in wind direction around mean direction, 1 stdev, in degrees.
-rhoL<-1.0084 # Density of sprayed solution, grams/cc
+rhoL<-rhosoln/1000 # Density of sprayed solution, grams/cc
 Dpmax<-1350
 DDpmin<-18
 
