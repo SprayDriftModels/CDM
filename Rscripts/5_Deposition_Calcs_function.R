@@ -12,7 +12,8 @@ deposition_calcs<-function(IAR,
                            DDpmin,
                            a,
                            MMM,
-                           lambda){
+                           lambda,
+                           Driver){
   
 
   v <- FD*PL/43560
@@ -91,13 +92,16 @@ deposition_calcs<-function(IAR,
   registerDoParallel(cl)
   
   ## Creeate progress bar
-  withProgress(message = 'First Part', detail = "percent complete", value = 0, {
-  print("First Part")
-    
+
     for (i in 2:MM) {
-      ## Increment the progress bar, and update the detail text
-      incProgress(1/MM, detail = paste0(round((i/MM)*100, digits = 0), "% complete"))
-      print(i/MM)
+      
+      # Increment the progress bar, and update the detail text
+      if(Driver == "shiny"){
+        incProgress(1/MM, detail = paste0(round((i/MM)*100, digits = 0), "% complete - Part 1"))
+      } else{
+        print(paste0("Part 1",i))
+      }
+      
       for (jj in 1:Nsa){# Note that this is +1 compared to MathCAD
         DVM[i,jj]<-sum(
           ifelse(DriftDista[i]>((jj-1)*DWsa-X[1:jj])&DriftDista[i]<=(jj)*DWsa-X[1:jj],SVPs[i]/3,0)+
@@ -112,19 +116,20 @@ deposition_calcs<-function(IAR,
             ifelse(DriftDistc[i]>((jj-1)*DWsa-X[1:jj])&DriftDistc[i]<=(jj)*DWsa-X[1:jj],SVPs[i]/3,0)/
             (DWsa*(PL+2*(X[jj]-X[1:jj])*tan(psipsipsi*pi*zeta/180))))
       }
-    }
-  })
+  }
     
   
   ## Creeate progress bar
-  withProgress(message = 'Second Part', detail = "percent complete", value = 0, {
-  print("Second Part")
-    
+
     for (i in 2:MM) {
       
-      ## Increment the progress bar, and update the detail text
-      incProgress(1/MM, detail = paste0(round((i/MM)*100, digits = 0), "% complete"))
-      print(i/MM)
+      # Increment the progress bar, and update the detail text
+      if(Driver == "shiny"){
+        incProgress(1/MM, detail = paste0(round((i/MM)*100, digits = 0), "% complete - Part 2"))
+      } else{
+        print(paste0("Part 2",i))
+      }
+      
       for (jj in (Nsa+1):(Nsa+Nda)){# Note that this is +1 compared to MathCAD
         DVM[i,jj]<-sum(
           ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)+
@@ -141,7 +146,7 @@ deposition_calcs<-function(IAR,
         
       }
     }
-})
+
   
   DVM[1,] <- 0 # Since i in Mathcard starts from 1 (i.e., first element assumed zero)
   CM[1,] <- 0 # Since i in Mathcard starts from 1 (i.e., first element assumed zero)

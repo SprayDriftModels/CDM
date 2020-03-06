@@ -47,5 +47,5 @@ wet_bulb<-function(Tair, Patm, RH) {# 2_wet_bulb
   
   DTwb <- Tair-Twb # Wet bulb T depression - i.e., driving force for heat transfer from air to droplet surface, °C
   
-  return(c(DTwb,Twb))
+  return(c(DTwb, Twb))
 }

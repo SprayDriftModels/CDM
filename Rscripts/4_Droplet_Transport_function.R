@@ -1,4 +1,18 @@
-droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm, Uf, z0, Pn, vz0, vx0, ddd_inp, problem_i){
+droplet_transport<-function(Tair,
+                            RH,
+                            rhow,
+                            rhos,
+                            xs0,
+                            H0,
+                            DTwb,
+                            hcm,
+                            Uf,
+                            z0,
+                            Pn,
+                            vz0,
+                            vx0,
+                            ddd_inp,
+                            Driver){
 
   rhoL0 <- 1/(xs0/rhos+(1-xs0)/rhow) # Initial solution density (as applied), gram/cm^3
   
@@ -92,16 +106,16 @@ droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm, Uf, z0, Pn
   # _____________________________________________________________________
   # Loop through all Dp samples
   
-  ## Creeate progress bar
-  withProgress(message = problem_i, value = 0, {
-  
   Xdist<-c(0) # Initialize distance vector
   for (i in 1:23) {
-    print(i)
-    
-    ## Increment the progress bar, and update the detail text
+
+    # Increment the progress bar, and update the detail text
+    if(Driver == "shiny"){
     incProgress(1/23, detail = paste0(round((i/23)*100, digits = 0), "% complete"))
-   
+    } else{
+      print(i)
+    }
+
     ddd <- ddd_inp[i]
  
     dp0<-Dp[i]/10000  # Prototyping here; this is loop 1
@@ -168,8 +182,6 @@ droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm, Uf, z0, Pn
         silent=TRUE)  
     }
   }
-  
-  }) # end of progress bar
 
   return(data.frame(Dp[1:23],Xdist))
 }

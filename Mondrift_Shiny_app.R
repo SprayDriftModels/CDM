@@ -1,56 +1,3 @@
-
-
-#*** [SFR] To do list
-# 
-# Add check for libraries and if not installed, install
-# 
-# Add note to sidebar inputs
-# --enter inputs 
-# --~values highlighted red indicate potentially out of reasonable range
-# --???
-#
-# Maybe require packages use current version to avoid breaking in the future when updated
-#
-# Replace print page with more sophisticated download (generate report?)
-#
-# QUESTIONS for client
-# range for input values
-# need examples of all input variations (number of entries--e.g., ddd1, ddd2, etc.)
-# ....
-# if non-convergence (or other issues) what can user do? (do we want some hard-coded files they can change?)
-
-
-
-
-
-
-
-
-#=========================== Copyright Notice ==================================
-#             Copyright Dec 19 2019, Exponent, Inc. All rights reserved.         #
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# All code was developped on overhead and is the property of Exponent, Inc. 
-# Only its application is granted under licensed use to the project listed below.
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-################################################################################
-#              Author: Sean Ryan            
-#              Email:  sryan@exponent.com         
-#
-# ======================== Script  Information =================================
-# PURPOSE: Shiny App for Monsanto Drift Calculation
-# 
-# PROJECT INFORMATION:
-#   Name:   Monsanto Drift Calculation 
-#   Number: 1908428.000
-##################################################################################
-
-
-
-
-
-
-
-
 ## Initiate environment conditions -- hard-coded; not influenced by the user
 ########################################################################################
 
@@ -81,8 +28,8 @@ library(shinyjs)
 library(V8)
 library(gridExtra)
 library(deSolve)
-library(doParallel) # currently not being used
-library(foreach) # currently not being used
+library(doParallel) 
+library(foreach) 
 
 ## Create "notin" function
 `%notin%` <- Negate(`%in%`)
@@ -94,13 +41,11 @@ MeasurementOptions = c('One', 'Two')
 Nozzle_params <- as_tibble(read.csv("./Constants/Nozzle_params.csv", header = T))
 DDD_params <- as_tibble(read.csv("./Constants/DDD_params.csv", header = T))
 
-
 ## Load example DSD file
 Example.DSD <- read.csv("Templates/DSD_template.csv", header = T)
 
 ## Load all functions used
-source("./Rscripts/1a_psd_function.R")
-source("./Rscripts/1b_psd_function.R")
+source("./Rscripts/1_psd_function.R")
 source("./Rscripts/2_wet_bulb_function.R")
 source("./Rscripts/3_wvprofile_params.R")
 source("./Rscripts/3_WV2measurements.R")
@@ -108,23 +53,19 @@ source("./Rscripts/4_Nozzle_Characteristics.R")
 source("./Rscripts/4_Droplet_Transport_function.R")
 source("./Rscripts/5_Deposition_Calcs_function.R")
 
-## For printing page
-jsCode <- 'shinyjs.winprint = function(){
-window.print();
-}'
+## Set "Driver" -- whether running in shiny or terminal (main)
+Driver = "shiny"
 
 ## Set up user interface (ui)
 ########################################################################################
 ui <- shinyUI(
   
   fluidPage(
-    #dashboardPage(
     ## Add Exponent logo
-    #titlePanel(img(src = "Exponent_logo.jfif", height = 120, width = 200)),
+    #titlePanel(img(src = "Logo.jfif", height = 120, width = 200)),
     
     ## Create panel for inputs
     sidebarLayout(
-      #dashboardSidebar(
       sidebarPanel(
         tags$head(
           tags$style(
@@ -137,16 +78,14 @@ ui <- shinyUI(
           type = "text/css", # add css-style to the lists of selected categories and the dropdown menu
           ".selectize-input { font-size: 12pt; line-height: 13pt;} 
                             .selectize-dropdown { font-size: 12pt; line-height: 13pt; }"),
-        
         width = 3, # set panel width
-        
         
         
         ########################################################
         ##### Part 1 DSD Curve Fitting
         
         ## Title
-        h3("DSD Curve Fitting"),
+        h3("Step 1: DSD Curve Fitting"),
         
         ## Input: Select a file ----
         fileInput("file1", "Choose CSV file",
@@ -164,7 +103,7 @@ ui <- shinyUI(
         h3(""), #used to create space
         uiOutput("action_fit_dsd"),  # button to plot output
         
-        
+
         ########################################################
         ##### Part 2 Wet Bulb Calculation
         
@@ -173,7 +112,7 @@ ui <- shinyUI(
         
         # Example datasets/templates to download
         ## Title
-        h3("Wet Bulb Calculation"),
+        h3("Step 2: Wet Bulb Calculation"),
         
         numericInput(inputId = "Tair",
                      label = "Dry air temperature (Celcius):", # ***Do we want to let them enter in F too? (then convert)
@@ -211,13 +150,12 @@ ui <- shinyUI(
         
         # Example datasets/templates to download
         ## Title
-        h3("Wind Profile Calculation"),
+        h3("Step 3: Wind Profile Calculation"),
         
         selectizeInput(
           inputId = "NumberMeasures_chosen",
           label = 'Canopy/wind measurements',
           choice = c('Choose number of measurements' = '', unique(MeasurementOptions)),
-          #choices = c("One", "Two"),
           multiple = FALSE,
           selected = NULL
         ),
@@ -242,7 +180,7 @@ ui <- shinyUI(
         
         # Example datasets/templates to download
         ## Title
-        h3("Droplet Transport Calculations"),
+        h3("Step 4: Droplet Transport Calculations"),
         
         #Tair and RH loaded already in Part 3
         
@@ -312,6 +250,13 @@ ui <- shinyUI(
         
         uiOutput("action_drop_trans"),  #plot output
         
+        h3(""), #used to create space
+        
+        ## Button to download data used for plotting
+        downloadButton(
+          outputId = "download.part4.data",
+          label = "Download Part 4 Results"
+        ),
         
         ########################################################
         ##### Part 5 Calculate Deposition with Distance
@@ -321,7 +266,7 @@ ui <- shinyUI(
         
         # Example datasets/templates to download
         ## Title
-        h3("Calculate Deposition with Distance"),
+        h3("Step 5: Calculate Deposition with Distance"),
         
         numericInput(inputId = "IAR",
                      label = "Intended Application Rate of Dicamba (lb/acre):",
@@ -371,14 +316,6 @@ ui <- shinyUI(
                      min = 0, #****Is there a good min?
                      max = 10000),  #****Is there a good max?
         
-        numericInput(inputId = "rhoL",
-                     label = "Density of sprayed solution (g/cm3):",
-                     #value = "NA",
-                     value = "1.0084", # Default value
-                     step = 0.0000001, #*** How many decimal places do we want?
-                     min = 0, #****Is there a good min?
-                     max = 10000),  #****Is there a good max?
-        
         numericInput(inputId = "Dpmax",
                      label = "Dpmax (µm):",
                      #value = "NA",
@@ -413,15 +350,25 @@ ui <- shinyUI(
                      max = 100),  #****Is there a good max?
         
         uiOutput("action_plot_dep"),  #plot output
+        
+        h3(""), #used to create space
+        
+        ## Button to download data used for plotting
+        downloadButton(
+          outputId = "download.part5.data",
+          label = "Download Part 5 Results"
+        ),
       ),
-      
       
       ## Plot output
       mainPanel(
         
         ## Part 1 Results
         fluidRow(
-          h3("DSD Curve Fitting Results"),
+          h2("Results")
+        ),
+          fluidRow(
+          h3("Step 1: DSD Curve Fitting"),
           
           ## Plot results when ready (i.e., when output.return_part1_results is created)
           conditionalPanel("output.return_part1_results",
@@ -437,7 +384,7 @@ ui <- shinyUI(
         
         ## Part 2 Results
         fluidRow(
-          h3("Wet Bulb Calculation Results"),
+          h3("Step 2: Wet Bulb Calculation Results"),
           
           ## Plot results when ready (i.e., when output.return_part2_results is created)
           conditionalPanel("output.return_part2_results",
@@ -453,7 +400,7 @@ ui <- shinyUI(
           
           ## Part 3 Results
           fluidRow(
-            h3("Wind Profile Calculation Results"),
+            h3("Step 3: Wind Profile Calculation Results"),
             
             ## Plot results when ready (i.e., when output.return_part3_results is created)
             conditionalPanel("output.return_part3_results",
@@ -464,14 +411,16 @@ ui <- shinyUI(
                                 font-size: 16px;
                               }
                               "))),
-                                    conditionalPanel("input.NumberMeasures_chosen == 'One'",
-                                                     plotOutput('wv_plot')))),
+                                    # conditionalPanel("input.NumberMeasures_chosen == 'One'",
+                                    #                  plotOutput('wv_plot'))
+                                    )
+                             ),
             tags$hr()
           ),
           
           ## Part 4 Results
           fluidRow(
-            h3("Droplet Transport Calculation Results"),
+            h3("Step 4: Droplet Transport Calculation Results"),
             
             ## Plot results when ready (i.e., when output.return_part4_results is created)
             conditionalPanel("output.return_part4_results",
@@ -490,25 +439,14 @@ ui <- shinyUI(
           
           ## Part 5 Results
           fluidRow(
-            h3("Deposition with Distance Calculations Results"),
+            h3("Step 5: Deposition with Distance Calculations Results"),
             
             ## Plot results when ready (i.e., when output.return_part5_results is created)
             conditionalPanel("output.return_part5_results",
                              column(12,
                                     plotOutput('dep_plot'))
             )
-          ),
-          
-          ## Part 6 Print all Results
-          fluidRow(
-            column(12,
-                   useShinyjs(),
-                   extendShinyjs(text = jsCode),
-                   actionButton("print", "PRINT PAGE")),
-            tags$hr()
           )
-          #column(width = 8, plotOutput('Depo_Dist_plot', height = 400))
-          # ****Need to add text box for progress bar (step and percent complete)
         )
       ),
     )
@@ -546,7 +484,6 @@ server <- shinyServer(function(input, output, session) {
     
     ## Calculate mean for however many trials were included
     ymean <- selected.data() %>%
-      #DSD_template %>%
       select(-Droplet_Size_microns) %>%
       apply(.,1,mean)
     
@@ -561,7 +498,6 @@ server <- shinyServer(function(input, output, session) {
       pull(value)
     
     Dpdata <- selected.data() %>%
-      #DSD_template %>%
       select(Droplet_Size_microns) %>%
       slice(firsty:lasty) %>%
       pull(Droplet_Size_microns)
@@ -570,10 +506,7 @@ server <- shinyServer(function(input, output, session) {
     
     return(Data2)
   })
-  # ## SANITY CHECK
-  # # ***print tables to see what is being produced
-  # output$table_Data2 <- renderTable(Data2())
-  
+
   
   ## Obtain fitted parameters of the drop size distribution model
   pars <- reactive({
@@ -591,30 +524,28 @@ server <- shinyServer(function(input, output, session) {
   })
   
   
-  ## Output Part 1 using action button to avoid warnings/errors while waiting for user input
+  ## Output Part 1 (using action button to avoid warnings/errors while waiting for user input)
   
   ## Plot
   action_Part1 <- eventReactive(input$action_fit_dsd, {
     req(pars())
-    req(Data2())
+
+    part1_plot <- pars()$plot
     
-    fit_plot <- plot_fit(Data2()$y, Data2()$Dpdata, pars())
-    
-    return(fit_plot)
+    return(part1_plot)
   })
   
   ## Plot
   output$Fit_plot <- renderPlot({
     req(action_Part1())
-    action_Part1()$plot
+    pars()$plot
   })
   
   # Table
   output$Part1_table <- renderTable({
     req(action_Part1())
-    action_Part1()$table
+    pars()$table
   })
-  
   
   ## Print all results only when ready
   output$return_part1_results <- renderText({
@@ -633,16 +564,13 @@ server <- shinyServer(function(input, output, session) {
   # Outputs are: DTwb,Twb
   
   Twb <- reactive({
-    req(pars)
     req(input$Tair)
     req(input$Patm)
     req(input$RH)
-    #Twb <- wet_bulb(17.689,760,35.65)  #hard coded
     Twb <- wet_bulb(input$Tair, input$Patm, input$RH)  
     
     return(Twb)
   })
-  
   
   ## Create action button - user must push button to generate output
   output$action_Twb <- renderUI({
@@ -662,7 +590,6 @@ server <- shinyServer(function(input, output, session) {
     action_Part2()
   })
   
-  
   ## Print all results only when ready
   output$return_part2_results <- renderText({
     req(action_Part2())
@@ -674,8 +601,6 @@ server <- shinyServer(function(input, output, session) {
   ############################################################################################################
   ## PART 3 Wind Profile
   
-  # *** Need notes here
-  
   ##### Canopy Height
   output$Elevation_wind_speed_1 <- renderUI({
     if (is.null(input$NumberMeasures_chosen))
@@ -686,7 +611,6 @@ server <- shinyServer(function(input, output, session) {
         numericInput(inputId = "Elevation_wind_speed_1",
                      label = "1st Elevation wind speed (ft):", # ***Do we want to let them enter in meters too? (then convert)
                      value = "NA",
-                     #value = "6.6", #*** Debugging purposes
                      step = 0.001, #*** How many decimal places do we want?
                      min = 0, #*** Is this correct
                      max = 5000 )) #*** Is there a good max elevation?
@@ -703,14 +627,11 @@ server <- shinyServer(function(input, output, session) {
       return(
         numericInput(inputId = "Elevation_wind_speed_2",
                      label = "2nd Elevation wind speed (ft):", # ***Do we want to let them enter in meters too? (then convert)
-                     #value = "NA",
                      value = "1.66667", #*** Debugging purposes
                      step = 0.00001, #*** How many decimal places do we want?
                      min = 0, #*** Is this correct
                      max = 5000 )) #*** Is there a good max elevation?
   })
-  
-  
   
   ##### Wind Speed
   output$MPH_wind_speed_1 <- renderUI({
@@ -720,9 +641,8 @@ server <- shinyServer(function(input, output, session) {
     if (input$NumberMeasures_chosen == "One" | input$NumberMeasures_chosen == "Two")
       return(
         numericInput(inputId = "MPH_wind_speed_1",
-                     label = "1st wind speed (mph):", #*** Is this really divided by height? # ***Do we want to let them enter in kph too? (then convert)
-                     #value = "NA",
-                     value = "12.8", #*** Debugging purposes
+                     label = "1st wind speed (mph):",
+                     value = "12.8",
                      step = 0.001, #*** How many decimal places do we want?
                      min = 0,
                      max = 250))
@@ -738,15 +658,12 @@ server <- shinyServer(function(input, output, session) {
     if (input$NumberMeasures_chosen == "Two")
       return(
         numericInput(inputId = "MPH_wind_speed_2",
-                     label = "2nd wind speed (mph):", #*** Is this really divided by height? # ***Do we want to let them enter in kph too? (then convert)
-                     #value = "NA",
-                     value = "9.44", #*** Debugging purposes
+                     label = "2nd wind speed (mph):",
+                     value = "9.44",
                      step = 0.001, #*** How many decimal places do we want?
                      min = 0,
                      max = 250))
   })
-  
-  
   
   ##### Canopy, Lambda, and Boom (only used when one set of wind speed and elevation selected)
   output$Canopy_height <- renderUI({
@@ -760,53 +677,13 @@ server <- shinyServer(function(input, output, session) {
       return(
         numericInput(inputId = "Canopy_height",
                      label = "Canopy_height (in):",
-                     #value = "NA",
-                     value = "4", #*** Debugging purposes
+                     value = "4",
                      step = 0.001, #*** How many decimal places do we want?
                      min = 0, #*** Is this 0?
                      max = 5000)) #*** Is there a good max height?
   })
   
-  
-  output$Lambda <- renderUI({
-    if (is.null(input$NumberMeasures_chosen))
-      return()
-    
-    if (input$NumberMeasures_chosen == "Two")
-      return()
-    
-    if (input$NumberMeasures_chosen == "One")
-      return(
-        numericInput(inputId = "Lambda",
-                     label = "Lambda (fraction vegetation):",
-                     #value = "NA",
-                     value = "0.08", #*** Debugging purposes
-                     step = 0.001, #*** How many decimal places do we want?
-                     min = 0, #*** Is this 0?
-                     max = 100)) #*** Is this 100?
-  })
-  
-  
-  output$Boom_height <- renderUI({
-    if (is.null(input$NumberMeasures_chosen))
-      return()
-    
-    if (input$NumberMeasures_chosen == "Two")
-      return()
-    
-    if (input$NumberMeasures_chosen == "One")
-      return(
-        numericInput(inputId = "Boom_height",
-                     label = "Boom height (in):", # ***Do we want to let them enter in meters too? (then convert)
-                     #value = "NA",
-                     value = "20", #*** Debugging purposes
-                     step = 0.001, #*** How many decimal places do we want?
-                     min = 0,
-                     max = 100))
-  })
-  
-  
-  #####*** Calculate XXXXXX
+  ##### Calculations
   wvprofile_params <- reactive({
     req(Twb)
     req(input$NumberMeasures_chosen)
@@ -815,11 +692,9 @@ server <- shinyServer(function(input, output, session) {
       return()
     
     if (input$NumberMeasures_chosen == "One")
-      return(wvprofile(input$Lambda,
-                       input$Canopy_height,
-                       input$Boom_height,
-                       input$Elevation_wind_speed_1,
-                       input$MPH_wind_speed_1))
+      return(wvprofile(input$Elevation_wind_speed_1,
+                       input$MPH_wind_speed_1,
+                       input$Canopy_height))
     
     if (input$NumberMeasures_chosen == "Two")
       return(WV2m(input$Elevation_wind_speed_1,
@@ -849,20 +724,11 @@ server <- shinyServer(function(input, output, session) {
       return()
     }
     
-    if (input$NumberMeasures_chosen == "Two") {
-      ## Return z0 and uf for reference
       part3.text <- paste0("Friction height, cm (z0): ", round(wvprofile_params()[1],2), "\nFriction velocity, cm/sec (uf): ", round(wvprofile_params()[2],2))
       part3.list <- list("text" = part3.text)
+
       return(part3.list)
-    }
-    
-    if (input$NumberMeasures_chosen == "One") {
-      ## Return z0 and uf for reference
-      part3.text <- paste0("Friction height, cm (z0): ", round(wvprofile_params()$params[2],2), "\nFriction velocity, cm/sec (uf): ", round(wvprofile_params()$params[1],2))
-      part3.plot <- wvprofile_params()$wv_plot
-      part3.list <- list("text" = part3.text, "plot" = part3.plot)
-      return(part3.list)
-    }
+    # }
   })
   
   ## Plot text
@@ -871,11 +737,11 @@ server <- shinyServer(function(input, output, session) {
     action_Part3()$text
   })
   
-  ## Plot figure
-  output$wv_plot <- renderPlot({
-    req(action_Part3())
-    action_Part3()$plot
-  })
+  # ## Plot figure
+  # output$wv_plot <- renderPlot({
+  #   req(action_Part3())
+  #   action_Part3()$plot
+  # })
   
   ## Print all results only when ready
   output$return_part3_results <- renderText({
@@ -916,15 +782,15 @@ server <- shinyServer(function(input, output, session) {
     ddd2 <- DDD_params$ddd2
     ddd3 <- DDD_params$ddd3
     
-    if(input$NumberMeasures_chosen == "One"){
-      Uf <- wvprofile_params()$params[1]
-      z0 <- wvprofile_params()$params[2]
-    }
+    # if(input$NumberMeasures_chosen == "One"){
+    #   z0 <- wvprofile_params()[1]
+    #   Uf <- wvprofile_params()[2]
+    # }
     
-    if(input$NumberMeasures_chosen == "Two"){
+    # if(input$NumberMeasures_chosen == "Two"){
       z0 <- wvprofile_params()[1]
       Uf <- wvprofile_params()[2]
-    }
+    # }
     
     ## Calculated from previous function
     DTwb <- Twb()[1] # Wetbulb temperature depression, C
@@ -932,53 +798,65 @@ server <- shinyServer(function(input, output, session) {
     ## Nozzle characteristics calculation
     charac <- charact_cal(input$app_p, input$angle, input$rhosoln)
     
-    droplet_1 <- droplet_transport(input$Tair,
-                                   input$RH,
-                                   input$rhow,
-                                   input$rhos,
-                                   input$xs0,
-                                   input$H0,
-                                   DTwb,
-                                   input$hcm,
-                                   Uf,
-                                   z0,
-                                   input$app_p,
-                                   charac[1],
-                                   charac[2],
-                                   ddd1,
-                                   "Solving Straight Down Problem")
+    ## Creeate progress bar
+    withProgress(message = "Solving Straight Down Problem", value = 0, {
     
-    droplet_2 <- droplet_transport(input$Tair,
-                                   input$RH,
-                                   input$rhow,
-                                   input$rhos,
-                                   input$xs0,
-                                   input$H0,
-                                   DTwb,
-                                   input$hcm,
-                                   Uf,
-                                   z0,
-                                   input$app_p,
-                                   charac[3],
-                                   charac[4],
-                                   ddd2,
-                                   "Solving with Wind Problem")
+      droplet_1 <- droplet_transport(input$Tair,
+                                     input$RH,
+                                     input$rhow,
+                                     input$rhos,
+                                     input$xs0,
+                                     input$H0,
+                                     DTwb,
+                                     input$hcm,
+                                     Uf,
+                                     z0,
+                                     input$app_p,
+                                     charac[1],
+                                     charac[2],
+                                     ddd1,
+                                     Driver)
+    }) # End of progress bar
     
-    droplet_3 <- droplet_transport(input$Tair,
-                                   input$RH,
-                                   input$rhow,
-                                   input$rhos,
-                                   input$xs0,
-                                   input$H0,
-                                   DTwb,
-                                   input$hcm,
-                                   Uf,
-                                   z0,
-                                   input$app_p,
-                                   charac[5],
-                                   charac[6],
-                                   ddd3,
-                                   "Solving against Wind Problem")
+    ## Creeate progress bar
+    withProgress(message = "Solving with Wind Problem", value = 0, {
+      
+      droplet_2 <- droplet_transport(input$Tair,
+                                     input$RH,
+                                     input$rhow,
+                                     input$rhos,
+                                     input$xs0,
+                                     input$H0,
+                                     DTwb,
+                                     input$hcm,
+                                     Uf,
+                                     z0,
+                                     input$app_p,
+                                     charac[3],
+                                     charac[4],
+                                     ddd2,
+                                     Driver)
+    }) # End of progress bar
+
+    ## Creeate progress bar
+    withProgress(message = "Solving against Wind Problem", value = 0, {
+      
+      droplet_3 <- droplet_transport(input$Tair,
+                                     input$RH,
+                                     input$rhow,
+                                     input$rhos,
+                                     input$xs0,
+                                     input$H0,
+                                     DTwb,
+                                     input$hcm,
+                                     Uf,
+                                     z0,
+                                     input$app_p,
+                                     charac[5],
+                                     charac[6],
+                                     ddd3,
+                                     Driver)
+    }) # End of progress bar
     
     
     Droplet_Transport_Results.list <- list("droplet_1" = droplet_1,
@@ -986,8 +864,6 @@ server <- shinyServer(function(input, output, session) {
                                            "droplet_3" = droplet_3)
     
   })
-  
-  
   
   ## Output from Part 4
   
@@ -1003,6 +879,7 @@ server <- shinyServer(function(input, output, session) {
     
     ## Create datatable and highlight zeroes in red
     DT::datatable(Droplet_Transport_Results()$droplet_1,
+                  options = list(dom = 'lt'),
                   rownames = FALSE,
                   colnames=c("Initial Droplet Diameter (microns)",
                              "Distance Traveled to Depositions from Nozzle Centerline (ft)"),
@@ -1028,6 +905,7 @@ server <- shinyServer(function(input, output, session) {
     
     ## Create datatable and highlight zeroes in red
     DT::datatable(Droplet_Transport_Results()$droplet_2,
+                  options = list(dom = 'lt'),
                   rownames = FALSE,
                   colnames=c("Initial Droplet Diameter (microns)",
                              "Distance Traveled to Depositions from Nozzle Centerline (ft)"),
@@ -1037,10 +915,7 @@ server <- shinyServer(function(input, output, session) {
                   backgroundColor = styleEqual(c(0, nonzero), c('red', 'white'))) %>%
       formatRound(columns=c('Xdist', 'Dp.1.23.'),
                   digits=3)
-    
   })
-  
-  
   
   output$Droplet3.table <- DT::renderDataTable({
     req(Droplet_Transport_Results())
@@ -1053,6 +928,7 @@ server <- shinyServer(function(input, output, session) {
     
     ## Create datatable and highlight zeroes in red
     DT::datatable(Droplet_Transport_Results()$droplet_3,
+                  options = list(dom = 'lt'),
                   rownames = FALSE,
                   colnames=c("Initial Droplet Diameter (microns)",
                              "Distance Traveled to Depositions from Nozzle Centerline (ft)"),
@@ -1062,10 +938,7 @@ server <- shinyServer(function(input, output, session) {
                   backgroundColor = styleEqual(c(0, nonzero), c('red', 'white'))) %>%
       formatRound(columns=c('Xdist', 'Dp.1.23.'),
                   digits=3)
-    
   })
-  
-  
   
   ## Create Figure
   output$Part4_plot <- renderPlot({
@@ -1084,14 +957,9 @@ server <- shinyServer(function(input, output, session) {
     All_droplet_data <- rbind(droplet1_data,
                               droplet2_data,
                               droplet3_data)
-    
-    #*** [SFR] Do we want to jitter?
-    #*** [SFR] Do we want to code NA as 0? and highlight in red
-    
-    
+      
     Part4_plot <- ggplot(All_droplet_data, aes(x = Xdist, y = Dp.1.23., color = Droplet)) +
       geom_point(size = 3, alpha = 0.5) +
-      #scale_color_manual(values = as.character(All_droplet_data$ColorSet)) +
       scale_color_manual(values = c("#ffd700", "#00ffd7", "#d700ff")) +
       ylab("Initial Droplet Diameter (microns)") +
       xlab("Distance Traveled to Depositions from Nozzle Centerline (ft)") +
@@ -1099,8 +967,6 @@ server <- shinyServer(function(input, output, session) {
       theme(
         legend.title = element_blank(),
         legend.background = element_rect(fill=alpha('white', 0.4)),
-        # legend.justification = c(0.995,0.995),
-        # legend.position = c(0.995,0.995),
         legend.position = "right",
         legend.text = element_text(size = 16),
         axis.line = element_line(colour = "black"),
@@ -1109,11 +975,8 @@ server <- shinyServer(function(input, output, session) {
         axis.title.y = element_text(size = 16, vjust= 1.5),
         axis.title.x = element_text(size = 16)
       )
-    
     return(Part4_plot)
   })
-  
-  
   
   ## Print all results only when ready
   output$return_part4_results <- renderText({
@@ -1122,10 +985,46 @@ server <- shinyServer(function(input, output, session) {
   })
   outputOptions(output, "return_part4_results", suspendWhenHidden = FALSE)  
   
+  ## Create data for download
+  Part4_results <- reactive({
+    req(Droplet_Transport_Results())
+    
+    droplet1_data <-
+      as_tibble(Droplet_Transport_Results()$droplet_1) %>%
+      mutate(Droplet = "Centerline")
+    droplet2_data <-
+      as_tibble(Droplet_Transport_Results()$droplet_2) %>%
+      mutate(Droplet = "Downwind")
+    droplet3_data <-
+      as_tibble(Droplet_Transport_Results()$droplet_3) %>%
+      mutate(Droplet = "Upwind")
+    
+    All_droplet_data <-
+      rbind(droplet1_data,
+            droplet2_data,
+            droplet3_data)
+    
+    All_droplet_data <-
+      All_droplet_data %>%
+      select("Droplet_diameter" = "Dp.1.23.",
+             "Distance_traveled" = "Xdist",
+             Droplet)
+    
+    return(All_droplet_data)
+  })
   
-  
-  
-  
+  ## Downloadable csv of data used for plotting 
+  output$download.part4.data <- downloadHandler(
+    
+    filename = function() {
+      paste0(
+        "Droplet_calculation_results.csv"
+      )
+    },
+    content = function(file) {
+      write.csv(Part4_results(), file, row.names = FALSE)
+    }
+  )
   
   ############################################################################################################
   ## PART 5 Deposition Calculations
@@ -1133,28 +1032,45 @@ server <- shinyServer(function(input, output, session) {
   Deposition <- reactive({
     req(pars())
     req(Droplet_Transport_Results())
+    req(input$rhosoln)
+    req(input$IAR)
+    req(input$xactive)
+    req(input$FD)
+    req(input$PL)
+    req(input$NozzleSpacing)
+    req(input$psipsipsi)
+    req(input$Dpmax)
+    req(input$DDpmin)
+    req(input$MMM)
+    req(input$lambda_res)
+    
     
     # Calculated in previous steps
-    a <- unname(pars)  
+    a <- unname(pars()$res)  
     Cent <- Droplet_Transport_Results()$droplet_1[2]$Xdist
     Dwnd <- Droplet_Transport_Results()$droplet_2[2]$Xdist
     Uwnd <- Droplet_Transport_Results()$droplet_3[2]$Xdist
+    rhoL <- input$rhosoln/1000
     
+    withProgress(message = 'Deposition calculation', detail = "percent complete", value = 0, {
+      
     Deposition <- deposition_calcs(input$IAR,
                                    input$xactive,
                                    input$FD,
                                    input$PL,
                                    input$NozzleSpacing,
                                    input$psipsipsi,
-                                   input$rhoL,
+                                   rhoL,
                                    Cent,
                                    Dwnd,
                                    Uwnd,
                                    input$Dpmax,
                                    input$DDpmin,
-                                   a(), #*** is this supposed to be a()
+                                   a,
                                    input$MMM,
-                                   input$lambda_res)
+                                   input$lambda_res,
+                                   Driver)
+    })
     
     return(Deposition)
   })
@@ -1163,7 +1079,6 @@ server <- shinyServer(function(input, output, session) {
   output$action_plot_dep <- renderUI({
     return(actionButton("action_plot_dep", "Calculate Deposition")) 
   })
-  
   
   
   # Output Part 5 using action button to avoid warnings/errors while waiting for user input
@@ -1177,7 +1092,6 @@ server <- shinyServer(function(input, output, session) {
     action_dep_plot()
   })
   
-  
   ## Print all results only when ready
   output$return_part5_results <- renderText({
     req(action_dep_plot())
@@ -1185,8 +1099,29 @@ server <- shinyServer(function(input, output, session) {
   })
   outputOptions(output, "return_part5_results", suspendWhenHidden = FALSE)  
   
+  ## Create data for download
+  Part5_results <- reactive({
+    req(Deposition())
+    
+    Deposition_data <-
+      tibble(Distance = Deposition()$XX,
+             Deposition = Deposition()$APplume)
+        
+    return(Deposition_data)
+  })
   
-  #########
+  ## Downloadable csv of data used for plotting 
+  output$download.part5.data <- downloadHandler(
+    
+    filename = function() {
+      paste0(
+        "Deposition_with_distance_results.csv"
+      )
+    },
+    content = function(file) {
+      write.csv(Part5_results(), file, row.names = FALSE)
+    }
+  )
   
   
   ## Output example data file for user if requested
@@ -1199,13 +1134,7 @@ server <- shinyServer(function(input, output, session) {
     }
   )
   
-  
-  ## Print entire page
-  observeEvent(input$print, {
-    js$winprint()
-  })
-  
-  
+
 }) # End of server script
 
 
