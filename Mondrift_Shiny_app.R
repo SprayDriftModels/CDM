@@ -129,7 +129,7 @@ ui <- shinyUI(
                      value = "760", #*** Debugging purposes
                      step = 0.001, #*** How many decimal places do we want?
                      min = 300, #***Is there a good min? https://www.avs.org/AVS/files/c7/c7edaedb-95b2-438f-adfb-36de54f87b9e.pdf
-                     max = 760),
+                     max = 800),
         
         ## Input Percent Relative Humidity
         numericInput(inputId = "RH",
@@ -214,7 +214,7 @@ ui <- shinyUI(
                      value = "24", # Default value
                      step = 0.001, #*** How many decimal places do we want?
                      min = 0, #****Is there a good min?
-                     max = 50000),  #****Is there a good max?
+                     max = 1000),  #****Is there a good max?
         
         numericInput(inputId = "hcm",
                      label = "Canopy height (cm):",
@@ -222,7 +222,7 @@ ui <- shinyUI(
                      value = "0", # Default value
                      step = 0.001, #*** How many decimal places do we want?
                      min = 0, #****Is there a good min?
-                     max = 50000),  #****Is there a good max?
+                     max = 1000),  #****Is there a good max?
         
         numericInput(inputId = "app_p",
                      label = "Nozzle pressure (psi):",
@@ -306,7 +306,7 @@ ui <- shinyUI(
                      value = "20", # Default value
                      step = 0.001, #*** How many decimal places do we want?
                      min = 0, #****Is there a good min?
-                     max = 10000),  #****Is there a good max?
+                     max = 100),  #****Is there a good max?
         
         numericInput(inputId = "psipsipsi",
                      label = "Horizontal variation in wind direction around mean direction, 1 stdev (degrees):",
@@ -314,7 +314,7 @@ ui <- shinyUI(
                      value = "10.7", # Default value
                      step = 0.001, #*** How many decimal places do we want?
                      min = 0, #****Is there a good min?
-                     max = 10000),  #****Is there a good max?
+                     max = 100),  #****Is there a good max?
         
         numericInput(inputId = "Dpmax",
                      label = "Dpmax (µm):",
@@ -330,7 +330,7 @@ ui <- shinyUI(
                      value = "18", # Default value
                      step = 0.001, #*** How many decimal places do we want?
                      min = 0, #****Is there a good min?
-                     max = 10000),  #****Is there a good max?
+                     max = 1000),  #****Is there a good max?
         
         
         numericInput(inputId = "MMM",
@@ -798,7 +798,7 @@ server <- shinyServer(function(input, output, session) {
     ## Nozzle characteristics calculation
     charac <- charact_cal(input$app_p, input$angle, input$rhosoln)
     
-    ## Creeate progress bar
+    ## Create progress bar
     withProgress(message = "Solving Straight Down Problem", value = 0, {
     
       droplet_1 <- droplet_transport(input$Tair,
@@ -818,7 +818,7 @@ server <- shinyServer(function(input, output, session) {
                                      Driver)
     }) # End of progress bar
     
-    ## Creeate progress bar
+    ## Create progress bar
     withProgress(message = "Solving with Wind Problem", value = 0, {
       
       droplet_2 <- droplet_transport(input$Tair,
@@ -838,7 +838,7 @@ server <- shinyServer(function(input, output, session) {
                                      Driver)
     }) # End of progress bar
 
-    ## Creeate progress bar
+    ## Create progress bar
     withProgress(message = "Solving against Wind Problem", value = 0, {
       
       droplet_3 <- droplet_transport(input$Tair,

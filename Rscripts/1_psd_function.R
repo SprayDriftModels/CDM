@@ -78,7 +78,7 @@ psd<-function(y, Dpdata){
   
   param_tb <- as.data.frame(res)
   param_tb <- tibble(Parameter = rownames(param_tb),
-                     Value = formatC(param_tb$res, format = "e", digits = 2))
+                     Value = formatC(param_tb$res, format = "f", digits = 2))
   
   part1.list <- list("res" = res,
                      "plot" = fit_plot,
