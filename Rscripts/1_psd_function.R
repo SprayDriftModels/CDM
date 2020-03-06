@@ -39,11 +39,11 @@ psd<-function(y, Dpdata){
   
   
   # Plot the calibration with the input data
-  Dp_plot <- (18:1460)
+  Dp_plot <- (Dpmin:Dpmax)
   fDP_plot <- 1/(2 * pi)^0.5 * (res[[5]]/res[[3]] * exp(-1 * (Dp_plot-res[[1]])^2/2/res[[3]]^2) + (1-res[[5]])/res[[4]] * exp(-1 * (Dp_plot-res[[2]])^2/2/res[[4]]^2))
   
   Y <- 0
-  for (i in 2:length(Dp_plot<-(18:1460))){
+  for (i in 2:length(Dp_plot<-(Dpmin:Dpmax))){
     Y[i] <- Y[i-1] + (fDP_plot[i-1] + fDP_plot[i])/2 * (Dp_plot[i]-Dp_plot[i-1]) * 100
   }
   
