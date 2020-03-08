@@ -6,6 +6,9 @@ library(nleqslv)
 library(deSolve)
 library(doParallel)
 library(foreach)
+library(ggplot2)
+library(gridExtra)
+library(tidyverse)
 
 # Clear all memory
 rm(list = ls())
@@ -30,6 +33,10 @@ source("Inputs.R")
 source("1_psd_function.R")
 # The following contains the fitted parameters of the drop size distribution model
 pars<-psd(y,Dpdata)
+
+# Plot calibration
+x11()
+pars$plot
 
 
 # Part 2
@@ -71,17 +78,17 @@ DTwb<-Twb[1] # Wetbulb temperature depression, C
 source ("4_Droplet_Transport_function.R")
 
 print("Solving Straight Down Problem")
-droplet_1<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[1],charac[2],ddd1)
+droplet_1<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[1],charac[2],ddd1,"text")
 print("Solving with Wind Problem")
-droplet_2<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[3],charac[4],ddd2)
+droplet_2<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[3],charac[4],ddd2,"text")
 print("Solving against Wind Problem")
-droplet_3<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[5],charac[6],ddd3)
+droplet_3<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[5],charac[6],ddd3,"text")
 
 print("Finished Solving for Droplet Transport")
 
 # Part 5
 # ________________________________________
-a<-unname(pars)  # Calibration from step #1 (removing the stored names)
+a<-unname(pars$res)  # Calibration from step #1 (removing the stored names)
 
 # Input from previous function
 Cent<-droplet_1[2]$Xdist
@@ -89,7 +96,11 @@ Dwnd<-droplet_2[2]$Xdist
 Uwnd<-droplet_3[2]$Xdist
 
 source("5_Deposition_Calcs_function.R")
-deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda)
+deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda,"text")
+
+# Plot results
+x11()
+deposition$dep_plot
 
 # Stop the clock
 proc.time() - ptm  # 
