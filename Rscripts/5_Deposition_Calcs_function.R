@@ -99,7 +99,7 @@ deposition_calcs<-function(IAR,
       if(Driver == "shiny"){
         incProgress(1/MM, detail = paste0(round((i/MM)*100, digits = 0), "% complete - Part 1"))
       } else{
-        print(paste0("Part 1",i))
+        print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 1"))
       }
       
       for (jj in 1:Nsa){# Note that this is +1 compared to MathCAD
@@ -127,7 +127,7 @@ deposition_calcs<-function(IAR,
       if(Driver == "shiny"){
         incProgress(1/MM, detail = paste0(round((i/MM)*100, digits = 0), "% complete - Part 2"))
       } else{
-        print(paste0("Part 2",i))
+        print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 2"))
       }
       
       for (jj in (Nsa+1):(Nsa+Nda)){# Note that this is +1 compared to MathCAD
