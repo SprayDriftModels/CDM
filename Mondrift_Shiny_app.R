@@ -15,7 +15,8 @@ list.of.packages <- c("shiny",
                       "deSolve",
                       "tidyr",
                       "shinydashboard",
-                      "shinycssloaders")
+                      "shinycssloaders",
+                      "magrittr")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages, dependencies = TRUE, repos = structure(c(CRAN="http://cloud.r-project.org/")))
 
@@ -36,9 +37,11 @@ library(foreach)
 library(tidyr)
 library(shinydashboard)
 library(shinycssloaders)
+library(magrittr)
 
-## Create "notin" function
+## Create functions
 `%notin%` <- Negate(`%in%`)
+`%OR%` <- shiny:::`%OR%`
 
 ## Create options for canopy/wind speed 
 MeasurementOptions = c(1, 2)
@@ -57,6 +60,7 @@ source("./Rscripts/3_wvprofile_params.R")
 source("./Rscripts/4_Nozzle_Characteristics.R")
 source("./Rscripts/4_Droplet_Transport_function.R")
 source("./Rscripts/5_Deposition_Calcs_function.R")
+source("./Rscripts/debounce_sc.R")
 
 ## Set "Driver" -- whether running in shiny or terminal (main)
 Driver = "shiny"
@@ -257,8 +261,8 @@ ui <- dashboardPage(
         
         numericInput(inputId = "rhow",
                      label = "Density of pure water in droplet (g/cm3):",
-                     #value = "NA",
-                     value = "1", # Default value
+                     value = "NA",
+                     #value = "1", # Default value
                      step = 0.001, #*** How many decimal places do we want?
                      min = 0, #****Is there a good min?
                      max = 1),  #****Is there a good max?
@@ -348,8 +352,8 @@ ui <- dashboardPage(
         
         numericInput(inputId = "IAR",
                      label = "Intended Application Rate (lb/acre):",
-                     #value = "NA",
-                     value = "0.4996", # Default value
+                     value = "NA",
+                     #value = "0.4996", # Default value
                      step = 0.0000001, #*** How many decimal places do we want?
                      min = 0, #****Is there a good min?
                      max = 100),  #****Is there a good max?
@@ -676,8 +680,11 @@ server <- shinyServer(function(input, output, session) {
     Twb <- wet_bulb(input$Tair, input$Patm, input$RH)  
     
     return(Twb)
-  })
-  
+  })  %>% 
+    # debounce(5000)
+    debounce_sc(5000, short_circuit = reactive(input$action_Twb)) #slows down invalidation, giving user time to make multiple changes before it triggers changes
+    # debounce includes a "short_circuit" so the user can initatiate the change with a button click
+    # 5000 = 5 seconds
   
   observeEvent(input$action_Twb,{
     output$Twb_values <- renderText({
@@ -790,7 +797,11 @@ server <- shinyServer(function(input, output, session) {
                   input$MPH_wind_speed_1,
                   input$MPH_wind_speed_2))
     
-  })       
+  }) %>% 
+    # debounce(5000)
+    debounce_sc(5000, short_circuit = reactive(input$action_wet)) #slows down invalidation, giving user time to make multiple changes before it triggers changes
+    # debounce includes a "short_circuit" so the user can initatiate the change with a button click
+    # 5000 = 5 seconds
   
   ## Create action button
   output$action_wet <- renderUI({
@@ -815,7 +826,10 @@ server <- shinyServer(function(input, output, session) {
   ## PART 4 Droplet Transport
   
   ## Calculations
-  Droplet_Transport_Results <- reactive( {
+  Droplet_Transport_Results <- reactive({
+    
+    if (input$action_drop_trans == 0)
+      return()
     
     req(input$Tair)
     req(input$RH)
@@ -828,7 +842,7 @@ server <- shinyServer(function(input, output, session) {
     req(input$angle)
     req(input$rhosoln)
     req(wvprofile_params())
-    req(input$NumberMeasures_chosen)
+
     
     ## Hard-coded parameters specific to nozzle used (file can be changed in Constants directory)
     p <- Nozzle_params %>% select(p)
@@ -868,6 +882,8 @@ server <- shinyServer(function(input, output, session) {
     ## Create progress bar
     withProgress(message = "Solving with Wind Problem", value = 0, {
       
+      droplet_2 <- 2
+      
       droplet_2 <- droplet_transport(input$Tair,
                                      input$RH,
                                      input$rhow,
@@ -888,6 +904,7 @@ server <- shinyServer(function(input, output, session) {
     ## Create progress bar
     withProgress(message = "Solving against Wind Problem", value = 0, {
       
+      droplet_3 <- 3
       droplet_3 <- droplet_transport(input$Tair,
                                      input$RH,
                                      input$rhow,
@@ -906,28 +923,35 @@ server <- shinyServer(function(input, output, session) {
     }) # End of progress bar
     
     
-    Droplet_Transport_Results.list <- list("droplet_1" = droplet_1,
-                                           "droplet_2" = droplet_2,
-                                           "droplet_3" = droplet_3)
+    Droplet_Transport_Results.list <- 
+      list("droplet_1" = droplet_1,
+           "droplet_2" = droplet_2,
+           "droplet_3" = droplet_3)
+    
     return(Droplet_Transport_Results.list)
-  })
+    
+  }) %>% 
+    # debounce(10000) #slows down invalidation, giving user time to make multiple changes before it triggers changes
+    debounce_sc(10000, short_circuit = reactive(input$action_drop_trans)) #slows down invalidation, giving user time to make multiple changes before it triggers changes
+  # debounce includes a "short_circuit" so the user can initatiate the change with a button click
+  # 10000 = 10 seconds
   
   
   ## Output from Part 4
   
   observeEvent(input$action_drop_trans,{
-    
-    
+
+
     ## Table
     output$Droplet1.table <- DT::renderDataTable({
       req(Droplet_Transport_Results())
-      
-      ## Identify all non-zero results 
+
+      ## Identify all non-zero results
       nonzero <- Droplet_Transport_Results()$droplet_1 %>%
         filter('Xdist' != 0) %>%
         select('Xdist') %>%
         unique()
-      
+
       ## Create datatable and highlight zeroes in red
       DT::datatable(Droplet_Transport_Results()$droplet_1,
                     options = list(dom = 'lt'),
@@ -936,24 +960,24 @@ server <- shinyServer(function(input, output, session) {
                                "Distance Traveled to Depositions from Nozzle Centerline (ft)"),
                     caption =  htmltools::tags$caption("Rows highlighted in red, likely non-convergence",
                                                        style="color:red")) %>%
-        formatStyle('Xdist', 
+        formatStyle('Xdist',
                     backgroundColor = styleEqual(c(0, nonzero), c('red', 'white'))) %>%
         formatRound(columns=c('Xdist', 'Dp.1.23.'),
                     digits=3)
-      
+
     })
-    
-    
-    
+
+
+
     output$Droplet2.table <- DT::renderDataTable({
       req(Droplet_Transport_Results())
-      
-      ## Identify all non-zero results 
+
+      ## Identify all non-zero results
       nonzero <- Droplet_Transport_Results()$droplet_2 %>%
         filter('Xdist' != 0) %>%
         select('Xdist') %>%
         unique()
-      
+
       ## Create datatable and highlight zeroes in red
       DT::datatable(Droplet_Transport_Results()$droplet_2,
                     options = list(dom = 'lt'),
@@ -962,21 +986,21 @@ server <- shinyServer(function(input, output, session) {
                                "Distance Traveled to Depositions from Nozzle Centerline (ft)"),
                     caption =  htmltools::tags$caption("Rows highlighted in red, likely non-convergence",
                                                        style="color:red")) %>%
-        formatStyle('Xdist', 
+        formatStyle('Xdist',
                     backgroundColor = styleEqual(c(0, nonzero), c('red', 'white'))) %>%
         formatRound(columns=c('Xdist', 'Dp.1.23.'),
                     digits=3)
     })
-    
+
     output$Droplet3.table <- DT::renderDataTable({
       req(Droplet_Transport_Results())
-      
-      ## Identify all non-zero results 
+
+      ## Identify all non-zero results
       nonzero <- Droplet_Transport_Results()$droplet_3 %>%
         filter('Xdist' != 0) %>%
         select('Xdist') %>%
         unique()
-      
+
       ## Create datatable and highlight zeroes in red
       DT::datatable(Droplet_Transport_Results()$droplet_3,
                     options = list(dom = 'lt'),
@@ -985,16 +1009,16 @@ server <- shinyServer(function(input, output, session) {
                                "Distance Traveled to Depositions from Nozzle Centerline (ft)"),
                     caption =  htmltools::tags$caption("Rows highlighted in red, likely non-convergence",
                                                        style="color:red")) %>%
-        formatStyle('Xdist', 
+        formatStyle('Xdist',
                     backgroundColor = styleEqual(c(0, nonzero), c('red', 'white'))) %>%
         formatRound(columns=c('Xdist', 'Dp.1.23.'),
                     digits=3)
     })
-    
+
     ## Create Figure
     output$Part4_plot <- renderPlot({
       req(Droplet_Transport_Results())
-      
+
       droplet1_data <- as_tibble(Droplet_Transport_Results()$droplet_1) %>%
         mutate(Droplet = "Centerline",
                ColorSet = "#ffd700")
@@ -1004,11 +1028,11 @@ server <- shinyServer(function(input, output, session) {
       droplet3_data <- as_tibble(Droplet_Transport_Results()$droplet_3) %>%
         mutate(Droplet = "Upwind",
                ColorSet = "#d700ff")
-      
+
       All_droplet_data <- rbind(droplet1_data,
                                 droplet2_data,
                                 droplet3_data)
-      
+
       Part4_plot <- ggplot(All_droplet_data, aes(x = Xdist, y = Dp.1.23., color = Droplet)) +
         geom_point(size = 3, alpha = 0.5) +
         scale_color_manual(values = c("#ffd700", "#00ffd7", "#d700ff")) +
@@ -1028,7 +1052,7 @@ server <- shinyServer(function(input, output, session) {
         )
       return(Part4_plot)
     })
-    
+
   }) # ObserveEvent
   
   
@@ -1036,6 +1060,10 @@ server <- shinyServer(function(input, output, session) {
   ## PART 5 Deposition Calculations
   
   Deposition <- reactive({
+    
+    if (input$action_plot_dep == 0)
+      return()
+    
     req(pars())
     req(Droplet_Transport_Results())
     req(input$rhosoln)
@@ -1079,12 +1107,11 @@ server <- shinyServer(function(input, output, session) {
     })
     
     return(Deposition)
-  })
-  
-  # ## Action button to plot output
-  # output$action_plot_dep <- renderUI({
-  #   return(actionButton("action_plot_dep", "Calculate Deposition")) 
-  # })
+  })  %>%
+    # debounce(10000) #slows down invalidation, giving user time to make multiple changes before it triggers changes
+    debounce_sc(10000, short_circuit = reactive(input$action_drop_trans)) #slows down invalidation, giving user time to make multiple changes before it triggers changes
+  # debounce includes a "short_circuit" so the user can initatiate the change with a button click
+  # 10000 = 10 seconds
   
   
   observeEvent(input$action_plot_dep,{
@@ -1153,17 +1180,57 @@ server <- shinyServer(function(input, output, session) {
       if(input$NumberMeasures_chosen == 1){
         input_params <- input_params %>%
           mutate("Canopy height" = input$Canopy_height) %>%
-          pivot_longer(everything(), names_to = "Parameters", values_to = "Value")
+          pivot_longer(everything(),
+                       names_to = "Parameters",
+                       values_to = "Value")
       }
       
       if(input$NumberMeasures_chosen == 2){
         input_params <- input_params %>%
           mutate("Elevation of wind speed (2)" = input$Elevation_wind_speed_2,
                  "MPH wind speed (2)" = input$MPH_wind_speed_2) %>%
-          pivot_longer(everything(), names_to = "Parameters", values_to = "Value")
+          pivot_longer(everything(),
+                       names_to = "Parameters",
+                       values_to = "Value")
       }
       
-      params <- list(input_params = input_params,
+      
+      param_units <- tibble("Dry air temperature" = "Celcius",
+                            "Barometric pressure" = "mmHg abs",
+                            "Relative humidity" = "%",
+                            "Number of wind measurements" = "NA",
+                            "Elevation of wind speed (1)" = "ft",
+                            "MPH wind speed (1)" = "mph",
+                            "Elevation of wind speed (2)" = "ft",
+                            "MPH wind speed (2)" = "mph",
+                            "Density of pure water in droplet" = "g/cm3",
+                            "Density of dissolved solids in droplet" = "g/cm3",
+                            "Mass fraction total dissolved solids in solution" = "NA",
+                            "Height of nozzle above ground" = "in",
+                            "Canopy height" = "cm",
+                            "Nozzle pressure" = "psi",
+                            "Nozzle angle" = "degrees",
+                            "Mix density" = "kg/m3",
+                            "Intended Application Rate" = "lb/acre",
+                            "Conc in tank solution" = "wtfraction",
+                            "Downwind field depth" = "ft",
+                            "Crosswind field width" = "ft",
+                            "Space between nozzles on Boom" = "in",
+                            "Horizontal variation in wind direction around mean direction, 1 stdev" = "degrees",
+                            "Dpmax" = "µm",
+                            "Dpmin" = "µm",
+                            "Number of droplet size bins" = "MMM",
+                            "Resolution of deposition calculations" = "NA") %>%
+                          pivot_longer(everything(), 
+                                       names_to = "Parameters", 
+                                       values_to = "Units")
+      
+      input_params_units <- left_join(x = input_params,
+                y = param_units,
+                by = "Parameters")
+      
+      
+      params <- list(input_params = input_params_units,
                      step1_results_plot = pars()$plot,
                      step1_results_table = pars()$table,
                      step2_results = Twb(),

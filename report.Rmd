@@ -26,7 +26,7 @@ kable(params$input_params, caption = "")
 ## Step 1: PSD Curve Fitting Results
 ```{r, echo = FALSE, warning = FALSE, comment=NA}
 params$step1_results_plot
-params$step1_results_table
+kable(params$step1_results_table)
 
 ```
 
@@ -90,7 +90,7 @@ paste0("Friction velocity, cm/sec (uf): ", round(params$step3_results[2],2))
       select("Droplet_diameter" = "Dp.1.23.",
              "Distance_traveled" = "Xdist",
              Droplet) %>% 
-        print(n = 100)
+        kable()
     
 ```
 
@@ -100,6 +100,6 @@ params$step5_results$dep_plot
 
 tibble(Distance = params$step5_results$XX,
        Deposition = params$step5_results$APplume) %>%
-  print(n = 100)
+  kable()
 
 ```
