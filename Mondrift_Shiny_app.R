@@ -41,7 +41,6 @@ library(magrittr)
 
 ## Create functions
 `%notin%` <- Negate(`%in%`)
-`%OR%` <- shiny:::`%OR%`
 
 ## Create options for canopy/wind speed 
 MeasurementOptions = c(1, 2)

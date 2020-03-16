@@ -1,6 +1,8 @@
 # Redefined in global namespace since it's not exported from shiny
 debounce_sc <- function(r, millis, priority = 100, domain = getDefaultReactiveDomain(), short_circuit = NULL) 
 {
+  `%OR%` <- shiny:::`%OR%`
+  
   force(r)
   force(millis)
   if (!is.function(millis)) {
