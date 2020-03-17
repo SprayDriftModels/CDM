@@ -1,17 +1,17 @@
 # Function when 1 wind vs. height measurements are available
 wvprofile <- function(z1, ux1, ch){
-
-ch<-ch*0.0254 # convert crop height in to m
-zcm <- z1*12*2.54
-Vcms <- ux1*5280*12*2.54/3600
-
-#######################
-# Example Overide; different equations:
-z0 <- (0.00340738473+0.1244537*ch)*100 # in cm
-Uf <- Vcms*0.41/log(zcm/z0) # in cm/s
-#######################
-
-return(c(z0, Uf))
+  
+  ch<-ch*0.0254 # convert crop height in to m
+  zcm <- z1*12*2.54
+  Vcms <- ux1*5280*12*2.54/3600
+  
+  #######################
+  # Example Overide; different equations:
+  z0 <- (0.00340738473+0.1244537*ch)*100 # in cm
+  Uf <- Vcms*0.41/log(zcm/z0) # in cm/s
+  #######################
+  
+  return(c(z0, Uf))
 }
 
 

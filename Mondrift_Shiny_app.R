@@ -580,8 +580,8 @@ ui <- dashboardPage(
                                      plotOutput('dep_plot'))
              )
       )
-      #For debugging purposes
-      #, tableOutput("checker") # a needed output in ui.R, doesn't have to be table
+      # For debugging purposes
+      , tableOutput("checker") # a needed output in ui.R, doesn't have to be table
     )
   ) #End Mainpanel
 ) # End of UI
@@ -678,7 +678,13 @@ server <- shinyServer(function(input, output, session) {
     req(input$RH)
     Twb <- wet_bulb(input$Tair, input$Patm, input$RH)  
     
-    return(Twb)
+    Twb_results <- 
+      list("Twb" = Twb,
+           "Tair" = input$Tair,
+           "Patm" = input$Patm,
+           "RH" = input$RH)
+    
+    return(Twb_results)
   })  %>% 
     # debounce(5000)
     debounce_sc(5000, short_circuit = reactive(input$action_Twb)) #slows down invalidation, giving user time to make multiple changes before it triggers changes
@@ -687,7 +693,7 @@ server <- shinyServer(function(input, output, session) {
   
   observeEvent(input$action_Twb,{
     output$Twb_values <- renderText({
-      paste0("Change in Wet Bulb Temperature (DTwb): ", round(Twb()[1],2), "\nWet Bulb Temperature (Twb): ", round(Twb()[2],2))
+      paste0("Change in Wet Bulb Temperature (DTwb): ", round(Twb()$Twb[1],2), "\nWet Bulb Temperature (Twb): ", round(Twb()$Twb[2],2))
     })
   })
   
@@ -785,16 +791,32 @@ server <- shinyServer(function(input, output, session) {
     if (is.null(input$NumberMeasures_chosen))
       return()
     
-    if (input$NumberMeasures_chosen == 1)
-      return(wvprofile(input$Elevation_wind_speed_1,
-                       input$MPH_wind_speed_1,
-                       input$Canopy_height))
+    if (input$NumberMeasures_chosen == 1){
+      wvprofile_params <- wvprofile(input$Elevation_wind_speed_1,
+                                    input$MPH_wind_speed_1,
+                                    input$Canopy_height)
+      wvprofile_params_list <- 
+        list("wvprofile_params" = wvprofile_params,
+             "Elevation_wind_speed_1" = input$Elevation_wind_speed_1,
+             "MPH_wind_speed_1" = input$MPH_wind_speed_1,
+             "Canopy_height" = input$Canopy_height)
+      
+      return(wvprofile_params_list)}
     
-    if (input$NumberMeasures_chosen == 2)
-      return(WV2m(input$Elevation_wind_speed_1,
-                  input$Elevation_wind_speed_2,
-                  input$MPH_wind_speed_1,
-                  input$MPH_wind_speed_2))
+    if (input$NumberMeasures_chosen == 2) {
+      wvprofile_params <- WV2m(input$Elevation_wind_speed_1,
+                               input$Elevation_wind_speed_2,
+                               input$MPH_wind_speed_1,
+                               input$MPH_wind_speed_2)
+      
+      wvprofile_params_list <- 
+        list("wvprofile_params" = wvprofile_params,
+             "Elevation_wind_speed_1" = input$Elevation_wind_speed_1,
+             "Elevation_wind_speed_2" = input$Elevation_wind_speed_2,
+             "MPH_wind_speed_1" = input$MPH_wind_speed_1,
+             "MPH_wind_speed_2" = input$MPH_wind_speed_2)}
+             
+      return(wvprofile_params_list)
     
   }) %>% 
     # debounce(5000)
@@ -816,7 +838,7 @@ server <- shinyServer(function(input, output, session) {
   
   observeEvent(input$action_wet,{
     output$z0_uf <- renderText({
-      paste0("Friction height, cm (z0): ", round(wvprofile_params()[1],2), "\nFriction velocity, cm/sec (uf): ", round(wvprofile_params()[2],2))
+      paste0("Friction height, cm (z0): ", round(wvprofile_params()$wvprofile_params[1],2), "\nFriction velocity, cm/sec (uf): ", round(wvprofile_params()$wvprofile_params[2],2))
     })
   })
   
@@ -851,9 +873,9 @@ server <- shinyServer(function(input, output, session) {
     ddd3 <- DDD_params$ddd3
     
     ## Calculated from previous function
-    DTwb <- Twb()[1] # Wetbulb temperature depression, C
-    z0 <- wvprofile_params()[1]
-    Uf <- wvprofile_params()[2]
+    DTwb <- Twb()$Twb[1] # Wetbulb temperature depression, C
+    z0 <- wvprofile_params()$wvprofile_params[1]
+    Uf <- wvprofile_params()$wvprofile_params[2]
     
     ## Nozzle characteristics calculation
     charac <- charact_cal(input$app_p, input$angle, input$rhosoln)
@@ -881,8 +903,6 @@ server <- shinyServer(function(input, output, session) {
     ## Create progress bar
     withProgress(message = "Solving with Wind Problem", value = 0, {
       
-      droplet_2 <- 2
-      
       droplet_2 <- droplet_transport(input$Tair,
                                      input$RH,
                                      input$rhow,
@@ -903,7 +923,6 @@ server <- shinyServer(function(input, output, session) {
     ## Create progress bar
     withProgress(message = "Solving against Wind Problem", value = 0, {
       
-      droplet_3 <- 3
       droplet_3 <- droplet_transport(input$Tair,
                                      input$RH,
                                      input$rhow,
@@ -925,7 +944,19 @@ server <- shinyServer(function(input, output, session) {
     Droplet_Transport_Results.list <- 
       list("droplet_1" = droplet_1,
            "droplet_2" = droplet_2,
-           "droplet_3" = droplet_3)
+           "droplet_3" = droplet_3,
+           "Tair" = input$Tair,
+           "RH" = input$RH,
+           "rhow" = input$rhow,
+           "rhos" = input$rhos,
+           "xs0" = input$xs0,
+           "H0" = input$H0,
+           #"DTTwb" = DTwb,
+           "hcm" = input$hcm,
+           #"Uf" = Uf,
+           #"z0" = z0,
+           "app_p" = input$app_p,
+           "angle" = input$angle)
     
     return(Droplet_Transport_Results.list)
     
@@ -1105,7 +1136,28 @@ server <- shinyServer(function(input, output, session) {
                                      Driver)
     })
     
-    return(Deposition)
+    
+    
+    Deposition_Results.list <- 
+      list("Deposition" = Deposition,
+           "IAR" = input$IAR,
+           "xactive" = input$xactive,
+           "FD" = input$FD,
+           "PL" = input$PL,
+           "NozzleSpacing" = input$NozzleSpacing,
+           "psipsipsi" = input$psipsipsi,
+           "rhol" = rhoL,
+           "Cent" = Cent,
+           "Dwnd" = Dwnd,
+           "Uwnd" = Uwnd,
+           "Dpmax" = input$Dpmax,
+           "DDpmin" = input$DDpmin,
+           #"a" = a,
+           "MMM" = input$MMM,
+           "lambda_res" = input$lambda_res,
+           "rhosoln" = input$rhosoln)
+    
+    return(Deposition_Results.list)
   })  %>%
     # debounce(10000) #slows down invalidation, giving user time to make multiple changes before it triggers changes
     debounce_sc(10000, short_circuit = reactive(input$action_drop_trans)) #slows down invalidation, giving user time to make multiple changes before it triggers changes
@@ -1115,7 +1167,7 @@ server <- shinyServer(function(input, output, session) {
   
   observeEvent(input$action_plot_dep,{
     output$dep_plot <- renderPlot({
-      Deposition()$dep_plot
+      Deposition()$Deposition$dep_plot
     })
   })
   
@@ -1150,44 +1202,49 @@ server <- shinyServer(function(input, output, session) {
       ## Set up parameters to pass to Rmd document
       # Create table of paramaeters used
       
-      input_params <- tibble("Dry air temperature" = input$Tair,
-                             "Barometric pressure" = input$Patm,
-                             "Relative humidity" = input$RH,
+      
+      input_params <- tibble("Dry air temperature" = Twb()$Tair,
+                             "Barometric pressure" = Twb()$Patm,
+                             "Relative humidity" = Twb()$RH,
+                             
                              "Number of wind measurements" = as.numeric(input$NumberMeasures_chosen),
-                             "Elevation of wind speed (1)" = input$Elevation_wind_speed_1,
-                             "MPH wind speed (1)" = input$MPH_wind_speed_1,
-                             "Density of pure water in droplet" = input$rhow,
-                             "Density of dissolved solids in droplet" = input$rhos,
-                             "Mass fraction total dissolved solids in solution" = input$xs0,
-                             "Height of nozzle above ground" = input$H0,
-                             "Canopy height" = input$hcm,
-                             "Nozzle pressure" = input$app_p,
-                             "Nozzle angle" = input$angle,
-                             "Mix density" = input$rhosoln,
-                             "Intended Application Rate" = input$IAR,
-                             "Conc in tank solution" = input$xactive,
-                             "Downwind field depth" = input$FD,
-                             "Crosswind field width" = input$PL,
-                             "Space between nozzles on Boom" = input$NozzleSpacing,
-                             "Horizontal variation in wind direction around mean direction, 1 stdev" = input$psipsipsi,
-                             "Dpmax" = input$Dpmax,
-                             "Dpmin" = input$DDpmin,
-                             "Number of droplet size bins" = input$MMM,
-                             "Resolution of deposition calculations" = input$lambda_res) 
+                             "Elevation of wind speed (1)" = wvprofile_params()$Elevation_wind_speed_1,
+                             "MPH wind speed (1)" = wvprofile_params()$MPH_wind_speed_1,
+
+                             "Density of pure water in droplet" = Droplet_Transport_Results()$rhow,
+                             "Density of dissolved solids in droplet" = Droplet_Transport_Results()$rhos,
+                             "Mass fraction total dissolved solids in solution" = Droplet_Transport_Results()$xs0,
+                             "Height of nozzle above ground" = Droplet_Transport_Results()$H0,
+                             "Canopy height (Droplet Transport Calculation)" = Droplet_Transport_Results()$hcm,
+                             "Nozzle pressure" = Droplet_Transport_Results()$app_p,
+                             "Nozzle angle" = Droplet_Transport_Results()$angle,
+                             
+                             "Mix density" = Deposition()$rhosoln,
+                             "Intended Application Rate" = Deposition()$IAR,
+                             "Conc in tank solution" = Deposition()$xactive,
+                             "Downwind field depth" = Deposition()$FD,
+                             "Crosswind field width" = Deposition()$PL,
+                             "Space between nozzles on Boom" = Deposition()$NozzleSpacing,
+                             "Horizontal variation in wind direction around mean direction, 1 stdev" = Deposition()$psipsipsi,
+                             "Dpmax" = Deposition()$Dpmax,
+                             "Dpmin" = Deposition()$DDpmin,
+                             "Number of droplet size bins" = Deposition()$MMM,
+                             "Resolution of deposition calculations" = Deposition()$lambda_res
+                             ) 
       
       #*** add sort to each of these after pivot
       if(input$NumberMeasures_chosen == 1){
         input_params <- input_params %>%
-          mutate("Canopy height" = input$Canopy_height) %>%
+          mutate("Canopy height" = wvprofile_params()$Canopy_height) %>%
           pivot_longer(everything(),
                        names_to = "Parameters",
                        values_to = "Value")
       }
-      
+
       if(input$NumberMeasures_chosen == 2){
         input_params <- input_params %>%
-          mutate("Elevation of wind speed (2)" = input$Elevation_wind_speed_2,
-                 "MPH wind speed (2)" = input$MPH_wind_speed_2) %>%
+          mutate("Elevation of wind speed (2)" = wvprofile_params()$Elevation_wind_speed_2,
+                 "MPH wind speed (2)" = wvprofile_params()$MPH_wind_speed_2) %>%
           pivot_longer(everything(),
                        names_to = "Parameters",
                        values_to = "Value")
@@ -1219,11 +1276,13 @@ server <- shinyServer(function(input, output, session) {
                             "Dpmax" = "µm",
                             "Dpmin" = "µm",
                             "Number of droplet size bins" = "MMM",
-                            "Resolution of deposition calculations" = "NA") %>%
-                          pivot_longer(everything(), 
-                                       names_to = "Parameters", 
-                                       values_to = "Units")
-      
+                            "Resolution of deposition calculations" = "NA"
+                            ) %>%
+                      pivot_longer(everything(),
+                                   names_to = "Parameters",
+                                   values_to = "Units")
+
+
       input_params_units <- left_join(x = input_params,
                 y = param_units,
                 by = "Parameters")
@@ -1233,9 +1292,9 @@ server <- shinyServer(function(input, output, session) {
                      step1_results_plot = pars()$plot,
                      step1_results_table = pars()$table,
                      step2_results = Twb(),
-                     step3_results = wvprofile_params(),
+                     step3_results = wvprofile_params()$wvprofile_params,
                      step4_results = Droplet_Transport_Results(),
-                     step5_results = Deposition()
+                     step5_results = Deposition()$Deposition
       )
       
       # Knit the document, passing in the `params` list, and eval it in a

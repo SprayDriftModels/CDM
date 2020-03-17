@@ -13,6 +13,8 @@ params:
   step5_results: NA
 ---
 
+
+
 ## Table of Parameter values
 ```{r, echo = FALSE, warning = FALSE}
 # Input parameter values
@@ -32,11 +34,8 @@ kable(params$step1_results_table)
 
 ## Step 2: Wet Bulb Calculation Results
 ```{r, echo = FALSE, warning = FALSE, comment=NA}
-# tibble("Change in Wet Bulb Temperature (DTwb)" = round(params$step2_results[1],2),
-#        "Wet Bulb Temperature (Twb)" = round(params$step2_results[2],2)
-#        )
-paste0("Change in Wet Bulb Temperature (DTwb): ", round(params$step2_results[1],2))
-paste0("Wet Bulb Temperature (Twb): ", round(params$step2_results[2],2))
+paste0("Change in Wet Bulb Temperature (DTwb): ", round(params$step2_results$Twb[1],2))
+paste0("Wet Bulb Temperature (Twb): ", round(params$step2_results$Twb[2],2))
 
 ```
 
@@ -60,11 +59,11 @@ paste0("Friction velocity, cm/sec (uf): ", round(params$step3_results[2],2))
       droplet3_data <- as_tibble(params$step4_results$droplet_3) %>%
         mutate(Droplet = "Upwind",
                ColorSet = "#d700ff")
-      
+
       All_droplet_data <- rbind(droplet1_data,
                                 droplet2_data,
                                 droplet3_data)
-      
+
       Part4_plot <- ggplot(All_droplet_data, aes(x = Xdist, y = Dp.1.23., color = Droplet)) +
         geom_point(size = 3, alpha = 0.5) +
         scale_color_manual(values = c("#ffd700", "#00ffd7", "#d700ff")) +
@@ -81,15 +80,15 @@ paste0("Friction velocity, cm/sec (uf): ", round(params$step3_results[2],2))
           axis.text.x = element_text(size = 16),
           axis.title.y = element_text(size = 16, vjust= 1.5),
           axis.title.x = element_text(size = 16)
-        )    
-    
+        )
+
       Part4_plot
-      
+
       ## Print table of results
       All_droplet_data %>%
       select("Droplet_diameter" = "Dp.1.23.",
              "Distance_traveled" = "Xdist",
-             Droplet) %>% 
+             Droplet) %>%
         kable()
     
 ```

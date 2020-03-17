@@ -82,7 +82,9 @@ psd<-function(y, Dpdata){
   
   part1.list <- list("res" = res,
                      "plot" = fit_plot,
-                     "table" = param_tb)
+                     "table" = param_tb,
+                     "y" = y,
+                     "Dpdata" = Dpdata)
   
   return(part1.list)
 }
