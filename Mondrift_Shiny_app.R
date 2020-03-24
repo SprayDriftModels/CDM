@@ -760,7 +760,7 @@ server <- shinyServer(function(input, output, session) {
     shinyjs::show("ShowHide_Part_2")
     
       output$Twb_values <- renderText({
-      paste0("Change in Wet Bulb Temperature (DTwb): ", round(Twb()$Twb[1],2), "\nWet Bulb Temperature (Twb): ", round(Twb()$Twb[2],2))
+      paste0("Change in Wet Bulb Temperature (DTwb in °C): ", round(Twb()$Twb[1],2), "\nWet Bulb Temperature (Twb in °C): ", round(Twb()$Twb[2],2))
     })
   })
   
