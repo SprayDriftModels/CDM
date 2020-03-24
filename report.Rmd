@@ -4,6 +4,7 @@ output: html_document
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 fontsize: 12pt
 params:
+  input_filename: NA
   input_params: NA
   step1_results_plot: NA
   step1_results_table: NA
@@ -14,15 +15,17 @@ params:
 ---
 
 
+## File used for PSD curve fitting
+```{r, echo = FALSE, warning = FALSE}
+library(knitr)
+cat(params$input_filename)
+```
+
 
 ## Table of Parameter values
 ```{r, echo = FALSE, warning = FALSE}
 # Input parameter values
-library(knitr)
-# library(tidyr)
-# params2 <- params$input_params %>% pivot_longer(names_to = "Parameters", values_to = "Value")
 kable(params$input_params, caption = "")
-#kable(params2, caption = "")
 ```
 
 ## Step 1: PSD Curve Fitting Results

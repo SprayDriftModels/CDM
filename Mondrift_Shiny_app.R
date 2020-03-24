@@ -134,7 +134,7 @@ ui <- dashboardPage(
                
                h3(""), #used to create space
                
-               actionButton("action_fit_dsd", "Fit PSD"),
+               actionButton("action_fit_psd", "Fit PSD"),
                
                h6("-") #used to create space
                
@@ -494,8 +494,14 @@ ui <- dashboardPage(
       column(12,
              h3("Step 1: PSD Curve Fitting"),
              
+             # Show or hide results depending on whether input values match those used for downstream calculations
+             shinyjs::useShinyjs(),
+             shinyjs::hidden(
+               div(
+                 id = "ShowHide_Part_1",
+                 
              ## Plot results when ready
-             conditionalPanel("input.action_fit_dsd",
+             conditionalPanel("input.action_fit_psd",
                               column(9,
                                      align="center",
                                      plotOutput('Fit_plot')),
@@ -506,6 +512,7 @@ ui <- dashboardPage(
              )
       ),
       tags$hr()
+             ))
     ),
     
     ## Part 2 Results
@@ -513,6 +520,12 @@ ui <- dashboardPage(
       column(12,
              h3("Step 2: Wet Bulb Calculation Results"),
              
+             # Show or hide results depending on whether input values match those used for downstream calculations
+             shinyjs::useShinyjs(),
+             shinyjs::hidden(
+               div(
+                 id = "ShowHide_Part_2",
+                 
              ## Plot results when ready
              conditionalPanel("input.action_Twb",
                               column(12,
@@ -524,6 +537,7 @@ ui <- dashboardPage(
                               ")))))
       ),
       tags$hr()
+             ))
     ),
     
     ## Part 3 Results
@@ -531,6 +545,12 @@ ui <- dashboardPage(
       column(12,
              h3("Step 3: Wind Profile Calculation Results"),
              
+             # Show or hide results depending on whether input values match those used for downstream calculations
+             shinyjs::useShinyjs(),
+             shinyjs::hidden(
+               div(
+                 id = "ShowHide_Part_3",
+                 
              ## Plot results when ready
              conditionalPanel("output.action_wet",
                               column(12,
@@ -546,12 +566,19 @@ ui <- dashboardPage(
              )
       ),
       tags$hr()
+             ))
     ),
     
     ## Part 4 Results
     fluidRow(
-      column(12,
+            column(12,
              h3("Step 4: Droplet Transport Calculation Results"),
+             
+             # Show or hide results depending on whether input values match those used for downstream calculations
+             shinyjs::useShinyjs(),
+             shinyjs::hidden(
+               div(
+                 id = "ShowHide_Part_4",
              
              ## Plot results when ready 
              conditionalPanel("input.action_drop_trans",
@@ -567,6 +594,7 @@ ui <- dashboardPage(
              )
       ),
       tags$hr()
+             ))
     ),
     
     ## Part 5 Results
@@ -574,10 +602,18 @@ ui <- dashboardPage(
       column(12,
              h3("Step 5: Deposition with Distance Calculations Results"),
              
+             # Show or hide results depending on whether input values match those used for downstream calculations
+             shinyjs::useShinyjs(),
+             shinyjs::hidden(
+               div(
+                 id = "ShowHide_Part_5",
+                 
              ## Plot results when ready (i.e., when output.return_part5_results is created)
              conditionalPanel("input.action_plot_dep",
                               column(12,
                                      plotOutput('dep_plot'))
+             )
+               )
              )
       )
       # For debugging purposes
@@ -594,7 +630,13 @@ ui <- dashboardPage(
 # Set up server logic
 server <- shinyServer(function(input, output, session) {
   
-  ## Upload DSD data
+  
+  
+  ############################################################################################################
+  ## PART 1 PSD Curve Fitting
+  
+  
+  ## Upload PSD data
   selected.data <- reactive({
     inFile <- input$file1
     
@@ -604,15 +646,14 @@ server <- shinyServer(function(input, output, session) {
     file.chosen <- read.csv(inFile$datapath,
                             header = T
     )
+    
     return(file.chosen)
   })
   
-  
-  ############################################################################################################
-  ## PART 1 DSD Curve Fitting
+
   
   ## Process input data files
-  Data2 <- reactive({
+  Data2 <- eventReactive(input$action_fit_psd, {
     req(selected.data())
     
     ## Calculate mean for however many trials were included
@@ -622,7 +663,7 @@ server <- shinyServer(function(input, output, session) {
     
     ## Determine where to draw the cut-off (begin with first value over zero and end with first value that reaches 100)
     firsty <- min(which(ymean > 0))
-    lasty <- max(which(ymean < 100))+1
+    lasty <- max(which(ymean < 100)) + 1
     
     ## Apply cut-off to y and Dpdata datasets
     y <- ymean %>%
@@ -635,34 +676,61 @@ server <- shinyServer(function(input, output, session) {
       slice(firsty:lasty) %>%
       pull(Droplet_Size_microns)
     
-    Data2 <- list(y = y, Dpdata = Dpdata)
+    Data2 <- list(y = y,
+                  Dpdata = Dpdata)
     
     return(Data2)
   })
   
   
   ## Obtain fitted parameters of the drop size distribution model
-  pars <- reactive({
+  pars <- eventReactive(input$action_fit_psd, {
     req(Data2())
     
     ## Calculate parameters using the loaded function "1a_psd_function.R"
-    pars <- psd(Data2()$y,Data2()$Dpdata)
+    pars <- psd(Data2()$y,
+                Data2()$Dpdata)
     
-    return(pars)
+    pars.list <- list(pars = pars,
+                  filename = input$file1)
+    
+    return(pars.list)
   })
   
   
   ## Output Part 1 (using action button to avoid warnings/errors while waiting for user input)
   
-  observeEvent(input$action_fit_dsd,{
+  observeEvent(input$action_fit_psd,{
+    shinyjs::show("ShowHide_Part_1")
+    
     output$Fit_plot <- renderPlot({
-      pars()$plot
+      pars()$pars$plot
     })
     
     output$Part1_table <- renderTable({
-      pars()$table
+      shinyjs::show("ShowHide_Part_1")
+      
+      pars()$pars$table
     })
   })
+  
+  # ## Reset downstream results if inputs change
+  observe({
+    req(pars())
+    
+    if(pars()$filename$name != input$file1$name){ 
+      shinyjs::hide("ShowHide_Part_1")
+      shinyjs::hide("ShowHide_Part_2")
+      shinyjs::hide("ShowHide_Part_3")
+      shinyjs::hide("ShowHide_Part_4")
+      shinyjs::hide("ShowHide_Part_5")    
+    }
+  })
+  
+  # # Debugging script
+  # output$checker <- renderTable({
+  #   glimpse(paste0(input$file1$name, pars()$filename$name))
+  # })
   
   
   ############################################################################################################
@@ -672,7 +740,7 @@ server <- shinyServer(function(input, output, session) {
   # Inputs are in sequence Dry air temperature (Tair) degrees C, Barometric pressure (Patm) in mmHg abs, and Percent relative humidity (RH)
   # Outputs are: DTwb,Twb
   
-  Twb <- reactive({
+  Twb <- eventReactive(input$action_Twb, {
     req(input$Tair)
     req(input$Patm)
     req(input$RH)
@@ -685,18 +753,35 @@ server <- shinyServer(function(input, output, session) {
            "RH" = input$RH)
     
     return(Twb_results)
-  })  %>% 
-    # debounce(5000)
-    debounce_sc(5000, short_circuit = reactive(input$action_Twb)) #slows down invalidation, giving user time to make multiple changes before it triggers changes
-    # debounce includes a "short_circuit" so the user can initatiate the change with a button click
-    # 5000 = 5 seconds
+  }) 
   
+  ## Output results with button push
   observeEvent(input$action_Twb,{
-    output$Twb_values <- renderText({
+    shinyjs::show("ShowHide_Part_2")
+    
+      output$Twb_values <- renderText({
       paste0("Change in Wet Bulb Temperature (DTwb): ", round(Twb()$Twb[1],2), "\nWet Bulb Temperature (Twb): ", round(Twb()$Twb[2],2))
     })
   })
   
+
+  # ## Reset downstream results if inputs change
+  observe({
+    req(Twb())
+    
+    if(Twb()$Tair != input$Tair |
+       Twb()$Patm != input$Patm |
+       Twb()$RH != input$RH){ 
+       shinyjs::hide("ShowHide_Part_2")
+       shinyjs::hide("ShowHide_Part_3")
+       shinyjs::hide("ShowHide_Part_4")
+       shinyjs::hide("ShowHide_Part_5")    
+      } 
+  })
+  
+  
+  
+
   
   ############################################################################################################
   ## PART 3 Wind Profile
@@ -785,7 +870,7 @@ server <- shinyServer(function(input, output, session) {
   })
   
   ##### Calculations
-  wvprofile_params <- reactive({
+  wvprofile_params <- eventReactive(input$action_wet, {
     req(input$NumberMeasures_chosen)
     
     if (is.null(input$NumberMeasures_chosen))
@@ -818,39 +903,84 @@ server <- shinyServer(function(input, output, session) {
              
       return(wvprofile_params_list)
     
-  }) %>% 
-    # debounce(5000)
-    debounce_sc(5000, short_circuit = reactive(input$action_wet)) #slows down invalidation, giving user time to make multiple changes before it triggers changes
-    # debounce includes a "short_circuit" so the user can initatiate the change with a button click
-    # 5000 = 5 seconds
+  }) 
   
   ## Create action button
   output$action_wet <- renderUI({
-    if (is.null(input$NumberMeasures_chosen))
+    if (is.null(input$NumberMeasures_chosen)){
       return()
+    }
     
-    if (input$NumberMeasures_chosen == 2)
+    if (input$NumberMeasures_chosen == 2){
       return(actionButton("action_wet", "Calculate wind profile")) 
+    }
     
-    if (input$NumberMeasures_chosen == 1)
+    if (input$NumberMeasures_chosen == 1){
       return(actionButton("action_wet", "Calculate wind profile")) 
+    }
   })
   
   observeEvent(input$action_wet,{
+    shinyjs::show("ShowHide_Part_3")
+    
     output$z0_uf <- renderText({
       paste0("Friction height, cm (z0): ", round(wvprofile_params()$wvprofile_params[1],2), "\nFriction velocity, cm/sec (uf): ", round(wvprofile_params()$wvprofile_params[2],2))
     })
   })
   
   
+  ## Reset downstream results if inputs change
+  observe({
+    req(wvprofile_params())
+    req(input$NumberMeasures_chosen)
+    
+    if (is.null(input$NumberMeasures_chosen)){
+      return()
+    }
+
+    if (input$NumberMeasures_chosen == 1){
+      
+      if(is.null(wvprofile_params()$Canopy_height)){
+            shinyjs::hide("ShowHide_Part_3")
+            shinyjs::hide("ShowHide_Part_4")
+            shinyjs::hide("ShowHide_Part_5")
+      }else if(wvprofile_params()$Elevation_wind_speed_1 != input$Elevation_wind_speed_1 |
+         wvprofile_params()$MPH_wind_speed_1 != input$MPH_wind_speed_1 |
+         wvprofile_params()$Canopy_height != input$Canopy_height
+        ){
+          shinyjs::hide("ShowHide_Part_3")
+          shinyjs::hide("ShowHide_Part_4")
+          shinyjs::hide("ShowHide_Part_5")
+        }
+      }
+    
+
+    if(input$NumberMeasures_chosen == 2){
+      
+      if(is.null(wvprofile_params()$Elevation_wind_speed_2) |
+         is.null(wvprofile_params()$MPH_wind_speed_2)){
+            shinyjs::hide("ShowHide_Part_3")
+            shinyjs::hide("ShowHide_Part_4")
+            shinyjs::hide("ShowHide_Part_5")
+      } else if(wvprofile_params()$Elevation_wind_speed_1 != input$Elevation_wind_speed_1 |
+         wvprofile_params()$Elevation_wind_speed_2 != input$Elevation_wind_speed_2 |
+         wvprofile_params()$MPH_wind_speed_1 != input$MPH_wind_speed_1 |
+         wvprofile_params()$MPH_wind_speed_2 != input$MPH_wind_speed_2
+        ){
+        shinyjs::hide("ShowHide_Part_3")
+        shinyjs::hide("ShowHide_Part_4")
+        shinyjs::hide("ShowHide_Part_5")
+      }
+    }
+  })
+  
+
+  
   ############################################################################################################
   ## PART 4 Droplet Transport
   
   ## Calculations
-  Droplet_Transport_Results <- reactive({
-    
-    if (input$action_drop_trans == 0)
-      return()
+  Droplet_Transport_Results <- eventReactive(input$action_drop_trans, {
     
     req(input$Tair)
     req(input$RH)
@@ -879,10 +1009,11 @@ server <- shinyServer(function(input, output, session) {
     
     ## Nozzle characteristics calculation
     charac <- charact_cal(input$app_p, input$angle, input$rhosoln)
+
     
     ## Create progress bar
     withProgress(message = "Solving Straight Down Problem", value = 0, {
-      
+
       droplet_1 <- droplet_transport(input$Tair,
                                      input$RH,
                                      input$rhow,
@@ -899,10 +1030,10 @@ server <- shinyServer(function(input, output, session) {
                                      ddd1,
                                      Driver)
     }) # End of progress bar
-    
+
     ## Create progress bar
     withProgress(message = "Solving with Wind Problem", value = 0, {
-      
+
       droplet_2 <- droplet_transport(input$Tair,
                                      input$RH,
                                      input$rhow,
@@ -919,10 +1050,10 @@ server <- shinyServer(function(input, output, session) {
                                      ddd2,
                                      Driver)
     }) # End of progress bar
-    
+
     ## Create progress bar
     withProgress(message = "Solving against Wind Problem", value = 0, {
-      
+
       droplet_3 <- droplet_transport(input$Tair,
                                      input$RH,
                                      input$rhow,
@@ -956,22 +1087,20 @@ server <- shinyServer(function(input, output, session) {
            #"Uf" = Uf,
            #"z0" = z0,
            "app_p" = input$app_p,
-           "angle" = input$angle)
+           "angle" = input$angle,
+           "rhosoln" = input$rhosoln)
     
     return(Droplet_Transport_Results.list)
     
-  }) %>% 
-    # debounce(10000) #slows down invalidation, giving user time to make multiple changes before it triggers changes
-    debounce_sc(10000, short_circuit = reactive(input$action_drop_trans)) #slows down invalidation, giving user time to make multiple changes before it triggers changes
-  # debounce includes a "short_circuit" so the user can initatiate the change with a button click
-  # 10000 = 10 seconds
+  }) 
   
   
   ## Output from Part 4
   
   observeEvent(input$action_drop_trans,{
-
-
+  
+    shinyjs::show("ShowHide_Part_4")
+    
     ## Table
     output$Droplet1.table <- DT::renderDataTable({
       req(Droplet_Transport_Results())
@@ -996,8 +1125,6 @@ server <- shinyServer(function(input, output, session) {
                     digits=3)
 
     })
-
-
 
     output$Droplet2.table <- DT::renderDataTable({
       req(Droplet_Transport_Results())
@@ -1048,6 +1175,11 @@ server <- shinyServer(function(input, output, session) {
     ## Create Figure
     output$Part4_plot <- renderPlot({
       req(Droplet_Transport_Results())
+      
+      #***SFR
+      if (input$action_drop_trans == 0) {
+        return(NULL)
+      }
 
       droplet1_data <- as_tibble(Droplet_Transport_Results()$droplet_1) %>%
         mutate(Droplet = "Centerline",
@@ -1084,19 +1216,39 @@ server <- shinyServer(function(input, output, session) {
     })
 
   }) # ObserveEvent
+
   
+  ## Reset downstream results if inputs change 
+  observe({
+    req(Droplet_Transport_Results())
+    
+    if(Droplet_Transport_Results()$rhow != input$rhow |
+       Droplet_Transport_Results()$rhos != input$rhos |
+       Droplet_Transport_Results()$xs0 != input$xs0 |
+       Droplet_Transport_Results()$H0 != input$H0 |
+       Droplet_Transport_Results()$hcm != input$hcm |
+       Droplet_Transport_Results()$app_p != input$app_p |
+       Droplet_Transport_Results()$angle != input$angle |
+       Droplet_Transport_Results()$rhosoln != input$rhosoln
+       )
+      { 
+      shinyjs::hide("ShowHide_Part_4")
+      shinyjs::hide("ShowHide_Part_5")    
+      } 
+  })
+  
+
   
   ############################################################################################################
   ## PART 5 Deposition Calculations
   
-  Deposition <- reactive({
+  Deposition <- eventReactive(input$action_plot_dep, {
     
-    if (input$action_plot_dep == 0)
-      return()
+    # if (input$action_plot_dep == 0)
+    #   return()
     
-    req(pars())
+    req(pars()$pars)
     req(Droplet_Transport_Results())
-    req(input$rhosoln)
     req(input$IAR)
     req(input$xactive)
     req(input$FD)
@@ -1110,7 +1262,7 @@ server <- shinyServer(function(input, output, session) {
     
     
     # Calculated in previous steps
-    a <- unname(pars()$res)  
+    a <- unname(pars()$pars$res)  
     Cent <- Droplet_Transport_Results()$droplet_1[2]$Xdist
     Dwnd <- Droplet_Transport_Results()$droplet_2[2]$Xdist
     Uwnd <- Droplet_Transport_Results()$droplet_3[2]$Xdist
@@ -1158,36 +1310,40 @@ server <- shinyServer(function(input, output, session) {
            "rhosoln" = input$rhosoln)
     
     return(Deposition_Results.list)
-  })  %>%
-    # debounce(10000) #slows down invalidation, giving user time to make multiple changes before it triggers changes
-    debounce_sc(10000, short_circuit = reactive(input$action_drop_trans)) #slows down invalidation, giving user time to make multiple changes before it triggers changes
-  # debounce includes a "short_circuit" so the user can initatiate the change with a button click
-  # 10000 = 10 seconds
-  
+  })
   
   observeEvent(input$action_plot_dep,{
+    shinyjs::show("ShowHide_Part_5")
+    
     output$dep_plot <- renderPlot({
       Deposition()$Deposition$dep_plot
     })
   })
   
+  ## Reset downstream results if inputs change 
+  observe({
+    req(Deposition())
+    
+    if(Deposition()$IAR != input$IAR |
+       Deposition()$xactive != input$xactive |
+       Deposition()$FD != input$FD |
+       Deposition()$PL != input$PL |
+       Deposition()$NozzleSpacing != input$NozzleSpacing |
+       Deposition()$psipsipsi != input$psipsipsi |
+       Deposition()$Dpmax != input$Dpmax |
+       Deposition()$DDpmin != input$DDpmin |
+       Deposition()$MMM != input$MMM |
+       Deposition()$lambda_res != input$lambda_res
+    )
+    { 
+      shinyjs::hide("ShowHide_Part_4")
+      shinyjs::hide("ShowHide_Part_5")    
+    } 
+  })
   
-  ## Output example data file for user if requested
-  output$download.example.DSD.csv <- downloadHandler(
-    filename = function() {
-      paste("Example.DSD", ".csv", sep="")
-    },
-    content = function(file) {
-      write.csv(Example.DSD, file, row.names=FALSE)
-    }
-  )
   
-  
-  # # ***print tables to see what is being produced
-  # output$checker <- renderTable({
-  #   glimpse(input$NumberMeasures_chosen) # something that relies on the reactive, same thing here for simplicty
-  # })
-  
+  ############################################################################################################
+  ## PART 6 Report
   
   output$report <- downloadHandler(
     # For PDF output, change this to "report.pdf"
@@ -1218,8 +1374,8 @@ server <- shinyServer(function(input, output, session) {
                              "Canopy height (Droplet Transport Calculation)" = Droplet_Transport_Results()$hcm,
                              "Nozzle pressure" = Droplet_Transport_Results()$app_p,
                              "Nozzle angle" = Droplet_Transport_Results()$angle,
+                             "Mix density" = Droplet_Transport_Results()$rhosoln,
                              
-                             "Mix density" = Deposition()$rhosoln,
                              "Intended Application Rate" = Deposition()$IAR,
                              "Conc in tank solution" = Deposition()$xactive,
                              "Downwind field depth" = Deposition()$FD,
@@ -1288,9 +1444,10 @@ server <- shinyServer(function(input, output, session) {
                 by = "Parameters")
       
       
-      params <- list(input_params = input_params_units,
-                     step1_results_plot = pars()$plot,
-                     step1_results_table = pars()$table,
+      params <- list(input_filename = pars()$filename$name,
+                     input_params = input_params_units,
+                     step1_results_plot = pars()$pars$plot,
+                     step1_results_table = pars()$pars$table,
                      step2_results = Twb(),
                      step3_results = wvprofile_params()$wvprofile_params,
                      step4_results = Droplet_Transport_Results(),
@@ -1307,6 +1464,20 @@ server <- shinyServer(function(input, output, session) {
     }
   )
   
+  
+  ############################################################################################################
+  ## Supplemental
+  
+  
+  ## Output example data file for user if requested
+  output$download.example.DSD.csv <- downloadHandler(
+    filename = function() {
+      paste("Example.DSD", ".csv", sep="")
+    },
+    content = function(file) {
+      write.csv(Example.DSD, file, row.names=FALSE)
+    }
+  )
   
   
 }) # End of server script

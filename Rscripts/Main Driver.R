@@ -22,6 +22,8 @@ ptm <- proc.time()
 current_working_dir <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(current_working_dir)
 
+echo = T
+
 # Open Input properties
 source("Inputs.R")
 
