@@ -718,7 +718,7 @@ server <- shinyServer(function(input, output, session) {
   observe({
     req(pars())
     
-    if(pars()$filename$name != input$file1$name){ 
+    if(pars()$filename != input$file1){ 
       shinyjs::hide("ShowHide_Part_1")
       shinyjs::hide("ShowHide_Part_2")
       shinyjs::hide("ShowHide_Part_3")
