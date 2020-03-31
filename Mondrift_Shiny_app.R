@@ -46,8 +46,8 @@ library(magrittr)
 MeasurementOptions = c(1, 2)
 
 ## Load hard-coded inputs
-Nozzle_params <- as_tibble(read.csv("./Constants/Nozzle_params.csv", header = T))
-DDD_params <- as_tibble(read.csv("./Constants/DDD_params.csv", header = T))
+Nozzle_params <- as_tibble(read.csv("./Constants/Nozzle_Params.csv", header = T))
+DDD_params <- as_tibble(read.csv("./Constants/DDD_Params.csv", header = T))
 
 ## Load example DSD file
 Example.DSD <- read.csv("Templates/DSD_template.csv", header = T)

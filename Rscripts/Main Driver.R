@@ -14,7 +14,7 @@ library(tidyverse)
 rm(list = ls())
 
 # Remove all figures
-graphics.off()
+# graphics.off()
 
 # Start the clock
 ptm <- proc.time()
@@ -37,7 +37,7 @@ source("1_psd_function.R")
 pars<-psd(y,Dpdata)
 
 # Plot calibration
-x11()
+## x11()
 pars$plot
 
 
@@ -101,7 +101,7 @@ source("5_Deposition_Calcs_function.R")
 deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda,"text")
 
 # Plot results
-x11()
+## x11()
 deposition$dep_plot
 
 # Stop the clock
