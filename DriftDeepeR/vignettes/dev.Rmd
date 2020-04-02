@@ -14,6 +14,9 @@ library(DriftDeepeR)
 ```
 
 ```{r}
-
+setwd("DriftDeepeR")
+proj_set(".")
+use_test()
+use_test("TestPSD")
 ```
 
