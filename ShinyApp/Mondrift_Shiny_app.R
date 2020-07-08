@@ -2,23 +2,23 @@
 ########################################################################################
 
 ## Check for packages, if not present install
-list.of.packages <- c("shiny",
-                      "shinydashboard",
-                      "nlstools",
-                      "tidyverse",
-                      "ggplot2",
-                      "nleqslv",
-                      "DT",
-                      "shinyjs",
-                      "V8",
-                      "gridExtra",
-                      "deSolve",
-                      "tidyr",
-                      "shinydashboard",
-                      "shinycssloaders",
-                      "magrittr")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages, dependencies = TRUE, repos = structure(c(CRAN="http://cloud.r-project.org/")))
+# list.of.packages <- c("shiny",
+#                       "shinydashboard",
+#                       "nlstools",
+#                       "tidyverse",
+#                       "ggplot2",
+#                       "nleqslv",
+#                       "DT",
+#                       "shinyjs",
+#                       "V8",
+#                       "gridExtra",
+#                       "deSolve",
+#                       "tidyr",
+#                       "shinydashboard",
+#                       "shinycssloaders",
+#                       "magrittr")
+# new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+# if(length(new.packages)) install.packages(new.packages, dependencies = TRUE, repos = structure(c(CRAN="http://cloud.r-project.org/")))
 
 ## Load libraries
 library(shiny)

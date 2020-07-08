@@ -1,0 +1,12 @@
+name: drifter
+title: DrifteR
+username: zhenglei_gao
+account: zhenglei_gao
+server: rsconnect.cs.sats.cloud
+hostUrl: https://rsconnect.cs.sats.cloud/__api__
+appId: 8
+bundleId: 12
+url: http://rsconnect.cs.sats.cloud/content/8/
+when: 1589200678.86384
+asMultiple: FALSE
+asStatic: FALSE

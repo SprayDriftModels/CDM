@@ -175,9 +175,9 @@ droplet_transport<-function(Tair,
     
     if (Xdist[i]==0){
       print("Trying alternate solution")
-      # Solve the system with Euler if failed before
+      # Solve the system with Euler if failed before // changed to radau method according to Naresh's email
       try({
-        out   <- ode(yini, times, EqnSys,parms=0,method="euler",maxsteps=1e4)
+        out   <- ode(yini, times, EqnSys,parms=0,method="radau",maxsteps=1e4)
         Xdist[i]<-out[N-1,3]/12/2.54},
         silent=TRUE)  
     }
