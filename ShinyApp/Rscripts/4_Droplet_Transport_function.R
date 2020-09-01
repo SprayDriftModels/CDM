@@ -1,3 +1,25 @@
+#' Droplet Transportation Calculator
+#'
+#' @param Tair Temperature
+#' @param RH 
+#' @param rhow 
+#' @param rhos 
+#' @param xs0 
+#' @param H0 
+#' @param DTwb 
+#' @param hcm 
+#' @param Uf 
+#' @param z0 
+#' @param Pn 
+#' @param vz0 
+#' @param vx0 
+#' @param ddd_inp 
+#' @param Driver 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 droplet_transport<-function(Tair,
                             RH,
                             rhow,
@@ -112,9 +134,12 @@ droplet_transport<-function(Tair,
     # Increment the progress bar, and update the detail text
     if(Driver == "shiny"){
     incProgress(1/23, detail = paste0(round((i/23)*100, digits = 0), "% complete"))
-    } else{
+    }else {
+      if(Driver=="Silent"){
+      
+    }else{
       print(i)
-    }
+    }}
 
     ddd <- ddd_inp[i]
  

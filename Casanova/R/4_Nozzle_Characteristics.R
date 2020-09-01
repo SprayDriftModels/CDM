@@ -1,13 +1,3 @@
-#' Title
-#'
-#' @param app_p 
-#' @param angle 
-#' @param rhosoln 
-#'
-#' @return
-#' @export
-#'
-#' @examples
 charact_cal<-function(app_p, angle, rhosoln){
   
   app_p_pa <- app_p/14.696*101325

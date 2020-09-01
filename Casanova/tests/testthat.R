@@ -1,4 +1,4 @@
 library(testthat)
-library(DriftDeepeR)
+library(Casanova)
 
-test_check("DriftDeepeR")
+test_check("Casanova")
