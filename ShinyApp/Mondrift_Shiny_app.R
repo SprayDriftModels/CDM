@@ -643,9 +643,7 @@ server <- shinyServer(function(input, output, session) {
     if (is.null(inFile)) {
       return(NULL)
     }
-    file.chosen <- read.csv(inFile$datapath,
-                            header = T
-    )
+    file.chosen <- read_csv(inFile$datapath)
     
     return(file.chosen)
   })
