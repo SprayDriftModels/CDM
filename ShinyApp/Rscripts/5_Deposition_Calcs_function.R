@@ -1,19 +1,5 @@
-deposition_calcs<-function(IAR,
-                           xactive,
-                           FD,
-                           PL,
-                           NozzleSpacing,
-                           psipsipsi,
-                           rhoL,
-                           Cent_inp,
-                           Dwnd_inp,
-                           Uwnd_inp,
-                           Dpmax,
-                           DDpmin,
-                           a,
-                           MMM,
-                           lambda,
-                           Driver){
+deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Cent_inp,Dwnd_inp,Uwnd_inp,
+                           Dpmax, DDpmin,a,MMM,lambda,Driver){
   
 
   v <- FD*PL/43560

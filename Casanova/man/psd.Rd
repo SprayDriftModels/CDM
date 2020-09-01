@@ -7,12 +7,12 @@
 psd(y, Dpdata)
 }
 \arguments{
-\item{y}{}
+\item{y}{Average DSD fit data:}
 
-\item{Dpdata}{}
+\item{Dpdata}{Corresponding droplet size (in microns):}
 }
 \value{
-
+list of res=c(a1,a2,d1,d2,k1), plot, and input data.
 }
 \description{
 PSD fitting function

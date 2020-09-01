@@ -7,7 +7,13 @@
 WV2m(z1, z2, ux1, ux2)
 }
 \arguments{
-\item{ux2}{}
+\item{z1}{elevation of wind velocity in ft}
+
+\item{z2}{elevation of wind velocity in ft}
+
+\item{ux1}{mph wind velocity at elevation}
+
+\item{ux2}{mph wind velocity at elevation}
 }
 \value{
 

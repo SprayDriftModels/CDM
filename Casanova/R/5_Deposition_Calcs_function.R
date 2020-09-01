@@ -1,42 +1,28 @@
 #' Calculate Deposition
 #'
-#' @param IAR teststes
-#' @param xactive
-#' @param FD
-#' @param PL
-#' @param NozzleSpacing
-#' @param psipsipsi
-#' @param rhoL
-#' @param Cent_inp
-#' @param Dwnd_inp
-#' @param Uwnd_inp
-#' @param Dpmax
-#' @param DDpmin
-#' @param a
-#' @param MMM
-#' @param lambda
+#' @param IAR Intended Application Rate for *Dicamba*, lb/acre
+#' @param xactive Dicamba conc in tank solution, wtfraction
+#' @param FD Downwind field depth, ft
+#' @param PL Crosswind field width, ft
+#' @param NozzleSpacing Space between nozzles on Boom, inches
+#' @param psipsipsi Horizontal variation in wind direction around mean direction, 1 stdev, in degrees.
+#' @param rhoL Density of sprayed solution, grams/cc
+#' @param Cent_inp output from droplet transportation
+#' @param Dwnd_inp output from droplet transportation
+#' @param Uwnd_inp output from droplet transportation
+#' @param Dpmax D pmax
+#' @param DDpmin DD pmin
+#' @param a output from psd function, Calibration results
+#' @param MMM original value for integration
+#' @param lambda Controls resolution of deposition calculations; higher numbers increase accuracy
 #' @param Driver "text","shiny", "Silent"
 #'
 #' @return
 #' @export
 #'
 #' @examples
-deposition_calcs<-function(IAR,
-                           xactive,
-                           FD,
-                           PL,
-                           NozzleSpacing,
-                           psipsipsi,
-                           rhoL,
-                           Cent_inp,
-                           Dwnd_inp,
-                           Uwnd_inp,
-                           Dpmax,
-                           DDpmin,
-                           a,
-                           MMM,
-                           lambda,
-                           Driver){
+deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Cent_inp,Dwnd_inp,Uwnd_inp,
+                           Dpmax, DDpmin,a,MMM,lambda,Driver){
 
 
   v <- FD*PL/43560

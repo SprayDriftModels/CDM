@@ -1,39 +1,26 @@
 #' Droplet Transportation Calculator
 #'
-#' @param Tair Temperature
-#' @param RH 
-#' @param rhow 
-#' @param rhos 
-#' @param xs0 
-#' @param H0 
-#' @param DTwb 
-#' @param hcm 
-#' @param Uf 
-#' @param z0 
-#' @param Pn 
-#' @param vz0 
-#' @param vx0 
-#' @param ddd_inp 
-#' @param Driver 
+#' @param Tair Dry air temperature, degrees C
+#' @param RH Percent relative humidity
+#' @param rhow Density of pure water in droplet
+#' @param rhos Density of dissolved solids in droplet, g/cc
+#' @param xs0 mass fraction total dissolved solids in solution
+#' @param H0 Height of nozzle above ground , inches
+#' @param DTwb Wetbulb temperature depression, C
+#' @param hcm Canopy height in cms
+#' @param Uf Friction velocity, cm/sec (uf)
+#' @param z0 Friction height, cm (z0)
+#' @param Pn  # Nozzle pressure, psi
+#' @param vz0 nozzle characteristics 1
+#' @param vx0 nozzle characteristics 1
+#' @param ddd_inp ddd parameters
+#' @param Driver "text","shiny", "Silent"
 #'
 #' @return
 #' @export
 #'
 #' @examples
-droplet_transport<-function(Tair,
-                            RH,
-                            rhow,
-                            rhos,
-                            xs0,
-                            H0,
-                            DTwb,
-                            hcm,
-                            Uf,
-                            z0,
-                            Pn,
-                            vz0,
-                            vx0,
-                            ddd_inp,
+droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm,Uf, z0, Pn,  vz0, vx0, ddd_inp,
                             Driver){
 
   rhoL0 <- 1/(xs0/rhos+(1-xs0)/rhow) # Initial solution density (as applied), gram/cm^3

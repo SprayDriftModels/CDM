@@ -1,8 +1,8 @@
 #' Title
 #'
-#' @param app_p 
-#' @param angle 
-#' @param rhosoln 
+#' @param app_p Nozzle pressure, psi
+#' @param angle often 110 for standard nozzle
+#' @param rhosoln in kg/m^3
 #'
 #' @return
 #' @export

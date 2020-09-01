@@ -28,10 +28,10 @@ wvprofile <- function(z1, ux1, ch){
 # Function when 2 wind vs. height measurements are available
 #' Function when 2 wind vs. height measurements are available
 #'
-#' @param z1
-#' @param z2
-#' @param ux1
-#' @param ux2
+#' @param z1 elevation of wind velocity in ft
+#' @param z2  elevation of wind velocity in ft
+#' @param ux1  mph wind velocity at elevation
+#' @param ux2 mph wind velocity at elevation
 #'
 #' @return
 #' @export

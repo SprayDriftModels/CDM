@@ -24,9 +24,37 @@ deposition_calcs(
 )
 }
 \arguments{
-\item{IAR}{teststes}
+\item{IAR}{Intended Application Rate for *Dicamba*, lb/acre}
 
-\item{Driver}{"text","Shiny", "Silent"}
+\item{xactive}{Dicamba conc in tank solution, wtfraction}
+
+\item{FD}{Downwind field depth, ft}
+
+\item{PL}{Crosswind field width, ft}
+
+\item{NozzleSpacing}{Space between nozzles on Boom, inches}
+
+\item{psipsipsi}{Horizontal variation in wind direction around mean direction, 1 stdev, in degrees.}
+
+\item{rhoL}{Density of sprayed solution, grams/cc}
+
+\item{Cent_inp}{output from droplet transportation}
+
+\item{Dwnd_inp}{output from droplet transportation}
+
+\item{Uwnd_inp}{output from droplet transportation}
+
+\item{Dpmax}{D pmax}
+
+\item{DDpmin}{DD pmin}
+
+\item{a}{output from psd function, Calibration results}
+
+\item{MMM}{original value for integration}
+
+\item{lambda}{Controls resolution of deposition calculations; higher numbers increase accuracy}
+
+\item{Driver}{"text","shiny", "Silent"}
 }
 \value{
 
