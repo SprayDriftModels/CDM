@@ -2,7 +2,7 @@
 % Please edit documentation in R/4_Droplet_Transport_function.R
 \name{droplet_transport}
 \alias{droplet_transport}
-\title{Calculating droplet transportation}
+\title{Droplet Transportation Calculator}
 \usage{
 droplet_transport(
   Tair,
@@ -23,39 +23,39 @@ droplet_transport(
 )
 }
 \arguments{
-\item{Tair}{}
+\item{Tair}{Dry air temperature, degrees C}
 
-\item{RH}{}
+\item{RH}{Percent relative humidity}
 
-\item{rhow}{}
+\item{rhow}{Density of pure water in droplet}
 
-\item{rhos}{}
+\item{rhos}{Density of dissolved solids in droplet, g/cc}
 
-\item{xs0}{}
+\item{xs0}{mass fraction total dissolved solids in solution}
 
-\item{H0}{}
+\item{H0}{Height of nozzle above ground , inches}
 
-\item{DTwb}{}
+\item{DTwb}{Wetbulb temperature depression, C}
 
-\item{hcm}{}
+\item{hcm}{Canopy height in cms}
 
-\item{Uf}{}
+\item{Uf}{Friction velocity, cm/sec (uf)}
 
-\item{z0}{}
+\item{z0}{Friction height, cm (z0)}
 
-\item{Pn}{}
+\item{Pn}{# Nozzle pressure, psi}
 
-\item{vz0}{}
+\item{vz0}{nozzle characteristics 1}
 
-\item{vx0}{}
+\item{vx0}{nozzle characteristics 1}
 
-\item{ddd_inp}{}
+\item{ddd_inp}{ddd parameters}
 
-\item{Driver}{}
+\item{Driver}{"text","shiny", "Silent"}
 }
 \value{
-
+Xdist and corresponding transportation.
 }
 \description{
-Calculating droplet transportation
+Droplet Transportation Calculator
 }
