@@ -16,7 +16,7 @@
 #' @param ddd_inp ddd parameters
 #' @param Driver "text","shiny", "Silent"
 #'
-#' @return
+#' @return Xdist and corresponding transportation.
 #' @export
 #'
 #' @examples
