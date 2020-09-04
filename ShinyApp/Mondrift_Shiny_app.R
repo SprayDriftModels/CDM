@@ -52,15 +52,15 @@ DDD_params <- as_tibble(read.csv("./Constants/DDD_Params.csv", header = T))
 ## Load example DSD file
 Example.DSD <- read.csv("Templates/DSD_template.csv", header = T)
 
-## Load all functions used
-# source("./Rscripts/1_psd_function.R")
-# source("./Rscripts/2_wet_bulb_function.R")
-# source("./Rscripts/3_wvprofile_params.R")
-# source("./Rscripts/4_Nozzle_Characteristics.R")
-# source("./Rscripts/4_Droplet_Transport_function.R")
-# source("./Rscripts/5_Deposition_Calcs_function.R")
-library(Casanova)
-source("./Rscripts/debounce_sc.R")
+# Load all functions used
+source("./Rscripts-deprecated/1_psd_function.R")
+source("./Rscripts-deprecated/2_wet_bulb_function.R")
+source("./Rscripts-deprecated/3_wvprofile_params.R")
+source("./Rscripts-deprecated/4_Nozzle_Characteristics.R")
+source("./Rscripts-deprecated/4_Droplet_Transport_function.R")
+source("./Rscripts-deprecated/5_Deposition_Calcs_function.R")
+##library(Casanova)
+source("./Rscripts-deprecated/debounce_sc.R")
 
 ## Set "Driver" -- whether running in shiny or terminal (main)
 Driver = "shiny"
