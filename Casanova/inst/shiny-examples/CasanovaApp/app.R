@@ -505,7 +505,13 @@ ui <- dashboardPage(
              conditionalPanel("input.action_fit_psd",
                               column(9,
                                      align="center",
-                                     plotOutput('Fit_plot')),
+                                     htmlOutput("Fit_plot_footnote"),
+                                     plotOutput('Fit_plot',
+                                                dblclick = "plot1_dblclick",
+                                                brush = brushOpts(
+                                                  id = "plot1_brush",
+                                                  resetOnNew = TRUE
+                                                ))),
                               column(3,
                                      align = "center",
                                      tableOutput('Part1_table')),
@@ -699,18 +705,43 @@ server <- shinyServer(function(input, output, session) {
 
   ## Output Part 1 (using action button to avoid warnings/errors while waiting for user input)
 
+  ## Create reactive to store axes ranges
+  ranges <- reactiveValues(x = NULL, y = NULL)
+
+  ## Set axes ranges based on user brush and click
+  observeEvent(input$plot1_dblclick, {
+    brush <- input$plot1_brush
+    if (!is.null(brush)) {
+      ranges$x <- c(brush$xmin, brush$xmax)
+      ranges$y <- c(brush$ymin, brush$ymax)
+    } else {
+      ranges$x <- NULL
+      ranges$y <- NULL
+    }
+  })
+
+  ## Plot Curve fit
   observeEvent(input$action_fit_psd,{
     shinyjs::show("ShowHide_Part_1")
 
     output$Fit_plot <- renderPlot({
-      pars()$pars$plot
+      pars()$pars$plot +
+      coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE)
     })
 
     output$Part1_table <- renderTable({
-      shinyjs::show("ShowHide_Part_1")
-
       pars()$pars$table
     })
+  })
+
+  output$Fit_plot_footnote <- renderUI({
+    HTML(
+      paste(
+        "Click and drag cursor over plot to select area, double-click to zoom in",
+        "Double-click with no selection to revert to standard view",
+        sep = '<br/>'
+      )
+    )
   })
 
   # ## Reset downstream results if inputs change
