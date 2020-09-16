@@ -725,6 +725,7 @@ server <- shinyServer(function(input, output, session) {
     shinyjs::show("ShowHide_Part_1")
 
     output$Fit_plot <- renderPlot({
+      pars()$pars$plot +
       coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE)
     })
 
