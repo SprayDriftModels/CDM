@@ -652,6 +652,26 @@ server <- shinyServer(function(input, output, session) {
     }
     file.chosen <- read_csv(inFile$datapath)
 
+    ## Check that file format is correct - a "Droplet" and at least one "Trial" column
+    if(file.chosen %>%
+       select(starts_with("Droplet")) %>%
+              ncol() == 1 &
+       file.chosen %>%
+       select(starts_with("Trial")) %>%
+       ncol() >= 1) {
+
+      ## Rename Droplet column for later steps
+      file.chosen <-
+        file.chosen %>%
+        rename(Droplet_Size_microns = starts_with("Droplet"))
+
+    } else {
+      showNotification("Input file format inccorrect - needs a \"Droplet\" column and one or more \"Trial\" column(s)",
+                       type = "error")
+
+      file.chosen <- NULL
+    }
+
     return(file.chosen)
   })
 
@@ -693,11 +713,21 @@ server <- shinyServer(function(input, output, session) {
     req(Data2())
 
     ## Calculate parameters using the loaded function "1a_psd_function.R"
-    pars <- psd(Data2()$y,
-                Data2()$Dpdata)
+    pars <- try(psd(Data2()$y,
+                Data2()$Dpdata),
+                silent = TRUE)
 
+    ## Check for errors in curve fitting
+    if(is(pars, "try-error")) {
+      showNotification("Curve fitting failed, please check that input file is the correct format",
+                       type = "error")
+
+      pars.list <- NULL
+
+    } else {
     pars.list <- list(pars = pars,
                   filename = input$file1)
+    }
 
     return(pars.list)
   })
@@ -722,6 +752,8 @@ server <- shinyServer(function(input, output, session) {
 
   ## Plot Curve fit
   observeEvent(input$action_fit_psd,{
+    req(pars())
+
     shinyjs::show("ShowHide_Part_1")
 
     output$Fit_plot <- renderPlot({
