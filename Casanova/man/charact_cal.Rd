@@ -7,7 +7,11 @@
 charact_cal(app_p, angle, rhosoln)
 }
 \arguments{
-\item{rhosoln}{}
+\item{app_p}{Nozzel Pressure}
+
+\item{angle}{Nozzle Angle}
+
+\item{rhosoln}{Mix Density}
 }
 \value{
 

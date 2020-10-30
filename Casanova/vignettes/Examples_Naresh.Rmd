@@ -33,34 +33,9 @@ library(gridExtra)
 
 ## Read in DSD Data 
 
-```{r naresh, eval=F}
-
-library(dplyr)
-library(plyr)
-library(readxl)
-
-# setwd("C:/Users/NPAI/OneDrive - Bayer/2020/Complete_MonDep/")
-
-data <- read_xlsx("2019 Sep 24 Bayer.xlsx","2019 Sep 24 Bayer")
-data <- data %>% filter(Solution != "Water")
-treatments <- unique(data$Solution)
-nozzles <- c("AI11004","SD11004","TTI11004","ULDM13004","UR11006")
-dsd_bins <-c(18,22,26,30,36,44,52,62,74,86,100,120,150,180,210,250,300,360,410,500,600,720,860,1020,1220,1460,1740,2060,2460,2940,3500)
-for (treatment in treatments)
-{
-  for (nozzle in nozzles)
-  {
-    filename <- paste0("DSD_", treatment,"_",nozzle,".csv")
-    dsd <- data %>% filter(Solution == treatment & Nozzle == nozzle) %>% select(29:59)
-    dsd <- rbind(dsd_bins,dsd)
-    rownames(dsd) <- c("Droplet_Size_microns","Trial_1","Trial_2","Trial_3")
-    write.table(t(dsd),filename,sep=",",quote = F,row.names = F)
-    }
-}
-```
 
 
-## Read in Hard-coded Nozzle and DDD params
+### Read in Hard-coded Nozzle and DDD params
 
 ```{r}
 
