@@ -88,6 +88,6 @@ getdeposition <- function(resList){
 
 tmp1 <- tmp%>% select(res) %>% mutate(depos=map(res,getdeposition)) %>% select(depos) %>% unnest(cols=c(depos))
 
-ggplot(tmp1,aes(x=Distance,y=Deposition,col=Nozzle,lty=Solution))+ geom_point() + geom_line()
+ggplot(tmp1,aes(x=Distance,y=Deposition,col=Nozzle,lty=Solution))+ geom_point() + geom_line()+facet_grid(.~Nozzle)+scale_y_log10()+scale_x_log10()
 ```
 

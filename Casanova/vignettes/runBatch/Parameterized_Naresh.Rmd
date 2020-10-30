@@ -279,7 +279,7 @@ droplet_plot <- ggplot(All_droplet_data, aes(x = Xdist, y = Dp.1.23., color = Dr
     axis.title.x = element_text(size = 16)
   )
 
-droplet_plot
+droplet_plot+scale_x_log10()+scale_y_log10()
 ```
 
 
@@ -304,7 +304,7 @@ Dwnd<-droplet_2[2]$Xdist
 Uwnd<-droplet_3[2]$Xdist
 
 deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda,"Silent")
-deposition$dep_plot
+deposition$dep_plot+scale_x_log10()
 ###################
 tibble(Distance = deposition$XX,
        Deposition = deposition$APplume) %>%
