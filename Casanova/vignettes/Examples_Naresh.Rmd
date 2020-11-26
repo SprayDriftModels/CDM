@@ -5,17 +5,17 @@ vignette: >
   %\VignetteIndexEntry{Introduction}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
----
-
-```{r, include = FALSE}
+  ---
+  
+  ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.width = 7,
-  fig.height = 6,
-  echo=FALSE,
-  warnings=FALSE,
-  message = FALSE
+collapse = TRUE,
+comment = "#>",
+fig.width = 7,
+fig.height = 6,
+echo=FALSE,
+warnings=FALSE,
+message = FALSE
 )
 ```
 
@@ -43,10 +43,10 @@ library(gridExtra)
 Nozzle_params <- as_tibble(read.csv("./../data-raw/Nozzle_Params.csv", header = T))
 DDD_params <- as_tibble(read.csv("../data-raw/DDD_Params.csv", header = T))
 p <- Nozzle_params %>% select(p)
-    NF <- Nozzle_params %>% select(NF)
-    ddd1 <- DDD_params$ddd1
-    ddd2 <- DDD_params$ddd2
-    ddd3 <- DDD_params$ddd3
+NF <- Nozzle_params %>% select(NF)
+ddd1 <- DDD_params$ddd1
+ddd2 <- DDD_params$ddd2
+ddd3 <- DDD_params$ddd3
 ```
 
 
@@ -57,17 +57,17 @@ library(tidyverse)
 dsdFile <- read_csv("DSD_ Xtendimax _ AI11004 .csv")
 dsdFile <- dsdFile%>% mutate(ymean=(Trial_1+Trial_2+Trial_3)/3)
 
-   ## Determine where to draw the cut-off (begin with first value over zero and end with first value that reaches 100)
-    firsty <- min(which(dsdFile$ymean > 0))
-    lasty <- max(which(dsdFile$ymean < 100)) + 1
-    
-    y <-  dsdFile$ymean %>%
-      tibble::enframe() %>%
-      slice(firsty:lasty) %>%
-      pull(value)
-    Dpdata <- dsdFile$Droplet_Size_microns%>%tibble::enframe() %>%
-      slice(firsty:lasty) %>%
-      pull(value)
+## Determine where to draw the cut-off (begin with first value over zero and end with first value that reaches 100)
+firsty <- min(which(dsdFile$ymean > 0))
+lasty <- max(which(dsdFile$ymean < 100)) + 1
+
+y <-  dsdFile$ymean %>%
+  tibble::enframe() %>%
+  slice(firsty:lasty) %>%
+  pull(value)
+Dpdata <- dsdFile$Droplet_Size_microns%>%tibble::enframe() %>%
+  slice(firsty:lasty) %>%
+  pull(value)
 pars <- psd(y,Dpdata)
 
 source("DefaultInputs.R")
@@ -137,39 +137,39 @@ print("Finished Solving for Droplet Transport")
 - Plot the droplet data
 
 ```{r}
-  droplet1_data <- as_tibble(droplet_1) %>%
-        mutate(Droplet = "Centerline",
-               ColorSet = "#ffd700")
-      droplet2_data <- as_tibble(droplet_2) %>%
-        mutate(Droplet = "Downwind",
-               ColorSet = "#00ffd7")
-      droplet3_data <- as_tibble(droplet_3) %>%
-        mutate(Droplet = "Upwind",
-               ColorSet = "#d700ff")
+droplet1_data <- as_tibble(droplet_1) %>%
+  mutate(Droplet = "Centerline",
+         ColorSet = "#ffd700")
+droplet2_data <- as_tibble(droplet_2) %>%
+  mutate(Droplet = "Downwind",
+         ColorSet = "#00ffd7")
+droplet3_data <- as_tibble(droplet_3) %>%
+  mutate(Droplet = "Upwind",
+         ColorSet = "#d700ff")
 
-      All_droplet_data <- rbind(droplet1_data,
-                                droplet2_data,
-                                droplet3_data)
+All_droplet_data <- rbind(droplet1_data,
+                          droplet2_data,
+                          droplet3_data)
 
-      droplet_plot <- ggplot(All_droplet_data, aes(x = Xdist, y = Dp.1.23., color = Droplet)) +
-        geom_point(size = 3, alpha = 0.5) +
-        scale_color_manual(values = c("#ffd700", "#00ffd7", "#d700ff")) +
-        ylab("Initial Droplet Diameter (microns)") +
-        xlab("Distance Traveled to Depositions from Nozzle Centerline (ft)") +
-        theme_bw() +
-        theme(
-          legend.title = element_blank(),
-          legend.background = element_rect(fill=alpha('white', 0.4)),
-          legend.position = "right",
-          legend.text = element_text(size = 16),
-          axis.line = element_line(colour = "black"),
-          axis.text.y = element_text(size = 16),
-          axis.text.x = element_text(size = 16),
-          axis.title.y = element_text(size = 16, vjust= 1.5),
-          axis.title.x = element_text(size = 16)
-        )
-      
-      droplet_plot
+droplet_plot <- ggplot(All_droplet_data, aes(x = Xdist, y = Dp.1.23., color = Droplet)) +
+  geom_point(size = 3, alpha = 0.5) +
+  scale_color_manual(values = c("#ffd700", "#00ffd7", "#d700ff")) +
+  ylab("Initial Droplet Diameter (microns)") +
+  xlab("Distance Traveled to Depositions from Nozzle Centerline (ft)") +
+  theme_bw() +
+  theme(
+    legend.title = element_blank(),
+    legend.background = element_rect(fill=alpha('white', 0.4)),
+    legend.position = "right",
+    legend.text = element_text(size = 16),
+    axis.line = element_line(colour = "black"),
+    axis.text.y = element_text(size = 16),
+    axis.text.x = element_text(size = 16),
+    axis.title.y = element_text(size = 16, vjust= 1.5),
+    axis.title.x = element_text(size = 16)
+  )
+
+droplet_plot
 ```
 
 

@@ -10,13 +10,20 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(DriftDeepeR)
+library(Casanova)
 ```
 
 ```{r}
-setwd("DriftDeepeR")
-proj_set(".")
-use_test()
+library(devtools)
+
 use_test("TestPSD")
+```
+
+## Questions!
+
+Different results from Naresh! WHY?
+
+```{r}
+
 ```
 
