@@ -71,7 +71,7 @@ IAR<-0.60880 #Intended Application Rate for Dicamba, lb/acre
 xactive<-0.01190 # Acitive conc in tank solution, wtfraction
 FD<-240.16 # Downwind field depth, ft
 PL<-787.4 # Crosswind field width, ft
-NozzleSpacing<-20 # Space between nozzles on Boom, inches
+NozzleSpacing<-20 # Space between nozzles on Boom, inches// 50 cm
 psipsipsi<-10.7 # Horizontal variation in wind direction around mean direction, 1 stdev, in degrees.
 rhoL<-rhosoln/1000 # Density of sprayed solution, grams/cc
 Dpmax<-1350

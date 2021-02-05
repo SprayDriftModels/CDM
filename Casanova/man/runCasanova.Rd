@@ -13,10 +13,18 @@ runCasanova(
 )
 }
 \arguments{
-\item{DDDParamsFile}{}
+\item{dsdTable}{dsd data as a table, use this when dsdFile is not provided.}
+
+\item{dsdFile}{read in a csv file input and use that as the table}
+
+\item{inputs}{an R file defining all the inputs, and it could be modified!}
+
+\item{NozzleParamFile}{nozzle parameter file}
+
+\item{DDDParamsFile}{DDD parameter file}
 }
 \value{
-
+a list containing all droplet data and deposition
 }
 \description{
 Title Run casanova as all

@@ -1,18 +1,18 @@
 #' Title Run casanova as all
 #'
-#' @param dsdTable
-#' @param dsdFile
-#' @param inputs
-#' @param NozzleParamFile
-#' @param DDDParamsFile
+#' @param dsdTable dsd data as a table, use this when dsdFile is not provided.
+#' @param dsdFile read in a csv file input and use that as the table
+#' @param inputs an R file defining all the inputs, and it could be modified!
+#' @param NozzleParamFile nozzle parameter file
+#' @param DDDParamsFile DDD parameter file
 #'
-#' @return
+#' @return a list containing all droplet data and deposition
 #' @export
 #'
 #' @examples
 runCasanova <- function(dsdTable,dsdFile=NULL,inputs="DefaultInputs.R",NozzleParamFile="~/mondep/Casanova/data-raw/Nozzle_Params.csv",DDDParamsFile="~/mondep/Casanova/data-raw/DDD_Params.csv"){
   results <- NULL
-  if(is.character(dsdFile)) dsdFile <- read_csv(dsdFile)## else dsdFile should be a table.
+  if(is.character(dsdFile)) dsdTable <- read_csv(dsdFile)## else dsdFile should be a table.
   dsdFile <- dsdTable%>% mutate(ymean=(Trial_1+Trial_2+Trial_3)/3)
 
   ## Determine where to draw the cut-off (begin with first value over zero and end with first value that reaches 100)
