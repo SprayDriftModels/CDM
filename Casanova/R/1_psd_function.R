@@ -41,9 +41,9 @@ psd<-function(y, Dpdata){
                   trace = T,
                   control=nls.control(maxiter = 200))
 
-  # The above produces slighlty different numbers than the MathCad code but they still calibrate well with data
+  # The above produces slightly different numbers than the MathCad code but they still calibrate well with data
 
-  # Return paramaters
+  # Return parameters
   res <- m.sinexp$m$getPars()
 
 
