@@ -1,2 +1,3 @@
-ID,Tair,Patm,measurements,ch,z1,ux1,z2,ux2,rhow,rhos,xs0,rhosoln,H0,hcm,app_p,angle,IAR,xactive,FD,PL,NozzleSpacing,psipsipsi,Dpmax,Ddpmin,MMM,lambda
-1,17.689,760,1,4,6.6,12.8,1.66667,9.44,1,2.01594,0.0198,1008.7,20,0.254,50,110,0.6088,0.0119,240.16,787.4,20,10.7,1350,18,500,2
+ID,Unit System,Tair,Patm,measurements,ch,z1,ux1,z2,ux2,rhow,rhos,xs0,rhosoln,H0,hcm,app_p,angle,IAR,xactive,FD,PL,NozzleSpacing,psipsipsi,Dpmax,Ddpmin,MMM,lambda
+1,1,17.689,760,1,4,6.6,12.8,1.66667,9.44,1,2.01594,0.0198,1008.7,20,0.254,50,110,0.6088,0.0119,240.16,787.4,20,10.7,1350,18,500,2
+2,1,17.689,760,1,4,6.6,12.8,1.66667,9.44,1,2.01594,0.0198,1008.7,20,0.254,50,110,0.6088,0.0119,240.16,787.4,20,10.7,1350,18,500,2
