@@ -1,5 +1,5 @@
 Package: Casanova
-Title: What the Package Does (One Line, Title Case)
+Title: This package add the basic function to run the Casanova Drift model
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "First",
@@ -7,7 +7,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "first.last@example.com",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Description: The package installs a series of functions to run the Casanova Drift model.
 License: What license it uses
 Encoding: UTF-8
 LazyData: true
