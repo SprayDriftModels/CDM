@@ -11,10 +11,10 @@
 #'
 #' @examples
 runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
-                        paramsFile="./sample_data/Params (Metric).csv",
-                        DDDParamsFile="./sample_data/DDD_Params.csv",
+                        DDDparamsFile="./sample_data/DDD_Params.csv",
                         report=F){
   results <- NULL
+  all_results<- NULL
 
   ##############################################################################
   # Read all the input files; error control if files cannot be read
@@ -24,25 +24,62 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     read_csv(scnFile)
   },
   error=function(e){
-    "Could not read scenario File"
+    print("Could not read scenario File")
   }
   )
 
   # Read DDDParameters file
-#  DDDparamsFile="./sample_data/DDD_Params.csv" # test line to be removed
+  #  DDDparamsFile="./sample_data/DDD_Params.csv" # test line to be removed
   DDDparamsData<-NULL
   DDDparamsData <- tryCatch({
     read_csv(DDDparamsFile)
   },
   error=function(e){
-    "Could not read parameters File"
+    print("Could not read parameters File")
   }
   )
 
+  # The following files are read to test whether they can be read without errors
+  i_scn<-max(scnData$'Scenario-ID')
+  for (i in 1:i_scn){
+    # Read DSD file
+    DSDFile<-paste0("./sample_data/",scnData$`DSD-Filename`[i])
+    DSDData<-NULL
+    DSDData <- tryCatch({
+      read_csv(DSDFile)
+    },
+    error=function(e){
+      print(paste("Could not read DSD File for scenario",i))
+    }
+    )
+
+    # Read Parameters file
+    paramsFile<-paste0("./sample_data/",scnData$`Params-Filename`[i])
+    paramsData<-NULL
+    paramsData <- tryCatch({
+      read_csv(paramsFile)
+    },
+    error=function(e){
+      print(paste("Could not read parameters File for scenario",i))
+    }
+    )
+
+    paramsType<-scnData$`Params-Type`[i] # This is the unit system of the parameters
+    paramsID<-scnData$`Params-ID`[i] # This is the unit system of the parameters
+
+    # Try to assign parameters from loaded files
+    inputs_from_csv(DSDData,
+                    paramsData,
+                    DDDparamsData,
+                    paramsID,
+                    paramsType)
+
+  }
+
+  print("Able to read successfully input files; continuing to run the prescribed scenarios")
+
   ############################################################################
   # Loop all scenarios
-  i_scn<-max(scnData$'Scenario-ID')
-
   for (i in 1:i_scn) {
     # Error control is a scenario fails
     tryCatch({
@@ -53,7 +90,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
         read_csv(DSDFile)
       },
       error=function(e){
-        "Could not read DSD File"
+        print(paste("Could not read DSD File for scenario",i))
       }
       )
 
@@ -64,10 +101,9 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
         read_csv(paramsFile)
       },
       error=function(e){
-        "Could not read parameters File"
+        print(paste("Could not read parameters File for scenario",i))
       }
       )
-
       paramsType<-scnData$`Params-Type`[i] # This is the unit system of the parameters
       paramsID<-scnData$`Params-ID`[i] # This is the unit system of the parameters
 
@@ -80,27 +116,75 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       # Finished reading input files
 
       # Assign parameters from loaded files
-      source("inputs_from_csv.R")
-
+      all_inputs<-inputs_from_csv(DSDData,
+                      paramsData,
+                      DDDparamsData,
+                      paramsID,
+                      paramsType)
+      y<-all_inputs[[1]]
+      Dpdata<-all_inputs[[2]]
+      Tair<-all_inputs[[3]]
+      Patm<-all_inputs[[4]]
+      RH<-all_inputs[[5]]
+      measurements<-all_inputs[[6]]
+      ch<-all_inputs[[7]]
+      z1<-all_inputs[[8]]
+      ux1<-all_inputs[[9]]
+      z2<-all_inputs[[10]]
+      ux2<-all_inputs[[11]]
+      rhow<-all_inputs[[12]]
+      rhos<-all_inputs[[13]]
+      xs0<-all_inputs[[14]]
+      rhosoln<-all_inputs[[15]]
+      H0<-all_inputs[[16]]
+      hcm<-all_inputs[[17]]
+      app_p<-all_inputs[[18]]
+      angle<-all_inputs[[19]]
+      ddd1<-all_inputs[[20]]
+      ddd2<-all_inputs[[21]]
+      ddd3<-all_inputs[[22]]
+      IAR<-all_inputs[[23]]
+      xactive<-all_inputs[[24]]
+      FD<-all_inputs[[25]]
+      PL<-all_inputs[[26]]
+      NozzleSpacing<-all_inputs[[27]]
+      psipsipsi<-all_inputs[[28]]
+      rhoL<-all_inputs[[29]]
+      Dpmax<-all_inputs[[30]]
+      DDpmin<-all_inputs[[31]]
+      MMM<-all_inputs[[32]]
+      lambda<-all_inputs[[33]]
       # Part 1, Curve fitting: Variable pars contains the fitted parameters of the drop size distribution model
       pars <- psd(y,Dpdata)
 
+
       # Part 2, Wet Bulb Calculations
       Twb <- wet_bulb(Tair, Patm, RH)
-      wv <- WV2m (z1=z1, z2, ux1, ux2)
-      z0 <- wv[1]
-      Uf <- wv[2]
+
+      # Part 3, Wind profile parameters
+      if (measurements==1){
+        # This first part is when we have only one wind v. elevation measurement.
+        # Outputs are Uh, Ufriction, z1, z0, alpha_avg, k2
+
+        profile<-wvprofile(z1, ux1, ch)
+        z0<-profile[1]
+        Uf<-profile[2]
+      }else if (measurements==2){
+        # Part for when we have two wind v. elevation measurements.
+        z0<-WV2m(z1,z2,ux1,ux2)[1]
+        Uf<-WV2m(z1,z2,ux1,ux2)[2]
+      }
 
       #Part 4, Droplet Transport Calculations
       tryCatch({
         charac<-charact_cal(app_p,angle, rhosoln)
         DTwb<-Twb[1] # Wetbulb temperature depression, C
         print("Solving Straight Down Problem")
-        droplet_1<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[1],charac[2],ddd1,"Silent")
+        droplet_1<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[1],charac[2],ddd1,"text")
         print("Solving with Wind Problem")
         droplet_2<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[3],charac[4],ddd2,"text")
         print("Solving against Wind Problem")
-        droplet_3<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[5],charac[6],ddd3,"Silent")
+        droplet_3<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[5],charac[6],ddd3,"text")
 
         print("Finished Solving for Droplet Transport")
 
@@ -153,7 +237,6 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       # Part 5
       # ________________________________________
       a<-unname(pars$res)  # Calibration from step #1 (removing the stored names)
-
       # Input from previous function
       Cent<-droplet_1[2]$Xdist
       Dwnd<-droplet_2[2]$Xdist
@@ -173,14 +256,14 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 
     },
     error=function(e){
-      paste("Could not run scenario",i)
+      print(paste("Could not run scenario",i))
     }
 
     )
 
+    all_results[[i]]<-results # This list stores all results so that they can be output
 
   }  # This is the end of the loop for all scenario being
 
-  all_results[[i]]<-results # This list stores all results so that they can be output
   return(all_results)
 }

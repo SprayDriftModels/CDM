@@ -2,30 +2,28 @@
 % Please edit documentation in R/runCasanova.R
 \name{runCasanova}
 \alias{runCasanova}
-\title{Title Run casanova as all}
+\title{Run Casanova}
 \usage{
 runCasanova(
-  dsdTable,
-  dsdFile = NULL,
-  inputs = "DefaultInputs.R",
-  NozzleParamFile = "~/mondep/Casanova/data-raw/Nozzle_Params.csv",
-  DDDParamsFile = "~/mondep/Casanova/data-raw/DDD_Params.csv"
+  scnFile = "./sample_data/Scenarios.csv",
+  DDDparamsFile = "./sample_data/DDD_Params.csv",
+  report = F
 )
 }
 \arguments{
-\item{dsdTable}{dsd data as a table, use this when dsdFile is not provided.}
+\item{scnFile}{a csv file containing the DSD, Params, Param type and param ID used for the analysis; default file is Scenarios.csv}
 
-\item{dsdFile}{read in a csv file input and use that as the table}
+\item{report}{is a T/F input indicating whether reports need to be printed out}
 
-\item{inputs}{an R file defining all the inputs, and it could be modified!}
+\item{DSDFile}{a csv file defining the DSD measurements; the function takes the average of each trial}
 
-\item{NozzleParamFile}{nozzle parameter file}
+\item{paramsFile}{a csv file defining all the inputs; default file is Params (Metric) for metric}
 
-\item{DDDParamsFile}{DDD parameter file}
+\item{DDDParamsFile}{DDD parameter file; default file is DDD_Params.csv}
 }
 \value{
-a list containing all droplet data and deposition
+a list containing all droplet data and deposition for each scenario analyzed
 }
 \description{
-Title Run casanova as all
+Run Casanova
 }

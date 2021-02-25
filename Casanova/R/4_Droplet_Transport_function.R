@@ -90,7 +90,7 @@ droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm,Uf, z0, Pn,
   theta <- xs0/rhos/(xs0/rhos+(1-xs0)/rhow)
 
   rhowa <- function(T,y){
-    (MWw*y+MWair*(1-y))/(82.061*(Tair+273.15))
+    (MWw*y+MWair*(1-y))/(82.061*(Tair+273.15))  #AV comment 2/24/2021; This function definition does not include T
   }
 
   rhoa0 <- rhowa(Tair,Ywinf)
