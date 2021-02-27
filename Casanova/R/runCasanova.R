@@ -93,7 +93,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
         print(paste("Could not read DSD File for scenario",i))
       }
       )
-
+# browser()
       # Read Parameters file
       paramsFile<-paste0("./sample_data/",scnData$`Params-Filename`[i])
       paramsData<-NULL
@@ -154,10 +154,11 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       DDpmin<-all_inputs[[31]]
       MMM<-all_inputs[[32]]
       lambda<-all_inputs[[33]]
+
       # Part 1, Curve fitting: Variable pars contains the fitted parameters of the drop size distribution model
       pars <- psd(y,Dpdata)
 
-
+      #browser()
       # Part 2, Wet Bulb Calculations
       Twb <- wet_bulb(Tair, Patm, RH)
 
@@ -199,27 +200,10 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
                  ColorSet = "#d700ff")
 
         All_droplet_data <- rbind(droplet1_data,
-                                  droplet2_data,
-                                  droplet3_data)
+                                 droplet2_data,
+                                 droplet3_data)
 
-        droplet_plot <- ggplot(All_droplet_data, aes(x = Xdist, y = Dp.1.23., color = Droplet)) +
-          geom_point(size = 3, alpha = 0.5) +
-          scale_color_manual(values = c("#ffd700", "#00ffd7", "#d700ff")) +
-          ylab("Initial Droplet Diameter (microns)") +
-          xlab("Distance Traveled to Depositions from Nozzle Centerline (ft)") +
-          theme_bw() +
-          theme(
-            legend.title = element_blank(),
-            legend.background = element_rect(fill=alpha('white', 0.4)),
-            legend.position = "right",
-            legend.text = element_text(size = 16),
-            axis.line = element_line(colour = "black"),
-            axis.text.y = element_text(size = 16),
-            axis.text.x = element_text(size = 16),
-            axis.title.y = element_text(size = 16, vjust= 1.5),
-            axis.title.x = element_text(size = 16)
-          )
-
+        droplet_plot<-plot_droplet_data(All_droplet_data)
 
         # Store results for function output
         results$droplet_plot <- droplet_plot
@@ -260,7 +244,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     }
 
     )
-
+    # browser()
     all_results[[i]]<-results # This list stores all results so that they can be output
 
   }  # This is the end of the loop for all scenario being

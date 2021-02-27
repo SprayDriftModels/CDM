@@ -115,12 +115,18 @@ droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm,Uf, z0, Pn,
   # _____________________________________________________________________
   # Loop through all Dp samples
 
-  Xdist<-c(0) # Initialize distance vector
-  for (i in 1:23) {
+  # Try to parallelize code:
+  cl <- makeCluster(4, type = "SOCK") #AVP
+  registerDoSNOW(cl) #AVP
+
+  Xdist<-c(0) # Initialize distance vector #AVP
+  # for (i in 1:23) { #AVP
+  Xdist<-foreach(i=1:23, .combine = c, .inorder = TRUE) %dopar% { #AVP
+    # Note that Xdist within the foreach loop has scope only within the loop
 
     # Increment the progress bar, and update the detail text
     if(Driver == "shiny"){
-    incProgress(1/23, detail = paste0(round((i/23)*100, digits = 0), "% complete"))
+      incProgress(1/23, detail = paste0(round((i/23)*100, digits = 0), "% complete"))
     } else{
       print(i)
     }
@@ -161,11 +167,11 @@ droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm,Uf, z0, Pn,
       with(as.list(c(state)),{
 
         dVz <- ((pi/6*((6/pi*(Mw/rhow+Ms/rhos))^(1/3))^3*gc*(rhoa0-(Mw+Ms)/(Mw/rhow+Ms/rhos))+
-                 W(Ms,Mw,(rhoa0*(6/pi*(Mw/rhow+Ms/rhos))^(1/3)*((Vz-Vwz(Z))^2+(Vvwx-Vx)^2)^0.5)/ma0)*Vz+
-                 pi*f((rhoa0*(6/pi*(Mw/rhow+Ms/rhos))^(1/3)*((Vz-Vwz(Z))^2)^0.5)/ma0)*rhoa0*((6/pi*(Mw/rhow+Ms/rhos))^(1/3))^2*(-Vz+Vwz(Z))*abs(-Vz+Vwz(Z))/8))/(Mw+Ms)*ifelse(Z<=z0,0,1)
+                   W(Ms,Mw,(rhoa0*(6/pi*(Mw/rhow+Ms/rhos))^(1/3)*((Vz-Vwz(Z))^2+(Vvwx-Vx)^2)^0.5)/ma0)*Vz+
+                   pi*f((rhoa0*(6/pi*(Mw/rhow+Ms/rhos))^(1/3)*((Vz-Vwz(Z))^2)^0.5)/ma0)*rhoa0*((6/pi*(Mw/rhow+Ms/rhos))^(1/3))^2*(-Vz+Vwz(Z))*abs(-Vz+Vwz(Z))/8))/(Mw+Ms)*ifelse(Z<=z0,0,1)
         dMw <- -W(Ms,Mw,(rhoa0*(6/pi*(Mw/rhow+Ms/rhos))^(1/3)*((Vz-Vwz(Z))^2+(Vvwx-Vx)^2)^0.5)/ma0)*ifelse(Z<=z0,0,1)
         dVx <- ((Vx*W(Ms,Mw,(rhoa0*(6/pi*(Mw/rhow+Ms/rhos))^(1/3)*((Vz-Vwz(Z))^2+(Vvwx-Vx)^2)^0.5)/ma0)+
-                 pi*f((rhoa0*(6/pi*(Mw/rhow+Ms/rhos))^(1/3)*((Vx-Vvwx)^2)^0.5)/ma0)*rhoa0*((6/pi*(Mw/rhow+Ms/rhos))^(1/3))^2*(Vvwx-Vx)*abs(Vvwx-Vx)/8))/(Mw+Ms)*ifelse(Z<=z0,0,1)*ifelse(Vvwx<=0,0,1)
+                   pi*f((rhoa0*(6/pi*(Mw/rhow+Ms/rhos))^(1/3)*((Vx-Vvwx)^2)^0.5)/ma0)*rhoa0*((6/pi*(Mw/rhow+Ms/rhos))^(1/3))^2*(Vvwx-Vx)*abs(Vvwx-Vx)/8))/(Mw+Ms)*ifelse(Z<=z0,0,1)*ifelse(Vvwx<=0,0,1)
         dX <- Vx*ifelse(Z<=z0,0,1)
         dZ <- Vz*ifelse(Z<=z0,0,1)
         dVvwx <- ifelse(Z>z0,Uf/0.4/Z*Vz,0)*ifelse(Z<=z0,0,1)
@@ -174,23 +180,29 @@ droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm,Uf, z0, Pn,
       })
     }
 
-    Xdist[i]<-0 # reset in case no convergence below
+    #Xdist[i]<-0 # reset in case no convergence below #AVP
+    Xdist<-0 # reset in case no convergence below #AVP
 
     # Solve the system
     try({
       out   <- ode(yini, times, EqnSys)
-      Xdist[i]<-out[N-1,3]/12/2.54},
+      #Xdist[i]<-out[N-1,3]/12/2.54}, #AVP
+      Xdist<-out[N-1,3]/12/2.54}, #AVP
       silent=TRUE)
 
-    if (Xdist[i]==0){
+    #    if (Xdist[i]==0){ #AVP
+    if (Xdist==0){ #AVP
       print("Trying alternate solution")
       # Solve the system with Euler if failed before
       try({
         out   <- ode(yini, times, EqnSys,parms=0,method="euler",maxsteps=1e4)
-        Xdist[i]<-out[N-1,3]/12/2.54},
+        #Xdist[i]<-out[N-1,3]/12/2.54}, #AVP
+        Xdist<-out[N-1,3]/12/2.54}, #AVP
         silent=TRUE)
     }
+    Xdist
   }
 
+  stopCluster(cl) #AVP
   return(data.frame(Dp[1:23],Xdist))
 }
