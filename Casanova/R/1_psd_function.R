@@ -37,9 +37,15 @@ psd<-function(y, Dpdata){
   }
 
 
-  m.sinexp <- nls(y ~ f(Dpdata, a1,a2,d1,d2,k1), data = all_dp_data,start = list(a1=300,a2=800,d1=100,d2=200,k1=0.2),
+  # AV edits on 7/21/2020 # This preliminary code estimate works
+
+  fit2 <- nls2(y ~ f(Dpdata, a1,a2,d1,d2,k1), algorithm  = "plinear-random",
+               start = data.frame(a1 = c(0.1, 1000), a2 = c(0.1, 2000),d1 = c(0.1, 1000),d2 = c(0.1, 1000),k1 = c(0.001, 1)),
+               control = nls.control(maxiter = 1000))
+
+  m.sinexp <- nls(y ~ f(Dpdata, a1,a2,d1,d2,k1), data = all_dp_data,start = coef(fit2)[1:5],
                   trace = T,
-                  control=nls.control(maxiter = 200))
+                  control=nls.control(maxiter = 500,minFactor =1/1024,warnOnly=T))
 
   # The above produces slightly different numbers than the MathCad code but they still calibrate well with data
 

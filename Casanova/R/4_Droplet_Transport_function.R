@@ -193,9 +193,9 @@ droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm,Uf, z0, Pn,
     #    if (Xdist[i]==0){ #AVP
     if (Xdist==0){ #AVP
       print("Trying alternate solution")
-      # Solve the system with Euler if failed before
+      # Solve the system with radau if failed before
       try({
-        out   <- ode(yini, times, EqnSys,parms=0,method="euler",maxsteps=1e4)
+        out   <- ode(yini, times, EqnSys,parms=0,method="radau",maxsteps=1e4) # radau instead of euler works better in some cases
         #Xdist[i]<-out[N-1,3]/12/2.54}, #AVP
         Xdist<-out[N-1,3]/12/2.54}, #AVP
         silent=TRUE)
