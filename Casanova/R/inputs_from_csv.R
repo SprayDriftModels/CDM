@@ -20,8 +20,6 @@ inputs_from_csv <- function(DSDData,
   # Part 1
   # ________________________________________
   # Average DSD fit data:
-  #browser()
-
   # Average DSD data; this averages the data for each row
   y_temp<-rowMeans(DSDData[,2:length(DSDData)])
 
@@ -39,7 +37,6 @@ inputs_from_csv <- function(DSDData,
   Patm<-as.double(paramsData[which(paramsData$ID=='Patm'),][paramsID+3]) # Barometric pressure, mmHg abs
   RH<-as.double(paramsData[which(paramsData$ID=='RH'),][paramsID+3])  # Percent relative humidity, %
 
-  #browser()
   # Part 3
   # ________________________________________
   #
@@ -86,13 +83,12 @@ inputs_from_csv <- function(DSDData,
   ddd2 <- DDDparamsData$ddd2
   ddd3 <- DDDparamsData$ddd3
 
-  # browser()
 
   # Part 5
   # ________________________________________
   # User Inputs:
   IAR<-as.double(paramsData[which(paramsData$ID=='IAR'),][paramsID+3]) #Intended Application Rate for Dicamba, lb/acre
-  xactive<-as.double(paramsData[which(paramsData$ID=='xactive'),][paramsID+3]) #Dicamba conc in tank solution, wtfraction
+  xactive<-as.double(paramsData[which(paramsData$ID=='xactive'),][paramsID+3]) #Dicamba concentration in tank solution, wtfraction
   FD<-as.double(paramsData[which(paramsData$ID=='FD'),][paramsID+3]) # Downwind field depth, ft
   PL<-as.double(paramsData[which(paramsData$ID=='PL'),][paramsID+3]) # Crosswind field width, ft
   NozzleSpacing<-as.double(paramsData[which(paramsData$ID=='NozzleSpacing'),][paramsID+3]) # Space between nozzles on Boom, inches

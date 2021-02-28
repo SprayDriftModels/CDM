@@ -115,8 +115,8 @@ droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm,Uf, z0, Pn,
   # _____________________________________________________________________
   # Loop through all Dp samples
 
-  # Try to parallelize code:
-  cl <- makeCluster(4, type = "SOCK") #AVP
+  # Parallelize code by creating a cluster with all available cores:
+  cl <- makeCluster(detectCores(), type = "SOCK") #AVP
   registerDoSNOW(cl) #AVP
 
   Xdist<-c(0) # Initialize distance vector #AVP
@@ -202,6 +202,7 @@ droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm,Uf, z0, Pn,
     }
     Xdist
   }
+
 
   stopCluster(cl) #AVP
   return(data.frame(Dp[1:23],Xdist))
