@@ -8,7 +8,7 @@
 #' @examples
 plot_droplet_data<-function(All_droplet_data){
 
-    droplet_plot <- ggplot(All_droplet_data, aes(x = Xdist, y = Dp.1.23., color = Droplet)) +
+    droplet_plot <- ggplot(All_droplet_data, aes(x = Distance_traveled, y = Droplet_diameter, color = Droplet)) +
     geom_point(size = 3, alpha = 0.5) +
     scale_color_manual(values = c("#ffd700", "#00ffd7", "#d700ff")) +
     ylab("Initial Droplet Diameter (microns)") +

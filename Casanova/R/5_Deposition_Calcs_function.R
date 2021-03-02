@@ -1,6 +1,6 @@
 #' Calculate Deposition
 #'
-#' @param IAR Intended Application Rate for *Dicamba*, lb/acre
+#' @param IAR Intended Application Rate for Dicamba, lb/acre
 #' @param xactive Dicamba conc in tank solution, wtfraction
 #' @param FD Downwind field depth, ft
 #' @param PL Crosswind field width, ft
@@ -132,33 +132,33 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
   }
 
 
-  # ## Create progress bar
-  #
-  #   for (i in 2:MM) {
-  #
-  #     # Increment the progress bar, and update the detail text
-  #     if(Driver == "shiny"){
-  #       incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5+0.5)*100, digits = 0), "% complete - Working on Part 2"))
-  #     } else{
-  #       if(Driver=="Silent"){}else print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 2"))
-  #     }
-  #
-  #     for (jj in (Nsa+1):(Nsa+Nda)){# Note that this is +1 compared to MathCAD
-  #       DVM[i,jj]<-sum(
-  #         ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)+
-  #           ifelse(DriftDistb[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistb[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)+
-  #           ifelse(DriftDistc[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistc[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0))
-  #
-  #       CM[i,jj]<-sum(
-  #         ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)/
-  #           (DWsa*(PL+2*(X[jj]-X[1:Nsa])*tan(psipsipsi*pi*zeta/180)))+
-  #           ifelse(DriftDistb[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistb[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)/
-  #           (DWsa*(PL+2*(X[jj]-X[1:Nsa])*tan(psipsipsi*pi*zeta/180)))+
-  #           ifelse(DriftDistc[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistc[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)/
-  #           (DWsa*(PL+2*(X[jj]-X[1:Nsa])*tan(psipsipsi*pi*zeta/180))))
-  #
-  #     }
-  #   }
+  ## Create progress bar
+
+    for (i in 2:MM) {
+
+      # Increment the progress bar, and update the detail text
+      if(Driver == "shiny"){
+        incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5+0.5)*100, digits = 0), "% complete - Working on Part 2"))
+      } else{
+        if(Driver=="Silent"){}else print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 2"))
+      }
+
+      for (jj in (Nsa+1):(Nsa+Nda)){# Note that this is +1 compared to MathCAD
+        DVM[i,jj]<-sum(
+          ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)+
+            ifelse(DriftDistb[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistb[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)+
+            ifelse(DriftDistc[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistc[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0))
+
+        CM[i,jj]<-sum(
+          ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)/
+            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*tan(psipsipsi*pi*zeta/180)))+
+            ifelse(DriftDistb[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistb[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)/
+            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*tan(psipsipsi*pi*zeta/180)))+
+            ifelse(DriftDistc[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistc[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)/
+            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*tan(psipsipsi*pi*zeta/180))))
+
+      }
+    }
 
 
   DVM[1,] <- 0 # Since i in Mathcard starts from 1 (i.e., first element assumed zero)

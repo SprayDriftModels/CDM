@@ -1,9 +1,8 @@
 #' Run Casanova
 #'
 #' @param scnFile a csv file containing the DSD, Params, Param type and param ID used for the analysis; default file is Scenarios.csv
-#' @param DSDFile a csv file defining the DSD measurements; the function takes the average of each trial
-#' @param paramsFile a csv file defining all the inputs; default file is Params (Metric) for metric
 #' @param DDDParamsFile DDD parameter file; default file is DDD_Params.csv
+#' @param report_folder is the folder to save the .html reports
 #' @param report is a T/F input indicating whether reports need to be printed out
 #'
 #' @return a list containing all droplet data and deposition for each scenario analyzed
@@ -12,7 +11,8 @@
 #' @examples
 runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
                         DDDparamsFile="./sample_data/DDD_Params.csv",
-                        report=F){
+                        report_folder="./sample_data/reports",
+                        report=T){
   results <- NULL
   all_results<- NULL
 
@@ -29,7 +29,6 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
   )
 
   # Read DDDParameters file
-  #  DDDparamsFile="./sample_data/DDD_Params.csv" # test line to be removed
   DDDparamsData<-NULL
   DDDparamsData <- tryCatch({
     read_csv(DDDparamsFile)
@@ -64,8 +63,8 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     }
     )
 
-    paramsType<-scnData$`Params-Type`[i] # This is the unit system of the parameters
-    paramsID<-scnData$`Params-ID`[i] # This is the unit system of the parameters
+    paramsType<-scnData$`Params-Type`[i] # This is the unit system of the input parameters
+    paramsID<-scnData$`Params-ID`[i] # This is the unit ID of the input parameters
 
     # Try to assign parameters from loaded files
     inputs_from_csv(DSDData,
@@ -93,7 +92,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
         print(paste("Could not read DSD File for scenario",i))
       }
       )
-# browser()
+      # browser()
       # Read Parameters file
       paramsFile<-paste0("./sample_data/",scnData$`Params-Filename`[i])
       paramsData<-NULL
@@ -117,50 +116,55 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 
       # Assign parameters from loaded files
       all_inputs<-inputs_from_csv(DSDData,
-                      paramsData,
-                      DDDparamsData,
-                      paramsID,
-                      paramsType)
-      y<-all_inputs[[1]]
-      Dpdata<-all_inputs[[2]]
-      Tair<-all_inputs[[3]]
-      Patm<-all_inputs[[4]]
-      RH<-all_inputs[[5]]
-      measurements<-all_inputs[[6]]
-      ch<-all_inputs[[7]]
-      z1<-all_inputs[[8]]
-      ux1<-all_inputs[[9]]
-      z2<-all_inputs[[10]]
-      ux2<-all_inputs[[11]]
-      rhow<-all_inputs[[12]]
-      rhos<-all_inputs[[13]]
-      xs0<-all_inputs[[14]]
-      rhosoln<-all_inputs[[15]]
-      H0<-all_inputs[[16]]
-      hcm<-all_inputs[[17]]
-      app_p<-all_inputs[[18]]
-      angle<-all_inputs[[19]]
-      ddd1<-all_inputs[[20]]
-      ddd2<-all_inputs[[21]]
-      ddd3<-all_inputs[[22]]
-      IAR<-all_inputs[[23]]
-      xactive<-all_inputs[[24]]
-      FD<-all_inputs[[25]]
-      PL<-all_inputs[[26]]
-      NozzleSpacing<-all_inputs[[27]]
-      psipsipsi<-all_inputs[[28]]
-      rhoL<-all_inputs[[29]]
-      Dpmax<-all_inputs[[30]]
-      DDpmin<-all_inputs[[31]]
-      MMM<-all_inputs[[32]]
-      lambda<-all_inputs[[33]]
-
-      # Part 1, Curve fitting: Variable pars contains the fitted parameters of the drop size distribution model
-      pars <- psd(y,Dpdata)
+                                  paramsData,
+                                  DDDparamsData,
+                                  paramsID,
+                                  paramsType)
+      y<-all_inputs[[2]][[1]]
+      Dpdata<-all_inputs[[2]][[2]]
+      Tair<-all_inputs[[2]][[3]]
+      Patm<-all_inputs[[2]][[4]]
+      RH<-all_inputs[[2]][[5]]
+      measurements<-all_inputs[[2]][[6]]
+      ch<-all_inputs[[2]][[7]]
+      z1<-all_inputs[[2]][[8]]
+      ux1<-all_inputs[[2]][[9]]
+      z2<-all_inputs[[2]][[10]]
+      ux2<-all_inputs[[2]][[11]]
+      rhow<-all_inputs[[2]][[12]]
+      rhos<-all_inputs[[2]][[13]]
+      xs0<-all_inputs[[2]][[14]]
+      rhosoln<-all_inputs[[2]][[15]]
+      H0<-all_inputs[[2]][[16]]
+      hcm<-all_inputs[[2]][[17]]
+      app_p<-all_inputs[[2]][[18]]
+      angle<-all_inputs[[2]][[19]]
+      ddd1<-all_inputs[[2]][[20]]
+      ddd2<-all_inputs[[2]][[21]]
+      ddd3<-all_inputs[[2]][[22]]
+      IAR<-all_inputs[[2]][[23]]
+      xactive<-all_inputs[[2]][[24]]
+      FD<-all_inputs[[2]][[25]]
+      PL<-all_inputs[[2]][[26]]
+      NozzleSpacing<-all_inputs[[2]][[27]]
+      psipsipsi<-all_inputs[[2]][[28]]
+      rhoL<-all_inputs[[2]][[29]]
+      Dpmax<-all_inputs[[2]][[30]]
+      DDpmin<-all_inputs[[2]][[31]]
+      MMM<-all_inputs[[2]][[32]]
+      lambda<-all_inputs[[2]][[33]]
 
       #browser()
+      # Part 1, Curve fitting: Variable pars contains the fitted parameters of the drop size distribution model
+      pars <- psd(y,Dpdata)
+      results$psd_pars<-pars
+
+      # browser()
       # Part 2, Wet Bulb Calculations
       Twb <- wet_bulb(Tair, Patm, RH)
+      results$Twb<-Twb
+
+      # browser()
 
       # Part 3, Wind profile parameters
       if (measurements==1){
@@ -170,11 +174,16 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
         profile<-wvprofile(z1, ux1, ch)
         z0<-profile[1]
         Uf<-profile[2]
+
+        wvprofile_params <-profile
+
       }else if (measurements==2){
         # Part for when we have two wind v. elevation measurements.
         z0<-WV2m(z1,z2,ux1,ux2)[1]
         Uf<-WV2m(z1,z2,ux1,ux2)[2]
+        wvprofile_params<-WV2m(z1,z2,ux1,ux2)
       }
+      results$wvprofile_params<-wvprofile_params
 
       #Part 4, Droplet Transport Calculations
       tryCatch({
@@ -200,21 +209,20 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
                  ColorSet = "#d700ff")
 
         All_droplet_data <- rbind(droplet1_data,
-                                 droplet2_data,
-                                 droplet3_data)
-
+                                  droplet2_data,
+                                  droplet3_data)
+        # browser()
+        names(All_droplet_data)[1:3] <- c("Droplet_diameter","Distance_traveled","Droplet")
         droplet_plot<-plot_droplet_data(All_droplet_data)
 
         # Store results for function output
         results$droplet_plot <- droplet_plot
-        names(All_droplet_data)[1:3] <- c("Droplet_diameter","Distance_traveled","Droplet")
         results$All_droplet_data <- All_droplet_data
 
       },
 
       error=function(e){
         "Could not run part 4, Droplet Transfer Function"
-        ############################NEED To add results
       }
       )
 
@@ -228,10 +236,12 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 
       tryCatch(
         {
+          #browser()
           deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda,"Silent")
+          print("Deposition calculations are finished")
         },
         error=function(e){
-          "Could not run part 5, Deposition Calculations"
+          print("Could not run part 5, Deposition Calculations")
         }
 
       )
@@ -244,10 +254,17 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     }
 
     )
-    # browser()
+
+    # The following generates one .html report per scenario
+    if (report==T){
+      write_report(i,all_inputs, results, report_folder)
+
+    }
+
     all_results[[i]]<-results # This list stores all results so that they can be output
 
-  }  # This is the end of the loop for all scenario being
+  }  # This is the end of the loop for all scenarios
+
 
   return(all_results)
 }

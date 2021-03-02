@@ -16,7 +16,9 @@ inputs_from_csv <- function(DSDData,
                             paramsID,
                             paramsType){
 
-  # Comments in code provide descriptions of units used in computation modules
+  # Comments in code next to each input parameter provide descriptions of units used in computation modules
+  # This function at the end converts units to the units used in computation modules
+
   # Part 1
   # ________________________________________
   # Average DSD fit data:
@@ -103,9 +105,22 @@ inputs_from_csv <- function(DSDData,
 
   #browser()
 
+  # As provided list of properties:
+  input_props<-list(  y,  Dpdata,
+                      Tair,  Patm,  RH,
+                      measurements,
+                      ch,z1,ux1, z2, ux2,
+                      rhow,  rhos,  xs0,  rhosoln,
+                      H0,  hcm,  app_p,  angle,
+                      ddd1,  ddd2,  ddd3,
+                      IAR,   xactive, FD, PL,
+                      NozzleSpacing,  psipsipsi,
+                      rhoL,  Dpmax, DDpmin,
+                      MMM,  lambda)
+
   # Convert input units to units used in the computation module
   if (paramsType=='English')
-    {
+  {
     Tair<-(Tair-32)*5/9 # Computation module uses degrees C
     rhow<-rhow/62.428 # Computation module uses g/cc
     rhos<-rhos/62.428 # Computation module uses g/cc
@@ -129,21 +144,21 @@ inputs_from_csv <- function(DSDData,
 
   }
 
-
-  # NEED TO COE THE COVERSION FROM METRIC
+  # Converted list of properties to the units used in computation modules
+  input_props_comp<-list(  y,  Dpdata,
+         Tair,  Patm,  RH,
+         measurements,
+         ch,z1,ux1, z2, ux2,
+         rhow,  rhos,  xs0,  rhosoln,
+         H0,  hcm,  app_p,  angle,
+         ddd1,  ddd2,  ddd3,
+         IAR,   xactive, FD, PL,
+         NozzleSpacing,  psipsipsi,
+         rhoL,  Dpmax, DDpmin,
+         MMM,  lambda)
 
   return(
-    list(  y,  Dpdata,
-           Tair,  Patm,  RH,
-           measurements,
-           ch,z1,ux1, z2, ux2,
-           rhow,  rhos,  xs0,  rhosoln,
-           H0,  hcm,  app_p,  angle,
-           ddd1,  ddd2,  ddd3,
-           IAR,   xactive, FD, PL,
-           NozzleSpacing,  psipsipsi,
-           rhoL,  Dpmax, DDpmin,
-           MMM,  lambda)
+    list(input_props, input_props_comp)
   )
 
 
