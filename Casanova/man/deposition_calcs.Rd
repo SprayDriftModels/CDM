@@ -24,7 +24,7 @@ deposition_calcs(
 )
 }
 \arguments{
-\item{IAR}{Intended Application Rate for *Dicamba*, lb/acre}
+\item{IAR}{Intended Application Rate for Dicamba, lb/acre}
 
 \item{xactive}{Dicamba conc in tank solution, wtfraction}
 

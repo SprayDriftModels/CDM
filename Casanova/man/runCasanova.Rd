@@ -7,17 +7,16 @@
 runCasanova(
   scnFile = "./sample_data/Scenarios.csv",
   DDDparamsFile = "./sample_data/DDD_Params.csv",
-  report = F
+  report_folder = "./sample_data/reports",
+  report = T
 )
 }
 \arguments{
 \item{scnFile}{a csv file containing the DSD, Params, Param type and param ID used for the analysis; default file is Scenarios.csv}
 
+\item{report_folder}{is the folder to save the .html reports}
+
 \item{report}{is a T/F input indicating whether reports need to be printed out}
-
-\item{DSDFile}{a csv file defining the DSD measurements; the function takes the average of each trial}
-
-\item{paramsFile}{a csv file defining all the inputs; default file is Params (Metric) for metric}
 
 \item{DDDParamsFile}{DDD parameter file; default file is DDD_Params.csv}
 }

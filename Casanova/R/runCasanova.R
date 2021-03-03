@@ -265,6 +265,6 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 
   }  # This is the end of the loop for all scenarios
 
-
+  dev.off() # This prevents a but that causes Rstudio to crash if one accesses the plots from the return value
   return(all_results)
 }
