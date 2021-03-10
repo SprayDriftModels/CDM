@@ -16,13 +16,16 @@
 #' @param MMM original value for integration
 #' @param lambda Controls resolution of deposition calculations; higher numbers increase accuracy
 #' @param Driver "text","shiny", "Silent"
+#' @param curverfitDSD a T/F paramet indicating if curvefitting of DSD data is used
+#' @param y Average DSD fit data:
+#' @param Dpdata Corresponding droplet size (in microns)
 #'
 #' @return
 #' @export
 #'
 #' @examples
 deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Cent_inp,Dwnd_inp,Uwnd_inp,
-                           Dpmax, DDpmin,a,MMM,lambda,Driver){
+                           Dpmax, DDpmin,a,MMM,lambda,Driver,curvefitDSD, y, Dpdata){
 
 
   v <- FD*PL/43560
@@ -32,10 +35,24 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
 
   Dddp <- (Dpmax-Dpmin)/MMM
 
-  f<-function(Dp){
-    (a[5]/a[3]*exp(-0.5*((Dp-a[1])/a[3])^2)+(1-a[5])/a[4]*exp(-0.5*((Dp-a[2])/a[4])^2))/(2*pi)^0.5*ifelse(Dp>=Dpmax,0,1)
+  # The following uses either the curve fitted function or interpolation between data:
+  if (curvefitDSD==T){
+    f<-function(Dp){
+      (a[5]/a[3]*exp(-0.5*((Dp-a[1])/a[3])^2)+(1-a[5])/a[4]*exp(-0.5*((Dp-a[2])/a[4])^2))/(2*pi)^0.5*ifelse(Dp>=Dpmax,0,1)
+    }
+  }
+  else{
+    Dpdata<-c(Dpdata[1]+(Dpdata[2]-Dpdata[1])/(y[2]-y[1])*(-y[1]),Dpdata)
+    y<-c(0,y)
+    Dpdata<-c(Dpdata, tail(Dpdata, n=1)+diff(tail(Dpdata,n=2))/diff(tail(y,n=2))*(-tail(y,n=1)))
+    y<-c(y,100)
+    g<-approxfun(Dpdata, y, method='linear',0,100) # This is the DSD function
+    f<-function(Dp){
+      (g(Dp+Dp/1000)-g(Dp-Dp/1000))/(Dp/500)/100*ifelse(Dp>=Dpmax,0,1) # This is the derivative divided by 100 to convert back to real numbers rather than %; added the ifelse to be consistent with previous function eventough this is not spelled out in word description
+    }
   }
 
+  browser()
   LvsDpa <- data.frame(
     Dp=c(18.0,25.0,32.0,39.0,46.0,53.0,60.0,67.0,74.0,81.0,88.0,95.0,102.0,132.1,171.0,221.4,286.6,371.1,480.4,622.0,805.4,1042.7,1350.0),
     Cent=Cent_inp,

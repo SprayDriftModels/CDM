@@ -1,7 +1,7 @@
 #' PSD fitting function
 #'
 #' @param y Average DSD fit data:
-#' @param Dpdata Corresponding droplet size (in microns):
+#' @param Dpdata Corresponding droplet size (in microns)
 #'
 #' @return list of res=c(a1,a2,d1,d2,k1), plot, and input data.
 #' @export

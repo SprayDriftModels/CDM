@@ -4,6 +4,7 @@
 #' @param DDDParamsFile DDD parameter file; default file is DDD_Params.csv
 #' @param report_folder is the folder to save the .html reports
 #' @param report is a T/F input indicating whether reports need to be printed out
+#' @param curvefitDSD is a T/F indicating whether the DSD will be curve fitted or interpolated
 #'
 #' @return a list containing all droplet data and deposition for each scenario analyzed
 #' @export
@@ -12,7 +13,8 @@
 runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
                         DDDparamsFile="./sample_data/DDD_Params.csv",
                         report_folder="./sample_data/reports",
-                        report=T){
+                        report=T,
+                        curvefitDSD=F){
   results <- NULL
   all_results<- NULL
 
@@ -206,9 +208,20 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       lambda<-all_inputs[[2]][[33]]
 
       #browser()
-      # Part 1, Curve fitting: Variable pars contains the fitted parameters of the drop size distribution model
-      pars <- psd(y,Dpdata)
-      results$psd_pars<-pars
+
+      if (curvefitDSD==T){
+        # Part 1, Curve fitting: Variable pars contains the fitted parameters of the drop size distribution model
+        pars <- psd(y,Dpdata)
+        results$psd_pars<-pars
+      }
+      else
+      {
+        results$psd_pars<-list("res" = 'No DSD fitting',
+                               "plot" = 'No DSD fitting',
+                               "table" = 'No DSD fitting',
+                               "y" = y,
+                               "Dpdata" = Dpdata)
+      }
 
       #browser()
       # Part 2, Wet Bulb Calculations
@@ -279,7 +292,13 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 
       # Part 5
       # ________________________________________
-      a<-unname(pars$res)  # Calibration from step #1 (removing the stored names)
+
+      if (curvefitDSD==T){
+        a<-unname(pars$res)  # Calibration from step #1 (removing the stored names)
+      }
+      else {
+        a<-NULL
+      }
       # Input from previous function
       Cent<-droplet_1[2]$Xdist
       Dwnd<-droplet_2[2]$Xdist
@@ -288,7 +307,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       tryCatch(
         {
           #browser()
-          deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda,"Silent")
+          deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda,"Silent",curvefitDSD,y,Dpdata)
           print("Deposition calculations are finished")
         },
         error=function(e){
@@ -305,7 +324,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     }
 
     )
-
+browser()
     # The following generates one .html report per scenario
     if (report==T){
       write_report(i,all_inputs, results, report_folder)
