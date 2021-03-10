@@ -29,36 +29,36 @@ inputs_from_csv <- function(DSDData,
   i_firsty <- max(min(which(y_temp > 0))-1,1)
   i_lasty <- max(which(y_temp < 100)) + 1
   y<-y_temp[i_firsty:i_lasty]
-  Dpdata<-unname(DSDData$Droplet_Size_microns[i_firsty:i_lasty]) # Corresponding droplet size, microns
+  Dpdata<-unname(DSDData$Droplet_Size_microns[i_firsty:i_lasty]) # Corresponding droplet size, units used in computation module: microns
 
   # Part 2
   # ________________________________________
 
   #  # User Input:
-  Tair<-as.double(paramsData[which(paramsData$ID=='Tair'),][paramsID+3]) # Dry air temperature, C
-  Patm<-as.double(paramsData[which(paramsData$ID=='Patm'),][paramsID+3]) # Barometric pressure, mmHg abs
-  RH<-as.double(paramsData[which(paramsData$ID=='RH'),][paramsID+3])  # Percent relative humidity, %
+  Tair<-as.double(paramsData[which(paramsData$Type=='Tair'),][paramsID+3]) # Dry air temperature, units used in computation module: C
+  Patm<-as.double(paramsData[which(paramsData$Type=='Patm'),][paramsID+3]) # Barometric pressure, units used in computation module: mmHg abs
+  RH<-as.double(paramsData[which(paramsData$Type=='RH'),][paramsID+3])  # Percent relative humidity, units used in computation module: %
 
   # Part 3
   # ________________________________________
   #
 
   # Only need to put appropriate params for the appropriate case (1 vs 2 measurements)
-  measurements<-as.double(paramsData[which(paramsData$ID=='measurements'),][paramsID+3]) # Number of wind vs. height sets of measurements
+  measurements<-as.double(paramsData[which(paramsData$Type=='measurements'),][paramsID+3]) # Number of wind vs. height sets of measurements
   if (measurements==1){
     # This first part is when we have only one wind v. elevation measurement.
-    ch<-as.double(paramsData[which(paramsData$ID=='ch'),][paramsID+3]) # crop height, inches
-    z1<-as.double(paramsData[which(paramsData$ID=='z1'),][paramsID+3]) # elevation of wind velocity, ft
-    ux1<-as.double(paramsData[which(paramsData$ID=='ux1'),][paramsID+3]) # wind velocity at elevation, mph
+    ch<-as.double(paramsData[which(paramsData$Type=='ch'),][paramsID+3]) # crop height, units used in computation module: inches
+    z1<-as.double(paramsData[which(paramsData$Type=='z1'),][paramsID+3]) # elevation of wind velocity, units used in computation module: ft
+    ux1<-as.double(paramsData[which(paramsData$Type=='ux1'),][paramsID+3]) # wind velocity at elevation, units used in computation module: mph
     z2<-NULL
     ux2<-NULL
 
   }else if (measurements==2){
     # Part for when we have two wind v. elevation measurements.
-    z1<-as.double(paramsData[which(paramsData$ID=='z1'),][paramsID+3]) # elevation 1, feet
-    z2<-as.double(paramsData[which(paramsData$ID=='z2'),][paramsID+3]) # elevation 2, feet
-    ux1<-as.double(paramsData[which(paramsData$ID=='ux1'),][paramsID+3]) # wind speed 1, mph
-    ux2<-as.double(paramsData[which(paramsData$ID=='ux2'),][paramsID+3]) # wind speed 2, mph
+    z1<-as.double(paramsData[which(paramsData$Type=='z1'),][paramsID+3]) # elevation 1, units used in computation module: feet
+    z2<-as.double(paramsData[which(paramsData$Type=='z2'),][paramsID+3]) # elevation 2, units used in computation module: feet
+    ux1<-as.double(paramsData[which(paramsData$Type=='ux1'),][paramsID+3]) # wind speed 1, units used in computation module: mph
+    ux2<-as.double(paramsData[which(paramsData$Type=='ux2'),][paramsID+3]) # wind speed 2, units used in computation module: mph
     ch<-NULL
   }
 
@@ -66,19 +66,19 @@ inputs_from_csv <- function(DSDData,
   # ________________________________________
   # Droplet Transport
 
-  rhow<-as.double(paramsData[which(paramsData$ID=='rhow'),][paramsID+3]) # Density of pure water in droplet, g/cc
-  rhos<-as.double(paramsData[which(paramsData$ID=='rhos'),][paramsID+3])  # Density of dissolved solids in droplet, g/cc
-  xs0<-as.double(paramsData[which(paramsData$ID=='xs0'),][paramsID+3])  # mass fraction total dissolved solids in solution
+  rhow<-as.double(paramsData[which(paramsData$Type=='rhow'),][paramsID+3]) # Density of pure water in droplet, units used in computation module: g/cc
+  rhos<-as.double(paramsData[which(paramsData$Type=='rhos'),][paramsID+3])  # Density of dissolved solids in droplet, units used in computation module: g/cc
+  xs0<-as.double(paramsData[which(paramsData$Type=='xs0'),][paramsID+3])  # mass fraction total dissolved solids in solution
 
   # Mix density (rows 25 to 42)
-  rhosoln<-as.double(paramsData[which(paramsData$ID=='rhosoln'),][paramsID+3]) # in kg/m^3  # New input (need to be added to GUI)
+  rhosoln<-as.double(paramsData[which(paramsData$Type=='rhosoln'),][paramsID+3]) # in units used in computation module: kg/m^3  # New input (need to be added to GUI)
 
   #
-  H0<-as.double(paramsData[which(paramsData$ID=='H0'),][paramsID+3]) # Height of nozzle above ground , inches
-  hcm<-as.double(paramsData[which(paramsData$ID=='hcm'),][paramsID+3]) # Canopy height in, cm
-  app_p<-as.double(paramsData[which(paramsData$ID=='app_p'),][paramsID+3]) # Nozzle pressure, psi
+  H0<-as.double(paramsData[which(paramsData$Type=='H0'),][paramsID+3]) # Height of nozzle above ground , units used in computation module: inches
+  hcm<-as.double(paramsData[which(paramsData$Type=='hcm'),][paramsID+3]) # Canopy height in, units used in computation module: cm
+  app_p<-as.double(paramsData[which(paramsData$Type=='app_p'),][paramsID+3]) # Nozzle pressure, units used in computation module: psi
 
-  angle<-as.double(paramsData[which(paramsData$ID=='angle'),][paramsID+3]) # angle, degrees
+  angle<-as.double(paramsData[which(paramsData$Type=='angle'),][paramsID+3]) # angle, units used in computation module: degrees
 
   # ddd parameters
   ddd1 <- DDDparamsData$ddd1
@@ -89,21 +89,21 @@ inputs_from_csv <- function(DSDData,
   # Part 5
   # ________________________________________
   # User Inputs:
-  IAR<-as.double(paramsData[which(paramsData$ID=='IAR'),][paramsID+3]) #Intended Application Rate for Dicamba, lb/acre
-  xactive<-as.double(paramsData[which(paramsData$ID=='xactive'),][paramsID+3]) #Dicamba concentration in tank solution, wtfraction
-  FD<-as.double(paramsData[which(paramsData$ID=='FD'),][paramsID+3]) # Downwind field depth, ft
-  PL<-as.double(paramsData[which(paramsData$ID=='PL'),][paramsID+3]) # Crosswind field width, ft
-  NozzleSpacing<-as.double(paramsData[which(paramsData$ID=='NozzleSpacing'),][paramsID+3]) # Space between nozzles on Boom, inches
-  psipsipsi<-as.double(paramsData[which(paramsData$ID=='psipsipsi'),][paramsID+3]) # Horizontal variation in wind direction around mean direction, 1 stdev, in degrees.
-  rhoL<-rhosoln/1000 # Density of sprayed solution, grams/cc
-  Dpmax<-as.double(paramsData[which(paramsData$ID=='Dpmax'),][paramsID+3])
-  DDpmin<-as.double(paramsData[which(paramsData$ID=='Ddpmin'),][paramsID+3])
+  IAR<-as.double(paramsData[which(paramsData$Type=='IAR'),][paramsID+3]) #Intended Application Rate for Dicamba, units used in computation module: lb/acre
+  xactive<-as.double(paramsData[which(paramsData$Type=='xactive'),][paramsID+3]) #Dicamba concentration in tank solution, wtfraction
+  FD<-as.double(paramsData[which(paramsData$Type=='FD'),][paramsID+3]) # Downwind field depth, units used in computation module: ft
+  PL<-as.double(paramsData[which(paramsData$Type=='PL'),][paramsID+3]) # Crosswind field width, units used in computation module: ft
+  NozzleSpacing<-as.double(paramsData[which(paramsData$Type=='NozzleSpacing'),][paramsID+3]) # Space between nozzles on Boom, units used in computation module: inches
+  psipsipsi<-as.double(paramsData[which(paramsData$Type=='psipsipsi'),][paramsID+3]) # Horizontal variation in wind direction around mean direction, 1 stdev, units used in computation module: in degrees.
+  rhoL<-rhosoln/1000 # Density of sprayed solution, units used in computation module: grams/cc
+  Dpmax<-as.double(paramsData[which(paramsData$Type=='Dpmax'),][paramsID+3])
+  DDpmin<-as.double(paramsData[which(paramsData$Type=='Ddpmin'),][paramsID+3])
 
   # Integration input parameters
-  MMM<-as.double(paramsData[which(paramsData$ID=='MMM'),][paramsID+3]) # Original value
-  lambda<-as.double(paramsData[which(paramsData$ID=='lambda'),][paramsID+3]) # Original value; Controls resolution of deposition calculations; higher numbers increase accuracy
+  MMM<-as.double(paramsData[which(paramsData$Type=='MMM'),][paramsID+3]) # Original value
+  lambda<-as.double(paramsData[which(paramsData$Type=='lambda'),][paramsID+3]) # Original value; Controls resolution of deposition calculations; higher numbers increase accuracy
 
-  #browser()
+  browser()
 
   # As provided list of properties:
   input_props<-list(  y,  Dpdata,

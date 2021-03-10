@@ -1,4 +1,5 @@
-ID,Description,Units,1,2
+Type,Description,Units,,
+ID,Sequencial ID,NA,1,2
 Tair,Dry air temperature,Celcius,17.689,17.689
 Patm,Barometric pressure,mmHg abs,760,760
 RH,Relative humidity,%,35.65,35.65

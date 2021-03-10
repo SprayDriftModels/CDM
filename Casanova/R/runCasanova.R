@@ -39,7 +39,22 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
   )
 
   # The following files are read to test whether they can be read without errors
-  i_scn<-max(scnData$'Scenario-ID')
+
+  # First check the number of scenarios to be input sequentially
+  if(max(scnData$'Scenario-ID')==nrow(scnData)) {
+    i_scn<-max(scnData$'Scenario-ID')
+  }
+  else{
+    stop('Please check the numbering of your scenarios')
+  }
+
+  if (i_scn>1){
+    for (i in 2:i_scn){
+      if(scnData$'Scenario-ID'[i]-scnData$'Scenario-ID'[i-1]!=1)
+      (stop('Scenarios should be numbered sequentially'))
+    }
+  }
+
   for (i in 1:i_scn){
     # Read DSD file
     DSDFile<-paste0("./sample_data/",scnData$`DSD-Filename`[i])
