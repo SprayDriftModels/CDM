@@ -54,7 +54,7 @@ psd<-function(y, Dpdata){
   # Return parameters
   res <- m.sinexp$m$getPars()
 
-
+  #browser()
   # Plot the calibration with the input data
   Dp_plot <- (Dpmin:Dpmax)
   fDP_plot <- 1/(2 * pi)^0.5 * (res[[5]]/res[[3]] * exp(-1 * (Dp_plot-res[[1]])^2/2/res[[3]]^2) + (1-res[[5]])/res[[4]] * exp(-1 * (Dp_plot-res[[2]])^2/2/res[[4]]^2))

@@ -4,7 +4,7 @@
 #' @param paramsData the raw paramsData read from .csv file
 #' @param DDDparamsData  the raw DDDparamsData read from .csv file
 #' @param paramsID the ID for the parameters
-#' @param paramsType the type of the parameters
+#' @param paramsUnits the type of the parameters
 #'
 #' @return a list containing all input data
 #' @export
@@ -14,10 +14,11 @@ inputs_from_csv <- function(DSDData,
                             paramsData,
                             DDDparamsData,
                             paramsID,
-                            paramsType){
+                            paramsUnits){
 
   # Comments in code next to each input parameter provide descriptions of units used in computation modules
   # This function at the end converts units to the units used in computation modules
+
 
   # Part 1
   # ________________________________________
@@ -59,7 +60,7 @@ inputs_from_csv <- function(DSDData,
     z2<-as.double(paramsData[which(paramsData$Type=='z2'),][paramsID+3]) # elevation 2, units used in computation module: feet
     ux1<-as.double(paramsData[which(paramsData$Type=='ux1'),][paramsID+3]) # wind speed 1, units used in computation module: mph
     ux2<-as.double(paramsData[which(paramsData$Type=='ux2'),][paramsID+3]) # wind speed 2, units used in computation module: mph
-    ch<-NULL
+    ch<-NULL # ch not used if two measurements available
   }
 
   # Part 4
@@ -103,7 +104,7 @@ inputs_from_csv <- function(DSDData,
   MMM<-as.double(paramsData[which(paramsData$Type=='MMM'),][paramsID+3]) # Original value
   lambda<-as.double(paramsData[which(paramsData$Type=='lambda'),][paramsID+3]) # Original value; Controls resolution of deposition calculations; higher numbers increase accuracy
 
-  browser()
+  # browser()
 
   # As provided list of properties:
   input_props<-list(  y,  Dpdata,
@@ -119,7 +120,7 @@ inputs_from_csv <- function(DSDData,
                       MMM,  lambda)
 
   # Convert input units to units used in the computation module
-  if (paramsType=='English')
+  if (paramsUnits=='English')
   {
     Tair<-(Tair-32)*5/9 # Computation module uses degrees C
     rhow<-rhow/62.428 # Computation module uses g/cc
@@ -131,15 +132,15 @@ inputs_from_csv <- function(DSDData,
   }
   else {
     ch<-ch/2.54  # Computation module uses in
-    z1<-z1*3.28  # Computation module uses ft
-    ux1<-ux1*2.23     # Computation model used mph
-    z2<-z2*3.28  # Computation module uses ft
-    ux2<-ux2*2.23     # Computation model used mph
+    z1<-z1*3.28084  # Computation module uses ft
+    ux1<-ux1*2.23694     # Computation model used mph
+    z2<-z2*3.28084  # Computation module uses ft
+    ux2<-ux2*2.23694     # Computation model used mph
     H0<-H0/2.54  # Computation module uses in
     app_p<-app_p*0.145038 # Computation module uses psi
-    IAR<-IAR*2.20/2.47 # Computation module uses lb/acre
-    FD<-FD*3.28  # Computation module uses ft
-    PL<-PL*3.28   # Computation module uses ft
+    IAR<-IAR*2.20462/2.47105 # Computation module uses lb/acre
+    FD<-FD*3.28084  # Computation module uses ft
+    PL<-PL*3.28084   # Computation module uses ft
     NozzleSpacing<-NozzleSpacing/2.54   # Computation module uses in
 
   }

@@ -55,6 +55,8 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     }
   }
 
+
+
   for (i in 1:i_scn){
     # Read DSD file
     DSDFile<-paste0("./sample_data/",scnData$`DSD-Filename`[i])
@@ -78,7 +80,39 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     }
     )
 
-    paramsType<-scnData$`Params-Type`[i] # This is the unit system of the input parameters
+    # browser()
+    # Check the number of parameters to be input sequentially
+    if (ncol(paramsData[which(paramsData$Type=='ID'),])>4){
+      for (j in 5:ncol(paramsData[which(paramsData$Type=='ID'),])){
+        if ((as.double(paramsData[which(paramsData$Type=='ID'),][j])-as.double(paramsData[which(paramsData$Type=='ID'),][j-1]))!=1){
+          stop('Parameter IDs should be numbered sequentially')
+        }
+      }
+    }
+
+    # Check that the user has not changed the default units:
+    units_english<-c(NA, "Farheneit", "mmHg abs", "%", NA, "in", "ft", "mph", "ft",
+                     "mph", "lbs/ft3", "lbs/ft3", NA, "lbs/ft3", "in", "in", "psi",
+                     "degrees", "lb/acre", "wtfraction", "ft", "ft", "in", "degrees",
+                     "microm", "microm", "#", NA)
+    units_metric<-c(NA, "Celcius", "mmHg abs", "%", NA, "cm", "m", "m/s", "m",
+                    "m/s", "g/cm3", "g/cm3", NA, "kg/m3", "cm", "cm", "kPa", "degrees",
+                    "kg/ha", "wtfraction", "m", "m", "cm", "degrees", "microm", "microm",
+                    "#", NA)
+
+    units_type<-c("ID", "Tair", "Patm", "RH", "measurements", "ch", "z1", "ux1",
+                  "z2", "ux2", "rhow", "rhos", "xs0", "rhosoln", "H0", "hcm", "app_p",
+                  "angle", "IAR", "xactive", "FD", "PL", "NozzleSpacing", "psipsipsi",
+                  "Dpmax", "Ddpmin", "MMM", "lambda")
+
+    # browser()
+    if (!(all(paramsData$Units==units_english,na.rm=T) | all(paramsData$Units==units_metric, na.rm=T) )){
+      stop('Parameter units should either be in english',units_english, 'or metric', units_metric)
+
+    }
+
+
+    paramsUnits<-scnData$`Params-Units`[i] # This is the unit system of the input parameters
     paramsID<-scnData$`Params-ID`[i] # This is the unit ID of the input parameters
 
     # Try to assign parameters from loaded files
@@ -86,7 +120,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
                     paramsData,
                     DDDparamsData,
                     paramsID,
-                    paramsType)
+                    paramsUnits)
 
   }
 
@@ -118,7 +152,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
         print(paste("Could not read parameters File for scenario",i))
       }
       )
-      paramsType<-scnData$`Params-Type`[i] # This is the unit system of the parameters
+      paramsUnits<-scnData$`Params-Units`[i] # This is the unit system of the parameters
       paramsID<-scnData$`Params-ID`[i] # This is the unit system of the parameters
 
       ## Load hard-coded inputs
@@ -134,7 +168,9 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
                                   paramsData,
                                   DDDparamsData,
                                   paramsID,
-                                  paramsType)
+                                  paramsUnits)
+
+      # The following assigns the inputs converted to the computational units
       y<-all_inputs[[2]][[1]]
       Dpdata<-all_inputs[[2]][[2]]
       Tair<-all_inputs[[2]][[3]]
@@ -174,7 +210,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       pars <- psd(y,Dpdata)
       results$psd_pars<-pars
 
-      # browser()
+      #browser()
       # Part 2, Wet Bulb Calculations
       Twb <- wet_bulb(Tair, Patm, RH)
       results$Twb<-Twb

@@ -1443,9 +1443,9 @@ server <- shinyServer(function(input, output, session) {
                 by = "Parameters")
       
       
-      params <- list(input_filename = pars()$filename$name,
+      params <- list(input_filename = "Superceded Code",
                      input_params = input_params_units,
-                     step1_results_plot = pars()$pars$plot,
+                     step1_results_plot = pars$plot,
                      step1_results_table = pars()$pars$table,
                      step2_results = Twb(),
                      step3_results = wvprofile_params()$wvprofile_params,
