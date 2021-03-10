@@ -1,3 +1,2 @@
-Scenario-ID,DSD-Filename,Params-Filename,Params-Type,Params-ID
+Scenario-ID,DSD-Filename,Params-Filename,Params-Units,Params-ID
 1,DSD.csv,Params (English).csv,English,1
-2,DSD.csv,Params (English).csv,English,2

@@ -1,14 +1,14 @@
-Type,Description,Units,,
+Type,Description,Units,Values,Values
 ID,Sequencial ID,NA,1,2
 Tair,Dry air temperature,Celcius,17.689,17.689
 Patm,Barometric pressure,mmHg abs,760,760
 RH,Relative humidity,%,35.65,35.65
 measurements,Number of wind measurements,NA,1,1
-ch,Crop Heigh,cm,4,4
+ch,Crop Height,cm,4,4
 z1,Elevation of wind speed (1),m,6.6,6.6
-ux1,MPH wind speed (1),m/s,12.8,12.8
+ux1,Wind speed (1),m/s,12.8,12.8
 z2,Elevation of wind speed (2),m,1.66667,1.66667
-ux2,MPH wind speed (2),m/s,9.44,9.44
+ux2,Wind speed (2),m/s,9.44,9.44
 rhow,Density of pure water in droplet,g/cm3,1,1
 rhos,Density of dissolved solids in droplet,g/cm3,2.01594,2.01594
 xs0,Mass fraction total dissolved solids in solution,NA,0.0198,0.0198
@@ -23,7 +23,7 @@ FD,Downwind field depth,m,240.16,240.16
 PL,Crosswind field width,m,787.4,787.4
 NozzleSpacing,Space between nozzles on Boom,cm,20,20
 psipsipsi,"Horizontal variation in wind direction around mean direction, 1 stdev",degrees,10.7,10.7
-Dpmax,Dpmax,µm,1350,1350
-Ddpmin,Dpmin,µm,18,18
+Dpmax,Dpmax,microm,1350,1350
+Ddpmin,Dpmin,microm,18,18
 MMM,Number of droplet size bins,#,500,500
 lambda,Resolution of deposition calculations,NA,2,2
