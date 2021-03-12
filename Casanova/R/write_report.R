@@ -136,7 +136,8 @@ write_report <- function(i,
   # from the code in this app).
   rmarkdown::render(tempReport, output_file = filename, output_dir=report_folder,
                     params = params,
-                    envir = new.env(parent = globalenv())
+                    envir = new.env(parent = globalenv()),
+                    quiet=T
   )
 }
 

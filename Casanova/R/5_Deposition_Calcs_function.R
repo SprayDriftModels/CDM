@@ -31,9 +31,9 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
   v <- FD*PL/43560
 
   Dpmin <- DDpmin
-  k <- seq(1,MMM) # Note the +1 compared to MathCAD notation
+  k <- seq(1,MMM) # Note the +1 compared to MathCAD notation    #This is not really used
 
-  Dddp <- (Dpmax-Dpmin)/MMM
+  Dddp <- (Dpmax-Dpmin)/MMM    # This is not really used
 
   # The following uses either the curve fitted function or interpolation between data:
   if (curvefitDSD==T){
@@ -52,7 +52,7 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
     }
   }
 
-  browser()
+  # browser()
   LvsDpa <- data.frame(
     Dp=c(18.0,25.0,32.0,39.0,46.0,53.0,60.0,67.0,74.0,81.0,88.0,95.0,102.0,132.1,171.0,221.4,286.6,371.1,480.4,622.0,805.4,1042.7,1350.0),
     Cent=Cent_inp,
@@ -112,39 +112,45 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
   DVM <- matrix(nrow=MM,ncol=Nsa+Nda)
   CM <- matrix(nrow=MM,ncol=Nsa+Nda)
 
-  #setup parallel backend to use many processors
+  #setup parallel backend to use processors
   cores = detectCores()
-  cl <- makeCluster(cores[1]-1) #not to overload your computer
+  cl <- makeCluster(cores[1]-1) #not to overload computer
   registerDoParallel(cl)
 
   ## Create progress bar
+  # Remove some statements outside loop
+  SVPs_3<-SVPs/3
+  partial_denom<-tan(psipsipsi*pi*zeta/180)
 
-    for (i in 2:MM) {
+  for (i in 2:MM) {
 
       # Increment the progress bar, and update the detail text
-      if(Driver == "shiny"){
-        incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5)*100, digits = 0), "% complete - Working on Part 1"))
-      } else {
-        if(Driver=="Silent"){
 
-      }else{
-
-        print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 1"))
-      }}
+    # ifelse is faster function;
+    ifelse(Driver == "shiny",incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5)*100, digits = 0), "% complete - Working on Part 1")),
+           ifelse(Driver=="Silent",'',print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 1"))))
+#    if(Driver == "shiny"){
+#        incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5)*100, digits = 0), "% complete - Working on Part 1"))
+#      } else {
+#        if(Driver=="Silent"){
+#
+#      }else{
+#        print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 1"))
+#      }}
 
       for (jj in 1:Nsa){# Note that this is +1 compared to MathCAD
         DVM[i,jj]<-sum(
-          ifelse(DriftDista[i]>((jj-1)*DWsa-X[1:jj])&DriftDista[i]<=(jj)*DWsa-X[1:jj],SVPs[i]/3,0)+
-            ifelse(DriftDistb[i]>((jj-1)*DWsa-X[1:jj])&DriftDistb[i]<=(jj)*DWsa-X[1:jj],SVPs[i]/3,0)+
-            ifelse(DriftDistc[i]>((jj-1)*DWsa-X[1:jj])&DriftDistc[i]<=(jj)*DWsa-X[1:jj],SVPs[i]/3,0))
+          ifelse(DriftDista[i]>((jj-1)*DWsa-X[1:jj])&DriftDista[i]<=(jj)*DWsa-X[1:jj],SVPs_3[i],0)+
+            ifelse(DriftDistb[i]>((jj-1)*DWsa-X[1:jj])&DriftDistb[i]<=(jj)*DWsa-X[1:jj],SVPs_3[i],0)+
+            ifelse(DriftDistc[i]>((jj-1)*DWsa-X[1:jj])&DriftDistc[i]<=(jj)*DWsa-X[1:jj],SVPs_3[i],0))
 
         CM[i,jj]<-sum(
-          ifelse(DriftDista[i]>((jj-1)*DWsa-X[1:jj])&DriftDista[i]<=(jj)*DWsa-X[1:jj],SVPs[i]/3,0)/
-            (DWsa*(PL+2*(X[jj]-X[1:jj])*tan(psipsipsi*pi*zeta/180)))+
-            ifelse(DriftDistb[i]>((jj-1)*DWsa-X[1:jj])&DriftDistb[i]<=(jj)*DWsa-X[1:jj],SVPs[i]/3,0)/
-            (DWsa*(PL+2*(X[jj]-X[1:jj])*tan(psipsipsi*pi*zeta/180)))+
-            ifelse(DriftDistc[i]>((jj-1)*DWsa-X[1:jj])&DriftDistc[i]<=(jj)*DWsa-X[1:jj],SVPs[i]/3,0)/
-            (DWsa*(PL+2*(X[jj]-X[1:jj])*tan(psipsipsi*pi*zeta/180))))
+          ifelse(DriftDista[i]>((jj-1)*DWsa-X[1:jj])&DriftDista[i]<=(jj)*DWsa-X[1:jj],SVPs_3[i],0)/
+            (DWsa*(PL+2*(X[jj]-X[1:jj])*partial_denom))+
+            ifelse(DriftDistb[i]>((jj-1)*DWsa-X[1:jj])&DriftDistb[i]<=(jj)*DWsa-X[1:jj],SVPs_3[i],0)/
+            (DWsa*(PL+2*(X[jj]-X[1:jj])*partial_denom))+
+            ifelse(DriftDistc[i]>((jj-1)*DWsa-X[1:jj])&DriftDistc[i]<=(jj)*DWsa-X[1:jj],SVPs_3[i],0)/
+            (DWsa*(PL+2*(X[jj]-X[1:jj])*partial_denom)))
       }
   }
 
@@ -154,32 +160,36 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
     for (i in 2:MM) {
 
       # Increment the progress bar, and update the detail text
-      if(Driver == "shiny"){
-        incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5+0.5)*100, digits = 0), "% complete - Working on Part 2"))
-      } else{
-        if(Driver=="Silent"){}else print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 2"))
-      }
+      #ifelse is faster function; giving it a try
+      ifelse(Driver == "shiny",incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5)*100, digits = 0), "% complete - Working on Part 2")),
+      ifelse(Driver=="Silent",'',print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 2"))))
+
+#       if(Driver == "shiny"){
+#         incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5+0.5)*100, digits = 0), "% complete - Working on Part 2"))
+#       } else{
+#         if(Driver=="Silent"){}else print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 2"))
+#       }
 
       for (jj in (Nsa+1):(Nsa+Nda)){# Note that this is +1 compared to MathCAD
         DVM[i,jj]<-sum(
-          ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)+
-            ifelse(DriftDistb[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistb[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)+
-            ifelse(DriftDistc[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistc[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0))
+          ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)+
+            ifelse(DriftDistb[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistb[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)+
+            ifelse(DriftDistc[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistc[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0))
 
         CM[i,jj]<-sum(
-          ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)/
-            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*tan(psipsipsi*pi*zeta/180)))+
-            ifelse(DriftDistb[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistb[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)/
-            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*tan(psipsipsi*pi*zeta/180)))+
-            ifelse(DriftDistc[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistc[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)/
-            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*tan(psipsipsi*pi*zeta/180))))
+          ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)/
+            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*partial_denom))+
+            ifelse(DriftDistb[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistb[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)/
+            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*partial_denom))+
+            ifelse(DriftDistc[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistc[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)/
+            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*partial_denom)))
 
       }
     }
 
 
-  DVM[1,] <- 0 # Since i in Mathcard starts from 1 (i.e., first element assumed zero)
-  CM[1,] <- 0 # Since i in Mathcard starts from 1 (i.e., first element assumed zero)
+  DVM[1,] <- 0 # Since i in Mathcad starts from 1 (i.e., first element assumed zero)
+  CM[1,] <- 0 # Since i in Mathcad starts from 1 (i.e., first element assumed zero)
 
   VPS <- matrix(nrow=(Nsa+Nda),ncol=1)
   VPS <- foreach(jj=1:(Nsa+Nda), .combine = c) %dopar% {
@@ -270,5 +280,6 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
                    "APplume" = APplume,
                    "dep_plot" = dep_plot)
 
+  stopCluster(cl) #AVP
   return(dep.list)
 }

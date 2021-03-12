@@ -36,23 +36,22 @@ psd<-function(y, Dpdata){
     funct[-1] # Removes the initialization of the vector
   }
 
-
-  # AV edits on 7/21/2020 # This preliminary code estimate works
-
-  # fit2 <- nls2(y ~ f(Dpdata, a1,a2,d1,d2,k1), algorithm  = "plinear-random",
-  #              start = data.frame(a1 = c(0.1, 1000), a2 = c(0.1, 2000),d1 = c(0.1, 1000),d2 = c(0.1, 1000),k1 = c(0.001, 1)),
-  #              control = nls.control(maxiter = 1000))
-  #
   print('Non-linear curve fitting of DSD data is starting:')
-  # m.sinexp <- nls(y ~ f(Dpdata, a1,a2,d1,d2,k1), data = all_dp_data,start = coef(fit2)[1:5],
-  #                 trace = T,
-  #                 control=nls.control(maxiter = 500,minFactor =1/1024,warnOnly=T))
+  fit2 <- nls2(y ~ f(Dpdata, a1,a2,d1,d2,k1), algorithm  = "random-search",
+                start = data.frame(a1 = c(0.1, 1000), a2 = c(0.1, 2000),d1 = c(0.1, 1000),d2 = c(0.1, 1000),k1 = c(0.001, 1)),
+                control = nls.control(maxiter = 500))
+  #browser()
 
-  m.sinexp <- nls(y ~ f(Dpdata, a1,a2,d1,d2,k1), data = all_dp_data,start = list(a1=300,a2=800,d1=100,d2=200,k1=0.2),
-                  trace = T,
-                  control=nls.control(maxiter = 500,minFactor =1/1024,warnOnly=T))
+  fit <- nls(y ~ f(Dpdata, a1,a2,d1,d2,k1), data = all_dp_data,start = coef(fit2),
+                   trace = T,
+                   control=nls.control(maxiter = 500,minFactor =1/1024,warnOnly=T))
+
+  #m.sinexp <- nls(y ~ f(Dpdata, a1,a2,d1,d2,k1), data = all_dp_data,start = list(a1=300,a2=800,d1=100,d2=200,k1=0.2),
+  #                trace = T,
+  #                control=nls.control(maxiter = 500,minFactor =1/1024,warnOnly=T))
   # Return parameters
-  res <- m.sinexp$m$getPars()
+  res <- fit$m$getPars()
+  #res <- m.sinexp$m$getPars()
 
   #browser()
   # Plot the calibration with the input data
@@ -97,6 +96,7 @@ psd<-function(y, Dpdata){
   param_tb <- tibble(Parameter = rownames(param_tb),
                      Value = formatC(param_tb$res, format = "f", digits = 2))
 
+  print('Non-linear curve fitting of DSD data is done')
   part1.list <- list("res" = res,
                      "plot" = fit_plot,
                      "table" = param_tb,
