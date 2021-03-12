@@ -37,21 +37,21 @@ psd<-function(y, Dpdata){
   }
 
   print('Non-linear curve fitting of DSD data is starting:')
-  fit2 <- nls2(y ~ f(Dpdata, a1,a2,d1,d2,k1), algorithm  = "random-search",
-                start = data.frame(a1 = c(0.1, 1000), a2 = c(0.1, 2000),d1 = c(0.1, 1000),d2 = c(0.1, 1000),k1 = c(0.001, 1)),
-                control = nls.control(maxiter = 500))
+
+  #fit2 <- nls2(y ~ f(Dpdata, a1,a2,d1,d2,k1), algorithm  = "random-search",
+  #              start = data.frame(a1 = c(0.1, 1000), a2 = c(0.1, 2000),d1 = c(0.1, 1000),d2 = c(0.1, 1000),k1 = c(0.001, 1)),
+  #              control = nls.control(maxiter = 500))
   #browser()
 
-  fit <- nls(y ~ f(Dpdata, a1,a2,d1,d2,k1), data = all_dp_data,start = coef(fit2),
-                   trace = T,
-                   control=nls.control(maxiter = 500,minFactor =1/1024,warnOnly=T))
+  #fit <- nls(y ~ f(Dpdata, a1,a2,d1,d2,k1), data = all_dp_data,start = coef(fit2),
+  #                 trace = T,
+  #                 control=nls.control(maxiter = 500,minFactor =1/1024,warnOnly=T))
 
-  #m.sinexp <- nls(y ~ f(Dpdata, a1,a2,d1,d2,k1), data = all_dp_data,start = list(a1=300,a2=800,d1=100,d2=200,k1=0.2),
-  #                trace = T,
-  #                control=nls.control(maxiter = 500,minFactor =1/1024,warnOnly=T))
+  fit <- nls(y ~ f(Dpdata, a1,a2,d1,d2,k1), data = all_dp_data,start = list(a1=300,a2=800,d1=100,d2=200,k1=0.2),
+                  trace = T,
+                  control=nls.control(maxiter = 500,minFactor =1/1024,warnOnly=T))
   # Return parameters
   res <- fit$m$getPars()
-  #res <- m.sinexp$m$getPars()
 
   #browser()
   # Plot the calibration with the input data
