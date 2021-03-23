@@ -18,32 +18,31 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
   results <- NULL
   all_results<- NULL
 
-  # Start the clock
-  ptm <- proc.time()
-
   ##############################################################################
   # Read all the input files; error control if files cannot be read
   # Read scenario file
   scnData<-NULL
   scnData <- tryCatch({
-    read_csv(scnFile,col_types='iccci')
+    read_csv(scnFile)
   },
   error=function(e){
     print("Could not read scenario File")
   }
   )
+
   # Read DDDParameters file
   DDDparamsData<-NULL
   DDDparamsData <- tryCatch({
-    read_csv(DDDparamsFile,col_types='ddd')
+    read_csv(DDDparamsFile)
   },
   error=function(e){
     print("Could not read parameters File")
   }
   )
 
+  # The following files are read to test whether they can be read without errors
 
-  # Check the number of scenarios to be input sequentially
+  # First check the number of scenarios to be input sequentially
   if(max(scnData$'Scenario-ID')==nrow(scnData)) {
     i_scn<-max(scnData$'Scenario-ID')
   }
@@ -59,14 +58,13 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
   }
 
 
-  # The following files are read to test whether they can be read without errors
 
   for (i in 1:i_scn){
     # Read DSD file
     DSDFile<-paste0("./sample_data/",scnData$`DSD-Filename`[i])
     DSDData<-NULL
     DSDData <- tryCatch({
-      read_csv(DSDFile,col_types='dddd')
+      read_csv(DSDFile)
     },
     error=function(e){
       print(paste("Could not read DSD File for scenario",i))
@@ -77,7 +75,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     paramsFile<-paste0("./sample_data/",scnData$`Params-Filename`[i])
     paramsData<-NULL
     paramsData <- tryCatch({
-      read_csv(paramsFile,col_types='cccddddddddddddd')
+      read_csv(paramsFile)
     },
     error=function(e){
       print(paste("Could not read parameters File for scenario",i))
@@ -139,7 +137,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       DSDFile<-paste0("./sample_data/",scnData$`DSD-Filename`[i])
       DSDData<-NULL
       DSDData <- tryCatch({
-        read_csv(DSDFile,col_types='dddd')
+        read_csv(DSDFile)
       },
       error=function(e){
         print(paste("Could not read DSD File for scenario",i))
@@ -150,7 +148,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       paramsFile<-paste0("./sample_data/",scnData$`Params-Filename`[i])
       paramsData<-NULL
       paramsData <- tryCatch({
-        read_csv(paramsFile,col_types='cccddddddddddddd')
+        read_csv(paramsFile)
       },
       error=function(e){
         print(paste("Could not read parameters File for scenario",i))
@@ -209,7 +207,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       MMM<-all_inputs[[2]][[32]]
       lambda<-all_inputs[[2]][[33]]
 
-      # browser()
+      #browser()
 
       if (curvefitDSD==T){
         # Part 1, Curve fitting: Variable pars contains the fitted parameters of the drop size distribution model
@@ -255,14 +253,14 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       tryCatch({
         charac<-charact_cal(app_p,angle, rhosoln)
         DTwb<-Twb[1] # Wetbulb temperature depression, C
-        print("Solving Straight Down Problem")
+        print(paste("Solving Straight Down Problem for Scenario", i))
         droplet_1<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[1],charac[2],ddd1,"text")
-        print("Solving with Wind Problem")
+        print(paste("Solving with Wind Problem for Scenario", i))
         droplet_2<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[3],charac[4],ddd2,"text")
-        print("Solving against Wind Problem")
+        print(paste("Solving against Wind Problem for Scenario", i))
         droplet_3<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[5],charac[6],ddd3,"text")
 
-        print("Finished Solving for Droplet Transport")
+        print(paste("Finished Solving for Droplet Transport for Scenario", i))
 
         droplet1_data <- as_tibble(droplet_1) %>%
           mutate(Droplet = "Centerline",
@@ -309,8 +307,9 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       tryCatch(
         {
           #browser()
+          print(paste("Calculating Deposition for Scenario", i))
           deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda,"Silent",curvefitDSD,y,Dpdata)
-          print("Deposition calculations are finished")
+          print(paste("Deposition calculations are finished for Scenario", i))
         },
         error=function(e){
           print("Could not run part 5, Deposition Calculations")
@@ -326,7 +325,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     }
 
     )
-    # browser()
+browser()
     # The following generates one .html report per scenario
     if (report==T){
       write_report(i,all_inputs, results, report_folder)
@@ -337,9 +336,6 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 
   }  # This is the end of the loop for all scenarios
 
-  try(dev.off(),silent = T) # This prevents a bug that causes Rstudio to crash sometimes if one accesses the plots from the return value
-  # Stop the clock
-  # browser()
-  print(paste('Computation time was:', (proc.time() - ptm)[[3]]))
+  dev.off() # This prevents a but that causes Rstudio to crash if one accesses the plots from the return value
   return(all_results)
 }

@@ -91,10 +91,12 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
   DriftDistb <- ffb(Dpavg)
   DriftDistb[1] <- 0
   DriftDistc <- ffc(Dpavg)
-  DriftDistc[1]<0
+  DriftDistc[1] <- 0  # JMP: fixed assigning to 0 (note: this is not used later, because Lmax is reset)
+
 
   Lmax <- max(DriftDista[1],DriftDistb[1],DriftDistc[1]) # This is the original formula that crashed MathCAD
-  Lmax <- 750 # This is new eqn for Lmax; this eqn replaces above eqn
+  # JMP: Lmax seems to be parameter that should be outside of the code, (advanced user)
+  Lmax <- 200 # This is new eqn for Lmax; this eqn replaces above eqn
   DWda <- Lmax/Nda
 
   SprayedArea <- FD*PL/43560
