@@ -18,12 +18,15 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
   results <- NULL
   all_results<- NULL
 
+  # Start the clock
+  ptm <- proc.time()
+
   ##############################################################################
   # Read all the input files; error control if files cannot be read
   # Read scenario file
   scnData<-NULL
   scnData <- tryCatch({
-    read_csv(scnFile)
+    read_csv(scnFile,col_types='iccci')
   },
   error=function(e){
     print("Could not read scenario File")
@@ -33,7 +36,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
   # Read DDDParameters file
   DDDparamsData<-NULL
   DDDparamsData <- tryCatch({
-    read_csv(DDDparamsFile)
+    read_csv(DDDparamsFile,col_types='ddd')
   },
   error=function(e){
     print("Could not read parameters File")
@@ -42,7 +45,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 
   # The following files are read to test whether they can be read without errors
 
-  # First check the number of scenarios to be input sequentially
+  # Check the number of scenarios to be input sequentially
   if(max(scnData$'Scenario-ID')==nrow(scnData)) {
     i_scn<-max(scnData$'Scenario-ID')
   }
@@ -58,13 +61,13 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
   }
 
 
-
+  # The following files are read to test whether they can be read without errors
   for (i in 1:i_scn){
     # Read DSD file
     DSDFile<-paste0("./sample_data/",scnData$`DSD-Filename`[i])
     DSDData<-NULL
     DSDData <- tryCatch({
-      read_csv(DSDFile)
+      read_csv(DSDFile,col_types='dddd')
     },
     error=function(e){
       print(paste("Could not read DSD File for scenario",i))
@@ -75,7 +78,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     paramsFile<-paste0("./sample_data/",scnData$`Params-Filename`[i])
     paramsData<-NULL
     paramsData <- tryCatch({
-      read_csv(paramsFile)
+      read_csv(paramsFile,col_types='cccddddddddddddd')
     },
     error=function(e){
       print(paste("Could not read parameters File for scenario",i))
@@ -137,7 +140,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       DSDFile<-paste0("./sample_data/",scnData$`DSD-Filename`[i])
       DSDData<-NULL
       DSDData <- tryCatch({
-        read_csv(DSDFile)
+        read_csv(DSDFile,col_types='dddd')
       },
       error=function(e){
         print(paste("Could not read DSD File for scenario",i))
@@ -148,7 +151,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       paramsFile<-paste0("./sample_data/",scnData$`Params-Filename`[i])
       paramsData<-NULL
       paramsData <- tryCatch({
-        read_csv(paramsFile)
+        read_csv(paramsFile,col_types='cccddddddddddddd')
       },
       error=function(e){
         print(paste("Could not read parameters File for scenario",i))
@@ -336,6 +339,7 @@ browser()
 
   }  # This is the end of the loop for all scenarios
 
-  dev.off() # This prevents a but that causes Rstudio to crash if one accesses the plots from the return value
+  try(dev.off(),silent = T) # This prevents a bug that causes Rstudio to crash sometimes if one accesses the plots from the return value
+  print(paste('Computation time was:', (proc.time() - ptm)[[3]]))
   return(all_results)
 }
