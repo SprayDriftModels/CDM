@@ -328,7 +328,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     }
 
     )
-browser()
+#browser()
     # The following generates one .html report per scenario
     if (report==T){
       write_report(i,all_inputs, results, report_folder)

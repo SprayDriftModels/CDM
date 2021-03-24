@@ -39,7 +39,7 @@ droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm,Uf, z0, Pn,
     24/Re*(1+0.197*Re^0.63+0.00026*Re^1.38)
   }
 
-  MWs <- 200
+  #MWs <- 200 # Not used anywhere
 
 
   # Horizontal wind velocity profile function, cm/sec .vs. cm:
@@ -69,7 +69,7 @@ droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm,Uf, z0, Pn,
     exp(18.3036+log(1/760)-3816.44/(T+227.02))
   }
 
-  #Water Vapor Pessure Equation, in atmospheres, T in C
+  #Water Vapor Pressure Equation, in atmospheres, T in C
   gc <- 980.1  # Gravitational constant, cm/sec^2
   lea <- 4*2.54
   nea <- 2
@@ -186,24 +186,24 @@ droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm,Uf, z0, Pn,
     # Solve the system
     try({
       out   <- ode(yini, times, EqnSys)
-      #Xdist[i]<-out[N-1,3]/12/2.54}, #AVP
-      Xdist<-out[N-1,3]/12/2.54}, #AVP
+      #Xdist[i]<-out[N-1,3]/12/2.54}, #Non-parallel
+      Xdist<-out[N-1,3]/12/2.54}, #parallel
       silent=TRUE)
 
-    #    if (Xdist[i]==0){ #AVP
-    if (Xdist==0){ #AVP
+    #    if (Xdist[i]==0){ #Non-parallel
+    if (Xdist==0){ #parallel
       print("Trying alternate solution")
       # Solve the system with radau if failed before
       try({
         out   <- ode(yini, times, EqnSys,parms=0,method="radau",maxsteps=1e4) # radau instead of euler works better in some cases
-        #Xdist[i]<-out[N-1,3]/12/2.54}, #AVP
-        Xdist<-out[N-1,3]/12/2.54}, #AVP
+        #Xdist[i]<-out[N-1,3]/12/2.54}, #Non-parallel
+        Xdist<-out[N-1,3]/12/2.54}, #parallel
         silent=TRUE)
     }
     Xdist
   }
 
 
-  stopCluster(cl) #AVP
+  stopCluster(cl) #parallel
   return(data.frame(Dp[1:23],Xdist))
 }
