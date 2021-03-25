@@ -26,7 +26,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
   # See if the report output file exists
   if (report){
     if (file.exists(report_folder)){
-      rep_over<-readline(prompt=paste('The report folder ',report_folder,' exists. Overwrite? (Y/N)'))
+      rep_over<-readline(prompt=paste('The report folder',report_folder,'already exists. Overwrite files in folder? (Y/N)'))
       if (rep_over=='N'|rep_over=='n'){
         stop('Casanova run stopped to avoid overwriting output reports.')
       }
@@ -355,7 +355,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 #browser()
     # The following generates one .html report per scenario
     if (report==T){
-      write_report(i,all_inputs, results, report_folder)
+      write_report(i,all_inputs, results, report_folder, paramsUnits)
 
     }
 

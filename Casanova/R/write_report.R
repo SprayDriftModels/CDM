@@ -11,7 +11,8 @@
 write_report <- function(i,
                          all_inputs,
                          results,
-                         report_folder)
+                         report_folder,
+                         paramsUnits)
 
   {
   # For PDF output, change this to "report.pdf"
@@ -83,6 +84,7 @@ write_report <- function(i,
   }
 
 
+  if (paramsUnits=='English'){
   param_units <- tibble("Dry air temperature" = "Farheneit",
                         "Barometric pressure" = "mmHg abs",
                         "Relative humidity" = "%",
@@ -113,6 +115,39 @@ write_report <- function(i,
     pivot_longer(everything(),
                  names_to = "Parameters",
                  values_to = "Units")
+  }
+  else if (paramsUnits=='Metric'){
+    param_units <- tibble("Dry air temperature" = "Celcius",
+                          "Barometric pressure" = "mmHg abs",
+                          "Relative humidity" = "%",
+                          "Number of wind measurements" = "NA",
+                          "Elevation of wind speed (1)" = "m",
+                          "MPH wind speed (1)" = "m/s",
+                          "Elevation of wind speed (2)" = "m",
+                          "MPH wind speed (2)" = "m/s",
+                          "Density of pure water in droplet" = "g/cm3",
+                          "Density of dissolved solids in droplet" = "g/cm3",
+                          "Mass fraction total dissolved solids in solution" = "NA",
+                          "Height of nozzle above ground" = "cm",
+                          "Canopy height" = "cm",
+                          "Nozzle pressure" = "kPa",
+                          "Nozzle angle" = "degrees",
+                          "Mix density" = "kg/m3",
+                          "Intended Application Rate" = "kg/ha",
+                          "Conc in tank solution" = "wtfraction",
+                          "Downwind field depth" = "m",
+                          "Crosswind field width" = "m",
+                          "Space between nozzles on Boom" = "cm",
+                          "Horizontal variation in wind direction around mean direction, 1 stdev" = "degrees",
+                          "Dpmax" = "µm",
+                          "Dpmin" = "µm",
+                          "Number of droplet size bins" = "MMM",
+                          "Resolution of deposition calculations" = "NA"
+    ) %>%
+      pivot_longer(everything(),
+                   names_to = "Parameters",
+                   values_to = "Units")
+  }
 
 
   input_params_units <- left_join(x = input_params,
