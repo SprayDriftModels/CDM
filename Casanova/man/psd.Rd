@@ -4,12 +4,14 @@
 \alias{psd}
 \title{PSD fitting function}
 \usage{
-psd(y, Dpdata)
+psd(y, Dpdata, CFiniData)
 }
 \arguments{
 \item{y}{Average DSD fit data:}
 
-\item{Dpdata}{Corresponding droplet size (in microns):}
+\item{Dpdata}{Corresponding droplet size (in microns)}
+
+\item{CFiniData}{initial value of curve fitting parameters}
 }
 \value{
 list of res=c(a1,a2,d1,d2,k1), plot, and input data.

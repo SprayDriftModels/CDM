@@ -40,7 +40,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
   # Read scenario file
   scnData<-NULL
   scnData <- tryCatch({
-    read_csv(scnFile,col_types='iccci')
+    read_csv(scnFile,col_types='icccic')
   },
   error=function(e){
     print("Could not read scenario File")
@@ -109,6 +109,9 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     }
     )
 
+    # Assign variable for Wind/Temperature file
+    paramsWTFile<-paste0("./sample_data/",scnData$`Wind_Temp_Filename`[i])
+
     # browser()
     # Check the number of parameters to be input sequentially
     if (ncol(paramsData[which(paramsData$Type=='ID'),])>4){
@@ -120,21 +123,18 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     }
 
     # Check that the user has not changed the default units:
-    units_english<-c(NA, "Farheneit", "mmHg abs", "%", NA, "in", "ft", "mph", "ft",
-                     "mph", "lbs/ft3", "lbs/ft3", NA, "lbs/ft3", "in", "in", "psi",
-                     "degrees", "lb/acre", "wtfraction", "ft", "ft", "in", "degrees",
-                     "#", NA)
-    units_metric<-c(NA, "Celcius", "mmHg abs", "%", NA, "cm", "m", "m/s", "m",
-                    "m/s", "g/cm3", "g/cm3", NA, "kg/m3", "cm", "cm", "kPa", "degrees",
-                    "kg/ha", "wtfraction", "m", "m", "cm", "degrees",
-                    "#", NA)
+    units_english<-c(NA, "Farheneit", "mmHg abs", "%", "in", NA,  "ft", "mph",
+                     "degrees", NA, "lbs/ft3", "lbs/ft3",NA, "lbs/ft3", "in", "in", "psi",
+                     "degrees", "lb/acre", "wtfraction", "ft", "ft", "in", "#", NA)
+    units_metric<-c(NA, "Celcius", "mmHg abs", "%", "cm", NA,"m", "m/s",
+                    "degrees", NA, "g/cm3", "g/cm3",NA, "kg/m3", "cm", "cm", "kPa", "degrees",
+                    "kg/ha", "wtfraction", "m", "m", "cm","#", NA)
 
-    units_type<-c("ID", "Tair", "Patm", "RH", "measurements", "ch", "z1", "ux1",
-                  "z2", "ux2", "rhow", "rhos", "xs0", "rhosoln", "H0", "hcm", "app_p",
-                  "angle", "IAR", "xactive", "FD", "PL", "NozzleSpacing", "psipsipsi",
-                  "MMM", "lambda")
+    units_type<-c("ID", "Tair", "Patm", "RH", "ch","measurements",  "z1", "ux1",
+                  "psipsipsi", "psipsipsi_method", "rhow", "rhos", "xs0", "rhosoln", "H0", "hcm", "app_p",
+                  "angle", "IAR", "xactive", "FD", "PL", "NozzleSpacing", "MMM", "lambda")
 
-    # browser()
+    #browser()
     if (!(all(paramsData$Units==units_english,na.rm=T) | all(paramsData$Units==units_metric, na.rm=T) )){
       stop('Parameter units should either be in english',units_english, 'or metric', units_metric)
 
@@ -149,7 +149,8 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
                     paramsData,
                     DDDparamsData,
                     paramsID,
-                    paramsUnits)
+                    paramsUnits,
+                    paramsWTFile)
 
   }
 
@@ -197,7 +198,8 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
                                   paramsData,
                                   DDDparamsData,
                                   paramsID,
-                                  paramsUnits)
+                                  paramsUnits,
+                                  paramsWTFile)
 
       # The following assigns the inputs converted to the computational units
       y<-all_inputs[[2]][[1]]
@@ -209,30 +211,31 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       ch<-all_inputs[[2]][[7]]
       z1<-all_inputs[[2]][[8]]
       ux1<-all_inputs[[2]][[9]]
-      z2<-all_inputs[[2]][[10]]
-      ux2<-all_inputs[[2]][[11]]
-      rhow<-all_inputs[[2]][[12]]
-      rhos<-all_inputs[[2]][[13]]
-      xs0<-all_inputs[[2]][[14]]
-      rhosoln<-all_inputs[[2]][[15]]
-      H0<-all_inputs[[2]][[16]]
-      hcm<-all_inputs[[2]][[17]]
-      app_p<-all_inputs[[2]][[18]]
-      angle<-all_inputs[[2]][[19]]
-      ddd1<-all_inputs[[2]][[20]]
-      ddd2<-all_inputs[[2]][[21]]
-      ddd3<-all_inputs[[2]][[22]]
-      IAR<-all_inputs[[2]][[23]]
-      xactive<-all_inputs[[2]][[24]]
-      FD<-all_inputs[[2]][[25]]
-      PL<-all_inputs[[2]][[26]]
-      NozzleSpacing<-all_inputs[[2]][[27]]
-      psipsipsi<-all_inputs[[2]][[28]]
-      rhoL<-all_inputs[[2]][[29]]
-      Dpmax<-all_inputs[[2]][[30]]
-      DDpmin<-all_inputs[[2]][[31]]
-      MMM<-all_inputs[[2]][[32]]
-      lambda<-all_inputs[[2]][[33]]
+      rhow<-all_inputs[[2]][[10]]
+      rhos<-all_inputs[[2]][[11]]
+      xs0<-all_inputs[[2]][[12]]
+      rhosoln<-all_inputs[[2]][[13]]
+      H0<-all_inputs[[2]][[14]]
+      hcm<-all_inputs[[2]][[15]]
+      app_p<-all_inputs[[2]][[16]]
+      angle<-all_inputs[[2]][[17]]
+      ddd1<-all_inputs[[2]][[18]]
+      ddd2<-all_inputs[[2]][[19]]
+      ddd3<-all_inputs[[2]][[20]]
+      IAR<-all_inputs[[2]][[21]]
+      xactive<-all_inputs[[2]][[22]]
+      FD<-all_inputs[[2]][[23]]
+      PL<-all_inputs[[2]][[24]]
+      NozzleSpacing<-all_inputs[[2]][[25]]
+      psipsipsi<-all_inputs[[2]][[26]]
+      rhoL<-all_inputs[[2]][[27]]
+      Dpmax<-all_inputs[[2]][[28]]
+      DDpmin<-all_inputs[[2]][[29]]
+      MMM<-all_inputs[[2]][[30]]
+      lambda<-all_inputs[[2]][[31]]
+      paramsWT<-all_inputs[[2]][[32]]
+      method<-all_inputs[[2]][[33]]
+
 
       #browser()
 
@@ -255,9 +258,9 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       Twb <- wet_bulb(Tair, Patm, RH)
       results$Twb<-Twb
 
-      # browser()
+      #browser()
 
-      # Part 3, Wind profile parameters
+      # Part 3, Wind profile and turbulence (psipsipsi) parameters
       if (measurements==1){
         # This first part is when we have only one wind v. elevation measurement.
         # Outputs are Uh, Ufriction, z1, z0, alpha_avg, k2
@@ -268,11 +271,19 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 
         wvprofile_params <-profile
 
-      }else if (measurements==2){
-        # Part for when we have two wind v. elevation measurements.
-        z0<-WV2m(z1,z2,ux1,ux2)[1]
-        Uf<-WV2m(z1,z2,ux1,ux2)[2]
-        wvprofile_params<-WV2m(z1,z2,ux1,ux2)
+      }else if (measurements>1){
+
+        # Part for when we have more than 1 wind v. elevation measurements.
+        ###########################################
+
+        #z0<-WV2m(z1,z2,ux1,ux2)[1]
+        #Uf<-WV2m(z1,z2,ux1,ux2)[2]
+        #wvprofile_params<-WV2m(z1,z2,ux1,ux2)
+
+        z0<-wvprofilem(paramsWT,method,ch)[1]
+        Uf<-wvprofilem(paramsWT,method,ch)[2]
+        psipsipsi<-wvprofilem(paramsWT,method,ch)[3]   # This calculation overrides the input psipsipsi if measurements are more than 1
+        wvprofile_params<-wvprofilem(paramsWT,method,ch)
       }
       results$wvprofile_params<-wvprofile_params
 
@@ -281,6 +292,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
         charac<-charact_cal(app_p,angle, rhosoln)
         DTwb<-Twb[1] # Wetbulb temperature depression, C
         print(paste("Solving Straight Down Problem for Scenario", i))
+        #browser()
         droplet_1<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[1],charac[2],ddd1,"text")
         print(paste("Solving with Wind Problem for Scenario", i))
         droplet_2<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[3],charac[4],ddd2,"text")

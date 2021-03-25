@@ -5,6 +5,7 @@
 #' @param DDDparamsData  the raw DDDparamsData read from .csv file
 #' @param paramsID the ID for the parameters
 #' @param paramsUnits the type of the parameters
+#' @paramsWTFile is the file containing the Wind/Temperature parameters if more than one measurements are provided
 #'
 #' @return a list containing all input data
 #' @export
@@ -14,10 +15,14 @@ inputs_from_csv <- function(DSDData,
                             paramsData,
                             DDDparamsData,
                             paramsID,
-                            paramsUnits){
+                            paramsUnits,
+                            paramsWTFile){
 
   # Comments in code next to each input parameter provide descriptions of units used in computation modules
   # This function at the end converts units to the units used in computation modules
+
+
+
 
 
   # Part 1
@@ -65,16 +70,31 @@ inputs_from_csv <- function(DSDData,
     ch<-as.double(paramsData[which(paramsData$Type=='ch'),][paramsID+3]) # crop height, units used in computation module: inches
     z1<-as.double(paramsData[which(paramsData$Type=='z1'),][paramsID+3]) # elevation of wind velocity, units used in computation module: ft
     ux1<-as.double(paramsData[which(paramsData$Type=='ux1'),][paramsID+3]) # wind velocity at elevation, units used in computation module: mph
-    z2<-NULL
-    ux2<-NULL
+    #z2<-NULL
+    #ux2<-NULL
+    paramsWT<-NULL
 
-  }else if (measurements==2){
+  }else if (measurements!=1){
+    # In this case the Wind/Temperature file is needed:
+    paramsWT<-NULL
+    paramsWT <- tryCatch({
+      read_csv(paramsWTFile,col_types='dddd')
+    },
+    error=function(e){
+      print("Could not read wind/temperature File")
+    }
+    )
+
     # Part for when we have two wind v. elevation measurements.
-    z1<-as.double(paramsData[which(paramsData$Type=='z1'),][paramsID+3]) # elevation 1, units used in computation module: feet
-    z2<-as.double(paramsData[which(paramsData$Type=='z2'),][paramsID+3]) # elevation 2, units used in computation module: feet
-    ux1<-as.double(paramsData[which(paramsData$Type=='ux1'),][paramsID+3]) # wind speed 1, units used in computation module: mph
-    ux2<-as.double(paramsData[which(paramsData$Type=='ux2'),][paramsID+3]) # wind speed 2, units used in computation module: mph
-    ch<-NULL # ch not used if two measurements available
+    #z1<-as.double(paramsData[which(paramsData$Type=='z1'),][paramsID+3]) # elevation 1, units used in computation module: feet
+    #z2<-as.double(paramsData[which(paramsData$Type=='z2'),][paramsID+3]) # elevation 2, units used in computation module: feet
+    #ux1<-as.double(paramsData[which(paramsData$Type=='ux1'),][paramsID+3]) # wind speed 1, units used in computation module: mph
+    #ux2<-as.double(paramsData[which(paramsData$Type=='ux2'),][paramsID+3]) # wind speed 2, units used in computation module: mph
+    z1<-NULL
+    #z2<-NULL
+    ux1<-NULL
+    #ux2<-NULL
+    ch<-as.double(paramsData[which(paramsData$Type=='ch'),][paramsID+3]) # crop height, units used in computation module: inches
   }
 
   # Part 4
@@ -109,6 +129,7 @@ inputs_from_csv <- function(DSDData,
   FD<-as.double(paramsData[which(paramsData$Type=='FD'),][paramsID+3]) # Downwind field depth, units used in computation module: ft
   PL<-as.double(paramsData[which(paramsData$Type=='PL'),][paramsID+3]) # Crosswind field width, units used in computation module: ft
   NozzleSpacing<-as.double(paramsData[which(paramsData$Type=='NozzleSpacing'),][paramsID+3]) # Space between nozzles on Boom, units used in computation module: inches
+  method<-as.double(paramsData[which(paramsData$Type=='psipsipsi_method'),][paramsID+3]) # Method to calculate psipsipsi used when more than 1 measurements are provided
   psipsipsi<-as.double(paramsData[which(paramsData$Type=='psipsipsi'),][paramsID+3]) # Horizontal variation in wind direction around mean direction, 1 stdev, units used in computation module: in degrees.
   rhoL<-rhosoln/1000 # Density of sprayed solution, units used in computation module: grams/cc
   Dpmax<-max(Dpdata)
@@ -124,19 +145,21 @@ inputs_from_csv <- function(DSDData,
   input_props<-list(  y,  Dpdata,
                       Tair,  Patm,  RH,
                       measurements,
-                      ch,z1,ux1, z2, ux2,
+                      ch,z1,ux1,
                       rhow,  rhos,  xs0,  rhosoln,
                       H0,  hcm,  app_p,  angle,
                       ddd1,  ddd2,  ddd3,
                       IAR,   xactive, FD, PL,
                       NozzleSpacing,  psipsipsi,
                       rhoL,  Dpmax, DDpmin,
-                      MMM,  lambda)
+                      MMM,  lambda,
+                      paramsWT, method)
 
   # Convert input units to units used in the computation module
   if (paramsUnits=='English')
   {
     Tair<-(Tair-32)*5/9 # Computation module uses degrees C
+    paramsWT[[4]]<-(paramsWT[[4]]-32)*5/9  # Computation module uses degrees C
     rhow<-rhow/62.428 # Computation module uses g/cc
     rhos<-rhos/62.428 # Computation module uses g/cc
     rhosoln<-rhosoln/0.062428 # Computation module uses kg/m3
@@ -148,8 +171,9 @@ inputs_from_csv <- function(DSDData,
     ch<-ch/2.54  # Computation module uses in
     z1<-z1*3.28084  # Computation module uses ft
     ux1<-ux1*2.23694     # Computation model used mph
-    z2<-z2*3.28084  # Computation module uses ft
-    ux2<-ux2*2.23694     # Computation model used mph
+    paramsWT[[1]]<-paramsWT[[1]]*3.28084  # Computation module uses ft
+    paramsWT[[2]]<-paramsWT[[2]]*2.23694  # Computation module used mph
+    paramsWT[[3]]<-paramsWT[[3]]*3.28084  # Computation module uses ft
     H0<-H0/2.54  # Computation module uses in
     app_p<-app_p*0.145038 # Computation module uses psi
     IAR<-IAR*2.20462/2.47105 # Computation module uses lb/acre
@@ -163,14 +187,15 @@ inputs_from_csv <- function(DSDData,
   input_props_comp<-list(  y,  Dpdata,
          Tair,  Patm,  RH,
          measurements,
-         ch,z1,ux1, z2, ux2,
+         ch,z1,ux1,
          rhow,  rhos,  xs0,  rhosoln,
          H0,  hcm,  app_p,  angle,
          ddd1,  ddd2,  ddd3,
          IAR,   xactive, FD, PL,
          NozzleSpacing,  psipsipsi,
          rhoL,  Dpmax, DDpmin,
-         MMM,  lambda)
+         MMM,  lambda,
+         paramsWT, method)
 
   return(
     list(input_props, input_props_comp)
