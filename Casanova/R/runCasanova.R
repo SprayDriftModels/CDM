@@ -13,6 +13,7 @@
 runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
                         DDDparamsFile="./sample_data/DDD_Params.csv",
                         report_folder="./sample_data/reports",
+                        curve_fit_ini_file="./sample_data/Curve_Fit_Initial_Values.csv",
                         report=T,
                         curvefitDSD=F){
   results <- NULL
@@ -22,6 +23,19 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
   ptm <- proc.time()
 
   ##############################################################################
+  # See if the report output file exists
+  if (report){
+    if (file.exists(report_folder)){
+      rep_over<-readline(prompt=paste('The report folder ',report_folder,' exists. Overwrite? (Y/N)'))
+      if (rep_over=='N'|rep_over=='n'){
+        stop('Casanova run stopped to avoid overwriting output reports.')
+      }
+      else if (rep_over!='Y'&rep_over!='y'){
+        stop('Please provide a valide Y/N response.')
+      }
+    }
+  }
+
   # Read all the input files; error control if files cannot be read
   # Read scenario file
   scnData<-NULL
@@ -40,6 +54,16 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
   },
   error=function(e){
     print("Could not read parameters File")
+  }
+  )
+
+  # Read Curve_Fit_Initial_Values file
+  CFiniData<-NULL
+  CFiniData <- tryCatch({
+    read_csv(curve_fit_ini_file,col_types='ddddd')
+  },
+  error=function(e){
+    print("Could not read DSD Curve-fitting initial value File")
   }
   )
 
@@ -99,16 +123,16 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     units_english<-c(NA, "Farheneit", "mmHg abs", "%", NA, "in", "ft", "mph", "ft",
                      "mph", "lbs/ft3", "lbs/ft3", NA, "lbs/ft3", "in", "in", "psi",
                      "degrees", "lb/acre", "wtfraction", "ft", "ft", "in", "degrees",
-                     "microm", "microm", "#", NA)
+                     "#", NA)
     units_metric<-c(NA, "Celcius", "mmHg abs", "%", NA, "cm", "m", "m/s", "m",
                     "m/s", "g/cm3", "g/cm3", NA, "kg/m3", "cm", "cm", "kPa", "degrees",
-                    "kg/ha", "wtfraction", "m", "m", "cm", "degrees", "microm", "microm",
+                    "kg/ha", "wtfraction", "m", "m", "cm", "degrees",
                     "#", NA)
 
     units_type<-c("ID", "Tair", "Patm", "RH", "measurements", "ch", "z1", "ux1",
                   "z2", "ux2", "rhow", "rhos", "xs0", "rhosoln", "H0", "hcm", "app_p",
                   "angle", "IAR", "xactive", "FD", "PL", "NozzleSpacing", "psipsipsi",
-                  "Dpmax", "Ddpmin", "MMM", "lambda")
+                  "MMM", "lambda")
 
     # browser()
     if (!(all(paramsData$Units==units_english,na.rm=T) | all(paramsData$Units==units_metric, na.rm=T) )){
@@ -134,7 +158,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
   ############################################################################
   # Loop all scenarios
   for (i in 1:i_scn) {
-    # Error control is a scenario fails
+    # Error control if a scenario fails
     tryCatch({
       # Read DSD file
       DSDFile<-paste0("./sample_data/",scnData$`DSD-Filename`[i])
@@ -214,7 +238,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 
       if (curvefitDSD==T){
         # Part 1, Curve fitting: Variable pars contains the fitted parameters of the drop size distribution model
-        pars <- psd(y,Dpdata)
+        pars <- psd(y,Dpdata,CFiniData)
         results$psd_pars<-pars
       }
       else
@@ -311,7 +335,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
         {
           #browser()
           print(paste("Calculating Deposition for Scenario", i))
-          deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda,"Silent",curvefitDSD,y,Dpdata)
+          deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda,"text",curvefitDSD,y,Dpdata)
           print(paste("Deposition calculations are finished for Scenario", i))
         },
         error=function(e){

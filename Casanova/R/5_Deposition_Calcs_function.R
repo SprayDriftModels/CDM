@@ -13,11 +13,11 @@
 #' @param Dpmax D pmax
 #' @param DDpmin DD pmin
 #' @param a output from psd function, Calibration results
-#' @param MMM original value for integration
+#' @param MMM original value for integration (if null it is not used and it is determined so that DDpmax is 0.5 microns)
 #' @param lambda Controls resolution of deposition calculations; higher numbers increase accuracy
 #' @param Driver "text","shiny", "Silent"
-#' @param curverfitDSD a T/F paramet indicating if curvefitting of DSD data is used
-#' @param y Average DSD fit data:
+#' @param curverfitDSD a T/F parameter indicating whether curve-fitting of DSD data is used
+#' @param y Average DSD fit data
 #' @param Dpdata Corresponding droplet size (in microns)
 #'
 #' @return
@@ -31,9 +31,9 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
   v <- FD*PL/43560
 
   Dpmin <- DDpmin
-  k <- seq(1,MMM) # Note the +1 compared to MathCAD notation    #This is not really used
+  #k <- seq(1,MMM) # Note the +1 compared to MathCAD notation    #This is not really used
 
-  Dddp <- (Dpmax-Dpmin)/MMM    # This is not really used
+  #Dddp <- (Dpmax-Dpmin)/MMM    # This is not really used
 
   # The following uses either the curve fitted function or interpolation between data:
   if (curvefitDSD==T){
@@ -83,6 +83,12 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
 
   MM <- as.integer((Dpmax-Dpmin)/DDp)
 
+  #browser()
+  # If advanced control is used with a specified value of MMM
+  if (!is.na(MMM)){
+    MM<-MMM
+    DDp<-(Dpmax-Dpmin)/MM
+  }
   Dpavg <- Dpmin+seq(0,MM-1)*DDp
   Dpavg[1] <- 0  # Dpavg matches now exactly MathCAD
 

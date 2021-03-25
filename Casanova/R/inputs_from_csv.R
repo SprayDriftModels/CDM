@@ -26,12 +26,26 @@ inputs_from_csv <- function(DSDData,
   # Average DSD data; this averages the data for each row
   y_temp<-rowMeans(DSDData[,2:length(DSDData)])
 
+  # Make y_temp cumulative
+  for (i in 2:length(y_temp)){
+    y_temp[i]<-y_temp[i]+y_temp[i-1]
+  }
+
   ## Determine where to draw the cut-off (begin with first value over zero and end with first value that reaches 100)
   i_firsty <- max(min(which(y_temp > 0))-1,1)
   i_lasty <- max(which(y_temp < 100)) + 1
   y<-y_temp[i_firsty:i_lasty]
   Dpdata<-unname(DSDData$Droplet_Size_microns[i_firsty:i_lasty]) # Corresponding droplet size, units used in computation module: microns
 
+
+  # Change the first element of the Dpdata vector
+  Dpdata[1]<-Dpdata[2]-(Dpdata[3]-Dpdata[2])/(y[3]-y[2])*y[2]
+
+  # Change the last element of the Dpdata vector
+  Dpdata[length(Dpdata)]<-Dpdata[length(Dpdata)-1]+
+    (Dpdata[length(Dpdata)-1]-Dpdata[length(Dpdata)-2])/(y[length(Dpdata)-1]-y[length(Dpdata)-2])*(100-y[length(Dpdata)-1])
+
+  # browser()
   # Part 2
   # ________________________________________
 
@@ -97,8 +111,8 @@ inputs_from_csv <- function(DSDData,
   NozzleSpacing<-as.double(paramsData[which(paramsData$Type=='NozzleSpacing'),][paramsID+3]) # Space between nozzles on Boom, units used in computation module: inches
   psipsipsi<-as.double(paramsData[which(paramsData$Type=='psipsipsi'),][paramsID+3]) # Horizontal variation in wind direction around mean direction, 1 stdev, units used in computation module: in degrees.
   rhoL<-rhosoln/1000 # Density of sprayed solution, units used in computation module: grams/cc
-  Dpmax<-as.double(paramsData[which(paramsData$Type=='Dpmax'),][paramsID+3])
-  DDpmin<-as.double(paramsData[which(paramsData$Type=='Ddpmin'),][paramsID+3])
+  Dpmax<-max(Dpdata)
+  DDpmin<-min(Dpdata)
 
   # Integration input parameters
   MMM<-as.double(paramsData[which(paramsData$Type=='MMM'),][paramsID+3]) # Original value

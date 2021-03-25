@@ -7,7 +7,7 @@
 #' @export
 #'
 #' @examples
-psd<-function(y, Dpdata){
+psd<-function(y, Dpdata, CFiniData){
 
   Dpmin <- min(Dpdata)
   Dpmax <- max(Dpdata)
@@ -47,7 +47,8 @@ psd<-function(y, Dpdata){
   #                 trace = T,
   #                 control=nls.control(maxiter = 500,minFactor =1/1024,warnOnly=T))
 
-  fit <- nls(y ~ f(Dpdata, a1,a2,d1,d2,k1), data = all_dp_data,start = list(a1=300,a2=800,d1=100,d2=200,k1=0.2),
+  #fit <- nls(y ~ f(Dpdata, a1,a2,d1,d2,k1), data = all_dp_data,start = list(a1=300,a2=800,d1=100,d2=200,k1=0.2),
+  fit <- nls(y ~ f(Dpdata, a1,a2,d1,d2,k1), data = all_dp_data,start = CFiniData, #AV have not testing this yet
                   trace = T,
                   control=nls.control(maxiter = 500,minFactor =1/1024,warnOnly=T))
   # Return parameters
