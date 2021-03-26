@@ -5,8 +5,8 @@ Patm,Barometric pressure,mmHg abs,760,760
 RH,Relative humidity,%,35.65,35.65
 ch,Crop Height,cm,4,4
 measurements,Number of wind measurements; input 1 for one measurement or any value greater than 1 for more than one measurement,NA,2,1
-z1,Elevation of wind speed (1); put NA if more than one measurements,m,6.6,6.6
-ux1,Wind speed (1); put NA if more than one measurements,m/s,12.8,12.8
+z1,Elevation of wind speed (1); put NA if more than one measurements,m,NA,6.6
+ux1,Wind speed (1); put NA if more than one measurements,m/s,NA,12.8
 psipsipsi,"Horizontal variation in wind direction around mean direction, 1 stdev (put NA if number of wind measurements is not 1)",degrees,10.7,10.7
 psipsipsi_method,"Method 1 interpolates value, method 2 uses SDTF function; Method to estimate psipsipsi when more than number of temperature and wind speed are available",NA,1,1
 rhow,Density of pure water in droplet,g/cm3,1,1
@@ -22,5 +22,5 @@ xactive,Conc in tank solution,wtfraction,0.0119,0.0119
 FD,Downwind field depth,m,240.16,240.16
 PL,Crosswind field width,m,787.4,787.4
 NozzleSpacing,Space between nozzles on Boom,cm,20,20
-MMM,Number of droplet size bins,#,10,NA
+MMM,Number of droplet size bins; if MMM is NA droplet bin of 0.5 microns is assumed,#,20,NA
 lambda,Resolution of deposition calculations,NA,2,2
