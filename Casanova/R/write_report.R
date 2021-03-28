@@ -29,34 +29,39 @@ write_report <- function(i,
   # Create table of parameters used
 
   # replace NULL values with NA in all_inputs
-  #  if (is.null(all_inputs[[1]][[8]])){all_inputs[[1]][[8]]<-'NA'}
-  # if (is.null(all_inputs[[1]][[9]])){all_inputs[[1]][[9]]<-'NA'}
+  if (is.null(all_inputs$input_props$z1)){all_inputs$input_props$z1<-NA}
+  if (is.null(all_inputs$input_props$ux1)){all_inputs$input_props$ux1<-NA}
+  wm<-all_inputs$input_props$measurements
+  if (wm!=1){
+    wm<-NA
+    psipsipsi_rep=NA
+    }
 
-  browser()
-  input_params <- tibble("Dry air temperature" = all_inputs[[1]][[3]],
-                         "Barometric pressure" = all_inputs[[1]][[4]],
-                         "Relative humidity" = all_inputs[[1]][[5]],
-                         "Number of wind measurements" = all_inputs[[1]][[6]],
-                         #"Elevation of wind speed (1)" = all_inputs[[1]][[8]],
-                         #"MPH wind speed (1)" = all_inputs[[1]][[9]],
-                         "Density of pure water in droplet" = all_inputs[[1]][[10]],
-                         "Density of dissolved solids in droplet" = all_inputs[[1]][[11]],
-                         "Mass fraction total dissolved solids in solution" = all_inputs[[1]][[12]],
-                         "Height of nozzle above ground" = all_inputs[[1]][[14]],
-                         "Canopy height (Droplet Transport Calculation)" = all_inputs[[1]][[15]],
-                         "Nozzle pressure" = all_inputs[[1]][[16]],
-                         "Nozzle angle" = all_inputs[[1]][[17]],
-                         "Mix density" = all_inputs[[1]][[13]],
-                         "Intended Application Rate" = all_inputs[[1]][[21]],
-                         "Conc in tank solution" = all_inputs[[1]][[22]],
-                         "Downwind field depth" = all_inputs[[1]][[23]],
-                         "Crosswind field width" = all_inputs[[1]][[24]],
-                         "Space between nozzles on Boom" = all_inputs[[1]][[25]],
-                         "Horizontal variation in wind direction around mean direction, 1 stdev" = all_inputs[[1]][[26]],
-                         "Dpmax" = all_inputs[[1]][[28]],
-                         "Dpmin" = all_inputs[[1]][[29]],
-                         "Number of droplet size bins" = all_inputs[[1]][[30]],
-                         "Resolution of deposition calculations" = all_inputs[[1]][[31]]
+  #browser()
+  input_params <- tibble("Dry air temperature" = all_inputs$input_props$Tair,
+                         "Barometric pressure" = all_inputs$input_props$Patm,
+                         "Relative humidity" = all_inputs$input_props$RH,
+                         "Number of wind measurements" = wm,
+                         "Elevation of wind speed (1)" = psipsipsi_rep,
+                         "MPH wind speed (1)" = all_inputs$input_props$ux1,
+                         "Density of pure water in droplet" = all_inputs$input_props$rhow,
+                         "Density of dissolved solids in droplet" = all_inputs$input_props$rhos,
+                         "Mass fraction total dissolved solids in solution" = all_inputs$input_props$xs0,
+                         "Height of nozzle above ground" = all_inputs$input_props$H0,
+                         "Canopy height (Droplet Transport Calculation)" = all_inputs$input_props$hcm,
+                         "Nozzle pressure" = all_inputs$input_props$app_p,
+                         "Nozzle angle" = all_inputs$input_props$angle,
+                         "Mix density" = all_inputs$input_props$rhosoln,
+                         "Intended Application Rate" = all_inputs$input_props$IAR,
+                         "Conc in tank solution" = all_inputs$input_props$xactive,
+                         "Downwind field depth" = all_inputs$input_props$FD,
+                         "Crosswind field width" = all_inputs$input_props$PL,
+                         "Space between nozzles on Boom" = all_inputs$input_props$NozzleSpacing,
+                         "Horizontal variation in wind direction around mean direction, 1 stdev" = all_inputs$input_props$psipsipsi,
+                         "Dpmax" = all_inputs$input_props$Dpmax,
+                         "Dpmin" = all_inputs$input_props$DDpmin,
+                         "Number of droplet size bins" = all_inputs$input_props$MMM,
+                         "Resolution of deposition calculations" = all_inputs$input_props$lambda
   ) %>%
   pivot_longer(everything(),
                names_to = "Parameters",
@@ -91,12 +96,12 @@ write_report <- function(i,
 
 
   if (paramsUnits=='English'){
-  param_units <- tibble("Dry air temperature" = "Farheneit",
+  param_units <- tibble("Dry air temperature" = "Farhenheit",
                         "Barometric pressure" = "mmHg abs",
                         "Relative humidity" = "%",
                         "Number of wind measurements" = "NA",
-                        #"Elevation of wind speed (1)" = "ft",
-                        #"MPH wind speed (1)" = "mph",
+                        "Elevation of wind speed (1)" = "ft",
+                        "MPH wind speed (1)" = "mph",
                         "Density of pure water in droplet" = "lbs/ft3",
                         "Density of dissolved solids in droplet" = "lbs/ft3",
                         "Mass fraction total dissolved solids in solution" = "NA",
@@ -151,7 +156,7 @@ write_report <- function(i,
                    values_to = "Units")
   }
 
-  browser()
+  #browser()
 
   input_params_units <- left_join(x = input_params,
                                   y = param_units,

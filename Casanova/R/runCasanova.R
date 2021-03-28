@@ -5,6 +5,7 @@
 #' @param report_folder is the folder to save the .html reports
 #' @param report is a T/F input indicating whether reports need to be printed out
 #' @param curvefitDSD is a T/F indicating whether the DSD will be curve fitted or interpolated
+#' @driver can be "text", "silent", "shiny" to output progress of step 5, no progress or progress for the shiny app respectively
 #'
 #' @return a list containing all droplet data and deposition for each scenario analyzed
 #' @export
@@ -15,7 +16,8 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
                         report_folder="./sample_data/reports",
                         curve_fit_ini_file="./sample_data/Curve_Fit_Initial_Values.csv",
                         report=T,
-                        curvefitDSD=F){
+                        curvefitDSD=F,
+                        driver="text"){
   results <- NULL
   all_results<- NULL
 
@@ -202,39 +204,39 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
                                   paramsWTFile)
 
       # The following assigns the inputs converted to the computational units
-      y<-all_inputs[[2]][[1]]
-      Dpdata<-all_inputs[[2]][[2]]
-      Tair<-all_inputs[[2]][[3]]
-      Patm<-all_inputs[[2]][[4]]
-      RH<-all_inputs[[2]][[5]]
-      measurements<-all_inputs[[2]][[6]]
-      ch<-all_inputs[[2]][[7]]
-      z1<-all_inputs[[2]][[8]]
-      ux1<-all_inputs[[2]][[9]]
-      rhow<-all_inputs[[2]][[10]]
-      rhos<-all_inputs[[2]][[11]]
-      xs0<-all_inputs[[2]][[12]]
-      rhosoln<-all_inputs[[2]][[13]]
-      H0<-all_inputs[[2]][[14]]
-      hcm<-all_inputs[[2]][[15]]
-      app_p<-all_inputs[[2]][[16]]
-      angle<-all_inputs[[2]][[17]]
-      ddd1<-all_inputs[[2]][[18]]
-      ddd2<-all_inputs[[2]][[19]]
-      ddd3<-all_inputs[[2]][[20]]
-      IAR<-all_inputs[[2]][[21]]
-      xactive<-all_inputs[[2]][[22]]
-      FD<-all_inputs[[2]][[23]]
-      PL<-all_inputs[[2]][[24]]
-      NozzleSpacing<-all_inputs[[2]][[25]]
-      psipsipsi<-all_inputs[[2]][[26]]
-      rhoL<-all_inputs[[2]][[27]]
-      Dpmax<-all_inputs[[2]][[28]]
-      DDpmin<-all_inputs[[2]][[29]]
-      MMM<-all_inputs[[2]][[30]]
-      lambda<-all_inputs[[2]][[31]]
-      paramsWT<-all_inputs[[2]][[32]]
-      method<-all_inputs[[2]][[33]]
+      y<-all_inputs$input_props_comp$y
+      Dpdata<-all_inputs$input_props_comp$Dpdata
+      Tair<-all_inputs$input_props_comp$Tair
+      Patm<-all_inputs$input_props_comp$Patm
+      RH<-all_inputs$input_props_comp$RH
+      measurements<-all_inputs$input_props_comp$measurements
+      ch<-all_inputs$input_props_comp$ch
+      z1<-all_inputs$input_props_comp$z1
+      ux1<-all_inputs$input_props_comp$ux1
+      rhow<-all_inputs$input_props_comp$rhow
+      rhos<-all_inputs$input_props_comp$rhos
+      xs0<-all_inputs$input_props_comp$xs0
+      rhosoln<-all_inputs$input_props_comp$rhosoln
+      H0<-all_inputs$input_props_comp$H0
+      hcm<-all_inputs$input_props_comp$hcm
+      app_p<-all_inputs$input_props_comp$app_p
+      angle<-all_inputs$input_props_comp$angle
+      ddd1<-all_inputs$input_props_comp$ddd1
+      ddd2<-all_inputs$input_props_comp$ddd2
+      ddd3<-all_inputs$input_props_comp$ddd3
+      IAR<-all_inputs$input_props_comp$IAR
+      xactive<-all_inputs$input_props_comp$xactive
+      FD<-all_inputs$input_props_comp$FD
+      PL<-all_inputs$input_props_comp$PL
+      NozzleSpacing<-all_inputs$input_props_comp$NozzleSpacing
+      psipsipsi<-all_inputs$input_props_comp$psipsipsi
+      rhoL<-all_inputs$input_props_comp$rhoL
+      Dpmax<-all_inputs$input_props_comp$Dpmax
+      DDpmin<-all_inputs$input_props_comp$DDpmin
+      MMM<-all_inputs$input_props_comp$MMM
+      lambda<-all_inputs$input_props_comp$lambda
+      paramsWT<-all_inputs$input_props_comp$paramsWT
+      method<-all_inputs$input_props_comp$method
 
 
       #browser()
@@ -347,7 +349,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
         {
           #browser()
           print(paste("Calculating Deposition for Scenario", i))
-          deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda,"text",curvefitDSD,y,Dpdata)
+          deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda,driver,curvefitDSD,y,Dpdata)
           print(paste("Deposition calculations are finished for Scenario", i))
         },
         error=function(e){

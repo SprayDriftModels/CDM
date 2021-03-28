@@ -142,18 +142,18 @@ inputs_from_csv <- function(DSDData,
   # browser()
 
   # As provided list of properties:
-  input_props<-list(  y,  Dpdata,
-                      Tair,  Patm,  RH,
-                      measurements,
-                      ch,z1,ux1,
-                      rhow,  rhos,  xs0,  rhosoln,
-                      H0,  hcm,  app_p,  angle,
-                      ddd1,  ddd2,  ddd3,
-                      IAR,   xactive, FD, PL,
-                      NozzleSpacing,  psipsipsi,
-                      rhoL,  Dpmax, DDpmin,
-                      MMM,  lambda,
-                      paramsWT, method)
+  input_props<-list(  y=y,  Dpdata=Dpdata,
+                      Tair=Tair,  Patm=Patm,  RH=RH,
+                      measurements=measurements,
+                      ch=ch,z1=z1,ux1=ux1,
+                      rhow=rhow,  rhos=rhos,  xs0=xs0,  rhosoln=rhosoln,
+                      H0=H0,  hcm=hcm,  app_p=app_p,  angle=angle,
+                      ddd1=ddd1,  ddd2=ddd2,  ddd3=ddd3,
+                      IAR=IAR,   xactive=xactive, FD=FD, PL=PL,
+                      NozzleSpacing=NozzleSpacing,  psipsipsi=psipsipsi,
+                      rhoL=rhoL,  Dpmax=Dpmax, DDpmin=DDpmin,
+                      MMM=MMM,  lambda=lambda,
+                      paramsWT=paramsWT, method=method)
 
   # Convert input units to units used in the computation module
   if (paramsUnits=='English')
@@ -184,21 +184,21 @@ inputs_from_csv <- function(DSDData,
   }
 
   # Converted list of properties to the units used in computation modules
-  input_props_comp<-list(  y,  Dpdata,
-         Tair,  Patm,  RH,
-         measurements,
-         ch,z1,ux1,
-         rhow,  rhos,  xs0,  rhosoln,
-         H0,  hcm,  app_p,  angle,
-         ddd1,  ddd2,  ddd3,
-         IAR,   xactive, FD, PL,
-         NozzleSpacing,  psipsipsi,
-         rhoL,  Dpmax, DDpmin,
-         MMM,  lambda,
-         paramsWT, method)
+  input_props_comp<-list(  y=y,  Dpdata=Dpdata,
+         Tair=Tair,  Patm=Patm,  RH=RH,
+         measurements=measurements,
+         ch=ch,z1=z1,ux1=ux1,
+         rhow=rhow,  rhos=rhos,  xs0=xs0,  rhosoln=rhosoln,
+         H0=H0,  hcm=hcm,  app_p=app_p,  angle=angle,
+         ddd1=ddd1,  ddd2=ddd2,  ddd3=ddd3,
+         IAR=IAR,   xactive=xactive, FD=FD, PL=PL,
+         NozzleSpacing=NozzleSpacing,  psipsipsi=psipsipsi,
+         rhoL=rhoL,  Dpmax=Dpmax, DDpmin=DDpmin,
+         MMM=MMM,  lambda=lambda,
+         paramsWT=paramsWT, method=method)
 
   return(
-    list(input_props, input_props_comp)
+    list(input_props=input_props, input_props_comp=input_props_comp)
   )
 
 
