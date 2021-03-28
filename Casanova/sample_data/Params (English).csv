@@ -1,6 +1,6 @@
 Type,Description,Units,Values,Values,Values
 ID,Sequencial ID,NA,1,2,3
-Tair,Dry air temperature,Farheneit,63.84,70,70
+Tair,Dry air temperature,Fahreneit,63.84,70,70
 Patm,Barometric pressure,mmHg abs,760,760,760
 RH,Relative humidity,%,35.65,35.65,35.65
 ch,Crop Height,in,4,4,4

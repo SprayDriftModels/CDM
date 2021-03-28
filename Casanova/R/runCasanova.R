@@ -123,7 +123,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     }
 
     # Check that the user has not changed the default units:
-    units_english<-c(NA, "Farheneit", "mmHg abs", "%", "in", NA,  "ft", "mph",
+    units_english<-c(NA, "Fahrenheit", "mmHg abs", "%", "in", NA,  "ft", "mph",
                      "degrees", NA, "lbs/ft3", "lbs/ft3",NA, "lbs/ft3", "in", "in", "psi",
                      "degrees", "lb/acre", "wtfraction", "ft", "ft", "in", "#", NA)
     units_metric<-c(NA, "Celcius", "mmHg abs", "%", "cm", NA,"m", "m/s",
