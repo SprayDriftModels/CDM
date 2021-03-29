@@ -53,8 +53,15 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
   }
 
   # browser()
+  Dp_inp<-NULL
+  for(ij in 1:23){
+    Dp_inp[ij]<-17.829*1.193^(ij-1)
+  }
+  # 3/28/2021
+
   LvsDpa <- data.frame(
-    Dp=c(18.0,25.0,32.0,39.0,46.0,53.0,60.0,67.0,74.0,81.0,88.0,95.0,102.0,132.1,171.0,221.4,286.6,371.1,480.4,622.0,805.4,1042.7,1350.0),
+    # 3/28/2021 Dp=c(18.0,25.0,32.0,39.0,46.0,53.0,60.0,67.0,74.0,81.0,88.0,95.0,102.0,132.1,171.0,221.4,286.6,371.1,480.4,622.0,805.4,1042.7,1350.0),
+    Dp=Dp_inp, # 3/28/2021
     Cent=Cent_inp,
     Dwnd=Dwnd_inp,
     Uwnd=Uwnd_inp
@@ -293,6 +300,6 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
                    "APplume" = APplume,
                    "dep_plot" = dep_plot)
 
-  stopCluster(cl) #AVP
+  stopCluster(cl)
   return(dep.list)
 }

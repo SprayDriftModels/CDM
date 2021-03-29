@@ -53,16 +53,22 @@ droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm,Uf, z0, Pn,
   }
 
 
-  Xf <- (1350/102)^(1/(22-12))
+  # Note this orginal code # Commented by AV to match new mathcad on 3/28/2021
+  # Xf <- (1350/102)^(1/(22-12))
+  #
+  # Dp <- c(0) # Initialize
+  #
+  # for(i in 1:13){
+  #   Dp[i]<-18+(i-1)*7
+  # }
+  #
+  # for(i in 14:23){
+  #   Dp[i]<-Dp[i-1]*Xf
+  # }
 
-  Dp <- c(0) # Initialize
-
-  for(i in 1:13){
-    Dp[i]<-18+(i-1)*7
-  }
-
-  for(i in 14:23){
-    Dp[i]<-Dp[i-1]*Xf
+  # This is new mathcad code; added by AV to match new mathacde on 3/28/2021
+  for(i in 1:23){
+    Dp[i]<-17.829*1.193^(i-1)
   }
 
   Psw<-function(T){
