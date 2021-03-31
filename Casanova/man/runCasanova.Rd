@@ -8,7 +8,9 @@ runCasanova(
   scnFile = "./sample_data/Scenarios.csv",
   DDDparamsFile = "./sample_data/DDD_Params.csv",
   report_folder = "./sample_data/reports",
-  report = T
+  curve_fit_ini_file = "./sample_data/Curve_Fit_Initial_Values.csv",
+  report = T,
+  curvefitDSD = F
 )
 }
 \arguments{
@@ -17,6 +19,8 @@ runCasanova(
 \item{report_folder}{is the folder to save the .html reports}
 
 \item{report}{is a T/F input indicating whether reports need to be printed out}
+
+\item{curvefitDSD}{is a T/F indicating whether the DSD will be curve fitted or interpolated}
 
 \item{DDDParamsFile}{DDD parameter file; default file is DDD_Params.csv}
 }

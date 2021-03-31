@@ -13,31 +13,55 @@
 #' @param Dpmax D pmax
 #' @param DDpmin DD pmin
 #' @param a output from psd function, Calibration results
-#' @param MMM original value for integration
+#' @param MMM original value for integration (if null it is not used and it is determined so that DDpmax is 0.5 microns)
 #' @param lambda Controls resolution of deposition calculations; higher numbers increase accuracy
 #' @param Driver "text","shiny", "Silent"
+#' @param curverfitDSD a T/F parameter indicating whether curve-fitting of DSD data is used
+#' @param y Average DSD fit data
+#' @param Dpdata Corresponding droplet size (in microns)
 #'
 #' @return
 #' @export
 #'
 #' @examples
 deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Cent_inp,Dwnd_inp,Uwnd_inp,
-                           Dpmax, DDpmin,a,MMM,lambda,Driver){
+                           Dpmax, DDpmin,a,MMM,lambda,Driver,curvefitDSD, y, Dpdata){
 
 
   v <- FD*PL/43560
 
   Dpmin <- DDpmin
-  k <- seq(1,MMM) # Note the +1 compared to MathCAD notation
+  #k <- seq(1,MMM) # Note the +1 compared to MathCAD notation    #This is not really used
 
-  Dddp <- (Dpmax-Dpmin)/MMM
+  #Dddp <- (Dpmax-Dpmin)/MMM    # This is not really used
 
-  f<-function(Dp){
-    (a[5]/a[3]*exp(-0.5*((Dp-a[1])/a[3])^2)+(1-a[5])/a[4]*exp(-0.5*((Dp-a[2])/a[4])^2))/(2*pi)^0.5*ifelse(Dp>=Dpmax,0,1)
+  # The following uses either the curve fitted function or interpolation between data:
+  if (curvefitDSD==T){
+    f<-function(Dp){
+      (a[5]/a[3]*exp(-0.5*((Dp-a[1])/a[3])^2)+(1-a[5])/a[4]*exp(-0.5*((Dp-a[2])/a[4])^2))/(2*pi)^0.5*ifelse(Dp>=Dpmax,0,1)
+    }
+  }
+  else{
+    Dpdata<-c(Dpdata[1]+(Dpdata[2]-Dpdata[1])/(y[2]-y[1])*(-y[1]),Dpdata)
+    y<-c(0,y)
+    Dpdata<-c(Dpdata, tail(Dpdata, n=1)+diff(tail(Dpdata,n=2))/diff(tail(y,n=2))*(-tail(y,n=1)))
+    y<-c(y,100)
+    g<-approxfun(Dpdata, y, method='linear',0,100) # This is the DSD function
+    f<-function(Dp){
+      (g(Dp+Dp/1000)-g(Dp-Dp/1000))/(Dp/500)/100*ifelse(Dp>=Dpmax,0,1) # This is the derivative divided by 100 to convert back to real numbers rather than %; added the ifelse to be consistent with previous function eventough this is not spelled out in word description
+    }
   }
 
+  # browser()
+  Dp_inp<-NULL
+  for(ij in 1:23){
+    Dp_inp[ij]<-17.829*1.193^(ij-1)
+  }
+  # 3/28/2021
+
   LvsDpa <- data.frame(
-    Dp=c(18.0,25.0,32.0,39.0,46.0,53.0,60.0,67.0,74.0,81.0,88.0,95.0,102.0,132.1,171.0,221.4,286.6,371.1,480.4,622.0,805.4,1042.7,1350.0),
+    # 3/28/2021 Dp=c(18.0,25.0,32.0,39.0,46.0,53.0,60.0,67.0,74.0,81.0,88.0,95.0,102.0,132.1,171.0,221.4,286.6,371.1,480.4,622.0,805.4,1042.7,1350.0),
+    Dp=Dp_inp, # 3/28/2021
     Cent=Cent_inp,
     Dwnd=Dwnd_inp,
     Uwnd=Uwnd_inp
@@ -66,6 +90,12 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
 
   MM <- as.integer((Dpmax-Dpmin)/DDp)
 
+  #browser()
+  # If advanced control is used with a specified value of MMM
+  if (!is.na(MMM)){
+    MM<-MMM
+    DDp<-(Dpmax-Dpmin)/MM
+  }
   Dpavg <- Dpmin+seq(0,MM-1)*DDp
   Dpavg[1] <- 0  # Dpavg matches now exactly MathCAD
 
@@ -74,10 +104,12 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
   DriftDistb <- ffb(Dpavg)
   DriftDistb[1] <- 0
   DriftDistc <- ffc(Dpavg)
-  DriftDistc[1]<0
+  DriftDistc[1] <- 0  # JMP: fixed assigning to 0 (note: this is not used later, because Lmax is reset)
+
 
   Lmax <- max(DriftDista[1],DriftDistb[1],DriftDistc[1]) # This is the original formula that crashed MathCAD
-  Lmax <- 750 # This is new eqn for Lmax; this eqn replaces above eqn
+  # JMP: Lmax seems to be parameter that should be outside of the code, (advanced user)
+  Lmax <- 200 # This is new eqn for Lmax; this eqn replaces above eqn
   DWda <- Lmax/Nda
 
   SprayedArea <- FD*PL/43560
@@ -95,39 +127,47 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
   DVM <- matrix(nrow=MM,ncol=Nsa+Nda)
   CM <- matrix(nrow=MM,ncol=Nsa+Nda)
 
-  #setup parallel backend to use many processors
+  #setup parallel backend to use processors
   cores = detectCores()
-  cl <- makeCluster(cores[1]-1) #not to overload your computer
+  cl <- makeCluster(cores[1]-1) #not to overload computer
   registerDoParallel(cl)
 
   ## Create progress bar
+  # Remove some statements outside loop
+  SVPs_3<-SVPs/3
+  partial_denom<-tan(psipsipsi*pi*zeta/180)
 
-    for (i in 2:MM) {
+  for (i in 2:MM) {
 
-      # Increment the progress bar, and update the detail text
-      if(Driver == "shiny"){
-        incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5)*100, digits = 0), "% complete - Working on Part 1"))
-      } else {
-        if(Driver=="Silent"){
-
-      }else{
-
-        print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 1"))
-      }}
+     # Increment the progress bar, and update the detail text
+    browser
+    # ifelse is faster function;
+    if ((i%%as.integer(MM/10))==0){
+      ifelse(Driver == "shiny",incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5)*100, digits = 0), "% complete - Working on Part 1")),
+             ifelse(Driver=="Silent",'',print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 1"))))
+    }
+#    if(Driver == "shiny"){
+#        incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5)*100, digits = 0), "% complete - Working on Part 1"))
+#      } else {
+#        if(Driver=="Silent"){
+#
+#      }else{
+#        print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 1"))
+#      }}
 
       for (jj in 1:Nsa){# Note that this is +1 compared to MathCAD
         DVM[i,jj]<-sum(
-          ifelse(DriftDista[i]>((jj-1)*DWsa-X[1:jj])&DriftDista[i]<=(jj)*DWsa-X[1:jj],SVPs[i]/3,0)+
-            ifelse(DriftDistb[i]>((jj-1)*DWsa-X[1:jj])&DriftDistb[i]<=(jj)*DWsa-X[1:jj],SVPs[i]/3,0)+
-            ifelse(DriftDistc[i]>((jj-1)*DWsa-X[1:jj])&DriftDistc[i]<=(jj)*DWsa-X[1:jj],SVPs[i]/3,0))
+          ifelse(DriftDista[i]>((jj-1)*DWsa-X[1:jj])&DriftDista[i]<=(jj)*DWsa-X[1:jj],SVPs_3[i],0)+
+            ifelse(DriftDistb[i]>((jj-1)*DWsa-X[1:jj])&DriftDistb[i]<=(jj)*DWsa-X[1:jj],SVPs_3[i],0)+
+            ifelse(DriftDistc[i]>((jj-1)*DWsa-X[1:jj])&DriftDistc[i]<=(jj)*DWsa-X[1:jj],SVPs_3[i],0))
 
         CM[i,jj]<-sum(
-          ifelse(DriftDista[i]>((jj-1)*DWsa-X[1:jj])&DriftDista[i]<=(jj)*DWsa-X[1:jj],SVPs[i]/3,0)/
-            (DWsa*(PL+2*(X[jj]-X[1:jj])*tan(psipsipsi*pi*zeta/180)))+
-            ifelse(DriftDistb[i]>((jj-1)*DWsa-X[1:jj])&DriftDistb[i]<=(jj)*DWsa-X[1:jj],SVPs[i]/3,0)/
-            (DWsa*(PL+2*(X[jj]-X[1:jj])*tan(psipsipsi*pi*zeta/180)))+
-            ifelse(DriftDistc[i]>((jj-1)*DWsa-X[1:jj])&DriftDistc[i]<=(jj)*DWsa-X[1:jj],SVPs[i]/3,0)/
-            (DWsa*(PL+2*(X[jj]-X[1:jj])*tan(psipsipsi*pi*zeta/180))))
+          ifelse(DriftDista[i]>((jj-1)*DWsa-X[1:jj])&DriftDista[i]<=(jj)*DWsa-X[1:jj],SVPs_3[i],0)/
+            (DWsa*(PL+2*(X[jj]-X[1:jj])*partial_denom))+
+            ifelse(DriftDistb[i]>((jj-1)*DWsa-X[1:jj])&DriftDistb[i]<=(jj)*DWsa-X[1:jj],SVPs_3[i],0)/
+            (DWsa*(PL+2*(X[jj]-X[1:jj])*partial_denom))+
+            ifelse(DriftDistc[i]>((jj-1)*DWsa-X[1:jj])&DriftDistc[i]<=(jj)*DWsa-X[1:jj],SVPs_3[i],0)/
+            (DWsa*(PL+2*(X[jj]-X[1:jj])*partial_denom)))
       }
   }
 
@@ -137,32 +177,39 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
     for (i in 2:MM) {
 
       # Increment the progress bar, and update the detail text
-      if(Driver == "shiny"){
-        incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5+0.5)*100, digits = 0), "% complete - Working on Part 2"))
-      } else{
-        if(Driver=="Silent"){}else print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 2"))
+      #ifelse is faster function; giving it a try
+      if ((i%%as.integer(MM/10))==0){
+        ifelse(Driver == "shiny",incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5)*100, digits = 0), "% complete - Working on Part 2")),
+               ifelse(Driver=="Silent",'',print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 2"))))
       }
+
+
+#       if(Driver == "shiny"){
+#         incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5+0.5)*100, digits = 0), "% complete - Working on Part 2"))
+#       } else{
+#         if(Driver=="Silent"){}else print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 2"))
+#       }
 
       for (jj in (Nsa+1):(Nsa+Nda)){# Note that this is +1 compared to MathCAD
         DVM[i,jj]<-sum(
-          ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)+
-            ifelse(DriftDistb[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistb[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)+
-            ifelse(DriftDistc[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistc[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0))
+          ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)+
+            ifelse(DriftDistb[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistb[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)+
+            ifelse(DriftDistc[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistc[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0))
 
         CM[i,jj]<-sum(
-          ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)/
-            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*tan(psipsipsi*pi*zeta/180)))+
-            ifelse(DriftDistb[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistb[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)/
-            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*tan(psipsipsi*pi*zeta/180)))+
-            ifelse(DriftDistc[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistc[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs[i]/3,0)/
-            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*tan(psipsipsi*pi*zeta/180))))
+          ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)/
+            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*partial_denom))+
+            ifelse(DriftDistb[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistb[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)/
+            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*partial_denom))+
+            ifelse(DriftDistc[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistc[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)/
+            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*partial_denom)))
 
       }
     }
 
 
-  DVM[1,] <- 0 # Since i in Mathcard starts from 1 (i.e., first element assumed zero)
-  CM[1,] <- 0 # Since i in Mathcard starts from 1 (i.e., first element assumed zero)
+  DVM[1,] <- 0 # Since i in Mathcad starts from 1 (i.e., first element assumed zero)
+  CM[1,] <- 0 # Since i in Mathcad starts from 1 (i.e., first element assumed zero)
 
   VPS <- matrix(nrow=(Nsa+Nda),ncol=1)
   VPS <- foreach(jj=1:(Nsa+Nda), .combine = c) %dopar% {
@@ -253,5 +300,6 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
                    "APplume" = APplume,
                    "dep_plot" = dep_plot)
 
+  stopCluster(cl)
   return(dep.list)
 }

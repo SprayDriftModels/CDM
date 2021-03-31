@@ -4,7 +4,14 @@
 \alias{inputs_from_csv}
 \title{Read inputs from the csv files and converts units as needed}
 \usage{
-inputs_from_csv(DSDData, paramsData, DDDparamsData, paramsID, paramsType)
+inputs_from_csv(
+  DSDData,
+  paramsData,
+  DDDparamsData,
+  paramsID,
+  paramsUnits,
+  paramsWTFile
+)
 }
 \arguments{
 \item{DSDData}{the raw DSDData read from .csv file}
@@ -15,7 +22,7 @@ inputs_from_csv(DSDData, paramsData, DDDparamsData, paramsID, paramsType)
 
 \item{paramsID}{the ID for the parameters}
 
-\item{paramsType}{the type of the parameters}
+\item{paramsUnits}{the type of the parameters}
 }
 \value{
 a list containing all input data

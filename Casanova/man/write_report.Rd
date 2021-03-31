@@ -4,7 +4,7 @@
 \alias{write_report}
 \title{Create html report for each scenario}
 \usage{
-write_report(i, all_inputs, results, report_folder)
+write_report(i, all_inputs, results, report_folder, paramsUnits)
 }
 \arguments{
 \item{i}{Scenario}

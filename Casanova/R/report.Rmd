@@ -15,13 +15,6 @@ params:
 ---
 
 
-## File used for PSD curve fitting
-```{r, echo = FALSE, warning = FALSE}
-#library(knitr)
-cat(params$input_filename)
-```
-
-
 ## Table of Parameter values
 ```{r, echo = FALSE, warning = FALSE}
 # Input parameter values

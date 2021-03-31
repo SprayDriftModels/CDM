@@ -20,7 +20,10 @@ deposition_calcs(
   a,
   MMM,
   lambda,
-  Driver
+  Driver,
+  curvefitDSD,
+  y,
+  Dpdata
 )
 }
 \arguments{
@@ -50,11 +53,17 @@ deposition_calcs(
 
 \item{a}{output from psd function, Calibration results}
 
-\item{MMM}{original value for integration}
+\item{MMM}{original value for integration (if null it is not used and it is determined so that DDpmax is 0.5 microns)}
 
 \item{lambda}{Controls resolution of deposition calculations; higher numbers increase accuracy}
 
 \item{Driver}{"text","shiny", "Silent"}
+
+\item{y}{Average DSD fit data}
+
+\item{Dpdata}{Corresponding droplet size (in microns)}
+
+\item{curverfitDSD}{a T/F parameter indicating whether curve-fitting of DSD data is used}
 }
 \value{
 

@@ -4,6 +4,8 @@
 #' @param DDDParamsFile DDD parameter file; default file is DDD_Params.csv
 #' @param report_folder is the folder to save the .html reports
 #' @param report is a T/F input indicating whether reports need to be printed out
+#' @param curvefitDSD is a T/F indicating whether the DSD will be curve fitted or interpolated
+#' @driver can be "text", "silent", "shiny" to output progress of step 5, no progress or progress for the shiny app respectively
 #'
 #' @return a list containing all droplet data and deposition for each scenario analyzed
 #' @export
@@ -12,16 +14,35 @@
 runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
                         DDDparamsFile="./sample_data/DDD_Params.csv",
                         report_folder="./sample_data/reports",
-                        report=T){
+                        curve_fit_ini_file="./sample_data/Curve_Fit_Initial_Values.csv",
+                        report=T,
+                        curvefitDSD=F,
+                        driver="text"){
   results <- NULL
   all_results<- NULL
 
+  # Start the clock
+  ptm <- proc.time()
+
   ##############################################################################
+  # See if the report output file exists
+  if (report){
+    if (file.exists(report_folder)){
+      rep_over<-readline(prompt=paste('The report folder',report_folder,'already exists. Overwrite files in folder? (Y/N)'))
+      if (rep_over=='N'|rep_over=='n'){
+        stop('Casanova run stopped to avoid overwriting output reports.')
+      }
+      else if (rep_over!='Y'&rep_over!='y'){
+        stop('Please provide a valide Y/N response.')
+      }
+    }
+  }
+
   # Read all the input files; error control if files cannot be read
   # Read scenario file
   scnData<-NULL
   scnData <- tryCatch({
-    read_csv(scnFile)
+    read_csv(scnFile,col_types='icccic')
   },
   error=function(e){
     print("Could not read scenario File")
@@ -31,21 +52,48 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
   # Read DDDParameters file
   DDDparamsData<-NULL
   DDDparamsData <- tryCatch({
-    read_csv(DDDparamsFile)
+    read_csv(DDDparamsFile,col_types='ddd')
   },
   error=function(e){
     print("Could not read parameters File")
   }
   )
 
+  # Read Curve_Fit_Initial_Values file
+  CFiniData<-NULL
+  CFiniData <- tryCatch({
+    read_csv(curve_fit_ini_file,col_types='ddddd')
+  },
+  error=function(e){
+    print("Could not read DSD Curve-fitting initial value File")
+  }
+  )
+
   # The following files are read to test whether they can be read without errors
-  i_scn<-max(scnData$'Scenario-ID')
+
+  # Check the number of scenarios to be input sequentially
+  if(max(scnData$'Scenario-ID')==nrow(scnData)) {
+    i_scn<-max(scnData$'Scenario-ID')
+  }
+  else{
+    stop('Please check the numbering of your scenarios')
+  }
+
+  if (i_scn>1){
+    for (i in 2:i_scn){
+      if(scnData$'Scenario-ID'[i]-scnData$'Scenario-ID'[i-1]!=1)
+      (stop('Scenarios should be numbered sequentially'))
+    }
+  }
+
+
+  # The following files are read to test whether they can be read without errors
   for (i in 1:i_scn){
     # Read DSD file
     DSDFile<-paste0("./sample_data/",scnData$`DSD-Filename`[i])
     DSDData<-NULL
     DSDData <- tryCatch({
-      read_csv(DSDFile)
+      read_csv(DSDFile,col_types='dddd')
     },
     error=function(e){
       print(paste("Could not read DSD File for scenario",i))
@@ -56,14 +104,46 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     paramsFile<-paste0("./sample_data/",scnData$`Params-Filename`[i])
     paramsData<-NULL
     paramsData <- tryCatch({
-      read_csv(paramsFile)
+      read_csv(paramsFile,col_types='cccddddddddddddd')
     },
     error=function(e){
       print(paste("Could not read parameters File for scenario",i))
     }
     )
 
-    paramsType<-scnData$`Params-Type`[i] # This is the unit system of the input parameters
+    # Assign variable for Wind/Temperature file
+    paramsWTFile<-paste0("./sample_data/",scnData$`Wind_Temp_Filename`[i])
+
+    # browser()
+    # Check the number of parameters to be input sequentially
+    if (ncol(paramsData[which(paramsData$Type=='ID'),])>4){
+      for (j in 5:ncol(paramsData[which(paramsData$Type=='ID'),])){
+        if ((as.double(paramsData[which(paramsData$Type=='ID'),][j])-as.double(paramsData[which(paramsData$Type=='ID'),][j-1]))!=1){
+          stop('Parameter IDs should be numbered sequentially')
+        }
+      }
+    }
+
+    # Check that the user has not changed the default units:
+    units_english<-c(NA, "Fahrenheit", "mmHg abs", "%", "in", NA,  "ft", "mph",
+                     "degrees", NA, "lbs/ft3", "lbs/ft3",NA, "lbs/ft3", "in", "in", "psi",
+                     "degrees", "lb/acre", "wtfraction", "ft", "ft", "in", "#", NA)
+    units_metric<-c(NA, "Celcius", "mmHg abs", "%", "cm", NA,"m", "m/s",
+                    "degrees", NA, "g/cm3", "g/cm3",NA, "kg/m3", "cm", "cm", "kPa", "degrees",
+                    "kg/ha", "wtfraction", "m", "m", "cm","#", NA)
+
+    units_type<-c("ID", "Tair", "Patm", "RH", "ch","measurements",  "z1", "ux1",
+                  "psipsipsi", "psipsipsi_method", "rhow", "rhos", "xs0", "rhosoln", "H0", "hcm", "app_p",
+                  "angle", "IAR", "xactive", "FD", "PL", "NozzleSpacing", "MMM", "lambda")
+
+    #browser()
+    if (!(all(paramsData$Units==units_english,na.rm=T) | all(paramsData$Units==units_metric, na.rm=T) )){
+      stop('Parameter units should either be in english',units_english, 'or metric', units_metric)
+
+    }
+
+
+    paramsUnits<-scnData$`Params-Units`[i] # This is the unit system of the input parameters
     paramsID<-scnData$`Params-ID`[i] # This is the unit ID of the input parameters
 
     # Try to assign parameters from loaded files
@@ -71,7 +151,8 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
                     paramsData,
                     DDDparamsData,
                     paramsID,
-                    paramsType)
+                    paramsUnits,
+                    paramsWTFile)
 
   }
 
@@ -80,13 +161,13 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
   ############################################################################
   # Loop all scenarios
   for (i in 1:i_scn) {
-    # Error control is a scenario fails
+    # Error control if a scenario fails
     tryCatch({
       # Read DSD file
       DSDFile<-paste0("./sample_data/",scnData$`DSD-Filename`[i])
       DSDData<-NULL
       DSDData <- tryCatch({
-        read_csv(DSDFile)
+        read_csv(DSDFile,col_types='dddd')
       },
       error=function(e){
         print(paste("Could not read DSD File for scenario",i))
@@ -97,13 +178,13 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       paramsFile<-paste0("./sample_data/",scnData$`Params-Filename`[i])
       paramsData<-NULL
       paramsData <- tryCatch({
-        read_csv(paramsFile)
+        read_csv(paramsFile,col_types='cccddddddddddddd')
       },
       error=function(e){
         print(paste("Could not read parameters File for scenario",i))
       }
       )
-      paramsType<-scnData$`Params-Type`[i] # This is the unit system of the parameters
+      paramsUnits<-scnData$`Params-Units`[i] # This is the unit system of the parameters
       paramsID<-scnData$`Params-ID`[i] # This is the unit system of the parameters
 
       ## Load hard-coded inputs
@@ -119,54 +200,69 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
                                   paramsData,
                                   DDDparamsData,
                                   paramsID,
-                                  paramsType)
-      y<-all_inputs[[2]][[1]]
-      Dpdata<-all_inputs[[2]][[2]]
-      Tair<-all_inputs[[2]][[3]]
-      Patm<-all_inputs[[2]][[4]]
-      RH<-all_inputs[[2]][[5]]
-      measurements<-all_inputs[[2]][[6]]
-      ch<-all_inputs[[2]][[7]]
-      z1<-all_inputs[[2]][[8]]
-      ux1<-all_inputs[[2]][[9]]
-      z2<-all_inputs[[2]][[10]]
-      ux2<-all_inputs[[2]][[11]]
-      rhow<-all_inputs[[2]][[12]]
-      rhos<-all_inputs[[2]][[13]]
-      xs0<-all_inputs[[2]][[14]]
-      rhosoln<-all_inputs[[2]][[15]]
-      H0<-all_inputs[[2]][[16]]
-      hcm<-all_inputs[[2]][[17]]
-      app_p<-all_inputs[[2]][[18]]
-      angle<-all_inputs[[2]][[19]]
-      ddd1<-all_inputs[[2]][[20]]
-      ddd2<-all_inputs[[2]][[21]]
-      ddd3<-all_inputs[[2]][[22]]
-      IAR<-all_inputs[[2]][[23]]
-      xactive<-all_inputs[[2]][[24]]
-      FD<-all_inputs[[2]][[25]]
-      PL<-all_inputs[[2]][[26]]
-      NozzleSpacing<-all_inputs[[2]][[27]]
-      psipsipsi<-all_inputs[[2]][[28]]
-      rhoL<-all_inputs[[2]][[29]]
-      Dpmax<-all_inputs[[2]][[30]]
-      DDpmin<-all_inputs[[2]][[31]]
-      MMM<-all_inputs[[2]][[32]]
-      lambda<-all_inputs[[2]][[33]]
+                                  paramsUnits,
+                                  paramsWTFile)
+
+      # The following assigns the inputs converted to the computational units
+      y<-all_inputs$input_props_comp$y
+      Dpdata<-all_inputs$input_props_comp$Dpdata
+      Tair<-all_inputs$input_props_comp$Tair
+      Patm<-all_inputs$input_props_comp$Patm
+      RH<-all_inputs$input_props_comp$RH
+      measurements<-all_inputs$input_props_comp$measurements
+      ch<-all_inputs$input_props_comp$ch
+      z1<-all_inputs$input_props_comp$z1
+      ux1<-all_inputs$input_props_comp$ux1
+      rhow<-all_inputs$input_props_comp$rhow
+      rhos<-all_inputs$input_props_comp$rhos
+      xs0<-all_inputs$input_props_comp$xs0
+      rhosoln<-all_inputs$input_props_comp$rhosoln
+      H0<-all_inputs$input_props_comp$H0
+      hcm<-all_inputs$input_props_comp$hcm
+      app_p<-all_inputs$input_props_comp$app_p
+      angle<-all_inputs$input_props_comp$angle
+      ddd1<-all_inputs$input_props_comp$ddd1
+      ddd2<-all_inputs$input_props_comp$ddd2
+      ddd3<-all_inputs$input_props_comp$ddd3
+      IAR<-all_inputs$input_props_comp$IAR
+      xactive<-all_inputs$input_props_comp$xactive
+      FD<-all_inputs$input_props_comp$FD
+      PL<-all_inputs$input_props_comp$PL
+      NozzleSpacing<-all_inputs$input_props_comp$NozzleSpacing
+      psipsipsi<-all_inputs$input_props_comp$psipsipsi
+      rhoL<-all_inputs$input_props_comp$rhoL
+      Dpmax<-all_inputs$input_props_comp$Dpmax
+      DDpmin<-all_inputs$input_props_comp$DDpmin
+      MMM<-all_inputs$input_props_comp$MMM
+      lambda<-all_inputs$input_props_comp$lambda
+      paramsWT<-all_inputs$input_props_comp$paramsWT
+      method<-all_inputs$input_props_comp$method
+
 
       #browser()
-      # Part 1, Curve fitting: Variable pars contains the fitted parameters of the drop size distribution model
-      pars <- psd(y,Dpdata)
-      results$psd_pars<-pars
 
-      # browser()
+      if (curvefitDSD==T){
+        # Part 1, Curve fitting: Variable pars contains the fitted parameters of the drop size distribution model
+        pars <- psd(y,Dpdata,CFiniData)
+        results$psd_pars<-pars
+      }
+      else
+      {
+        results$psd_pars<-list("res" = 'No DSD fitting',
+                               "plot" = 'No DSD fitting',
+                               "table" = 'No DSD fitting',
+                               "y" = y,
+                               "Dpdata" = Dpdata)
+      }
+
+      #browser()
       # Part 2, Wet Bulb Calculations
       Twb <- wet_bulb(Tair, Patm, RH)
       results$Twb<-Twb
 
-      # browser()
+      #browser()
 
-      # Part 3, Wind profile parameters
+      # Part 3, Wind profile and turbulence (psipsipsi) parameters
       if (measurements==1){
         # This first part is when we have only one wind v. elevation measurement.
         # Outputs are Uh, Ufriction, z1, z0, alpha_avg, k2
@@ -177,11 +273,19 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 
         wvprofile_params <-profile
 
-      }else if (measurements==2){
-        # Part for when we have two wind v. elevation measurements.
-        z0<-WV2m(z1,z2,ux1,ux2)[1]
-        Uf<-WV2m(z1,z2,ux1,ux2)[2]
-        wvprofile_params<-WV2m(z1,z2,ux1,ux2)
+      }else if (measurements>1){
+
+        # Part for when we have more than 1 wind v. elevation measurements.
+        ###########################################
+
+        #z0<-WV2m(z1,z2,ux1,ux2)[1]
+        #Uf<-WV2m(z1,z2,ux1,ux2)[2]
+        #wvprofile_params<-WV2m(z1,z2,ux1,ux2)
+
+        z0<-wvprofilem(paramsWT,method,ch)[1]
+        Uf<-wvprofilem(paramsWT,method,ch)[2]
+        psipsipsi<-wvprofilem(paramsWT,method,ch)[3]   # This calculation overrides the input psipsipsi if measurements are more than 1
+        wvprofile_params<-wvprofilem(paramsWT,method,ch)
       }
       results$wvprofile_params<-wvprofile_params
 
@@ -189,14 +293,15 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       tryCatch({
         charac<-charact_cal(app_p,angle, rhosoln)
         DTwb<-Twb[1] # Wetbulb temperature depression, C
-        print("Solving Straight Down Problem")
+        print(paste("Solving Straight Down Problem for Scenario", i))
+        #browser()
         droplet_1<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[1],charac[2],ddd1,"text")
-        print("Solving with Wind Problem")
+        print(paste("Solving with Wind Problem for Scenario", i))
         droplet_2<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[3],charac[4],ddd2,"text")
-        print("Solving against Wind Problem")
+        print(paste("Solving against Wind Problem for Scenario", i))
         droplet_3<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[5],charac[6],ddd3,"text")
 
-        print("Finished Solving for Droplet Transport")
+        print(paste("Finished Solving for Droplet Transport for Scenario", i))
 
         droplet1_data <- as_tibble(droplet_1) %>%
           mutate(Droplet = "Centerline",
@@ -228,7 +333,13 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 
       # Part 5
       # ________________________________________
-      a<-unname(pars$res)  # Calibration from step #1 (removing the stored names)
+
+      if (curvefitDSD==T){
+        a<-unname(pars$res)  # Calibration from step #1 (removing the stored names)
+      }
+      else {
+        a<-NULL
+      }
       # Input from previous function
       Cent<-droplet_1[2]$Xdist
       Dwnd<-droplet_2[2]$Xdist
@@ -237,8 +348,9 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       tryCatch(
         {
           #browser()
-          deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda,"Silent")
-          print("Deposition calculations are finished")
+          print(paste("Calculating Deposition for Scenario", i))
+          deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda,driver,curvefitDSD,y,Dpdata)
+          print(paste("Deposition calculations are finished for Scenario", i))
         },
         error=function(e){
           print("Could not run part 5, Deposition Calculations")
@@ -254,10 +366,10 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     }
 
     )
-
+#browser()
     # The following generates one .html report per scenario
     if (report==T){
-      write_report(i,all_inputs, results, report_folder)
+      write_report(i,all_inputs, results, report_folder, paramsUnits)
 
     }
 
@@ -265,6 +377,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 
   }  # This is the end of the loop for all scenarios
 
-  dev.off() # This prevents a but that causes Rstudio to crash if one accesses the plots from the return value
+  try(dev.off(),silent = T) # This prevents a bug that causes Rstudio to crash sometimes if one accesses the plots from the return value
+  print(paste('Computation time was:', (proc.time() - ptm)[[3]]))
   return(all_results)
 }
