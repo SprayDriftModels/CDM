@@ -713,7 +713,7 @@ server <- shinyServer(function(input, output, session) {
     req(Data2())
 
     ## Calculate parameters using the loaded function "1a_psd_function.R"
-    pars <- try(psd(Data2()$y,
+    pars <- try(Casanova::psd(Data2()$y,
                 Data2()$Dpdata),
                 silent = TRUE)
 
@@ -806,7 +806,7 @@ server <- shinyServer(function(input, output, session) {
     req(input$Tair)
     req(input$Patm)
     req(input$RH)
-    Twb <- wet_bulb(input$Tair, input$Patm, input$RH)
+    Twb <- Casanova::wet_bulb(input$Tair, input$Patm, input$RH)
 
     Twb_results <-
       list("Twb" = Twb,
@@ -939,7 +939,7 @@ server <- shinyServer(function(input, output, session) {
       return()
 
     if (input$NumberMeasures_chosen == 1){
-      wvprofile_params <- wvprofile(input$Elevation_wind_speed_1,
+      wvprofile_params <- Casanova::wvprofile(input$Elevation_wind_speed_1,
                                     input$MPH_wind_speed_1,
                                     input$Canopy_height)
       wvprofile_params_list <-
@@ -951,7 +951,7 @@ server <- shinyServer(function(input, output, session) {
       return(wvprofile_params_list)}
 
     if (input$NumberMeasures_chosen == 2) {
-      wvprofile_params <- WV2m(input$Elevation_wind_speed_1,
+      wvprofile_params <- Casanova::WV2m(input$Elevation_wind_speed_1,
                                input$Elevation_wind_speed_2,
                                input$MPH_wind_speed_1,
                                input$MPH_wind_speed_2)
@@ -1076,7 +1076,7 @@ server <- shinyServer(function(input, output, session) {
     ## Create progress bar
     withProgress(message = "Solving Straight Down Problem", value = 0, {
 
-      droplet_1 <- droplet_transport(input$Tair,
+      droplet_1 <- Casanova::droplet_transport(input$Tair,
                                      input$RH,
                                      input$rhow,
                                      input$rhos,
@@ -1096,7 +1096,7 @@ server <- shinyServer(function(input, output, session) {
     ## Create progress bar
     withProgress(message = "Solving with Wind Problem", value = 0, {
 
-      droplet_2 <- droplet_transport(input$Tair,
+      droplet_2 <- Casanova::droplet_transport(input$Tair,
                                      input$RH,
                                      input$rhow,
                                      input$rhos,
@@ -1116,7 +1116,7 @@ server <- shinyServer(function(input, output, session) {
     ## Create progress bar
     withProgress(message = "Solving against Wind Problem", value = 0, {
 
-      droplet_3 <- droplet_transport(input$Tair,
+      droplet_3 <- Casanova::droplet_transport(input$Tair,
                                      input$RH,
                                      input$rhow,
                                      input$rhos,
@@ -1332,7 +1332,7 @@ server <- shinyServer(function(input, output, session) {
 
     withProgress(message = 'Deposition calculation', detail = "percent complete", value = 0, {
 
-      Deposition <- deposition_calcs(input$IAR,
+      Deposition <- Casanova::deposition_calcs(input$IAR,
                                      input$xactive,
                                      input$FD,
                                      input$PL,
