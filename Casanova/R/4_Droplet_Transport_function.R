@@ -66,7 +66,8 @@ droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm,Uf, z0, Pn,
   #   Dp[i]<-Dp[i-1]*Xf
   # }
 
-  # This is new mathcad code; added by AV to match new mathacde on 3/28/2021
+  # This is new mathcad code; added by AV to match new mathcad on 3/28/2021
+  Dp<-NULL
   for(i in 1:23){
     Dp[i]<-17.829*1.193^(i-1)
   }
