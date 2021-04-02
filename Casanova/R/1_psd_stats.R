@@ -31,15 +31,15 @@ psd_stats<-function(y, Dpdata){
   IN<-y_inc/(4/3*pi*(Dpdata/2*0.000001)^3)
   IN_per<-IN/sum(IN)*100
   IN_cum<-NULL
-  IN_cum[1]<-IN[1]
-  for (i in 2:length(IN)){
-    IN_cum[i]<-IN[i]+IN_cum[i-1]
+  IN_cum[1]<-IN_per[1]
+  for (i in 2:length(IN_per)){
+    IN_cum[i]<-IN_per[i]+IN_cum[i-1]
   }
 
   psd_fun3<-approxfun(IN_cum,Dpdata)
   NMD<-psd_fun3(50)
 
-
+  #browser()
   drop_num<-y_inc/DropVol
   calc_vm<-drop_num*y^3
   calc_sm<-drop_num*y^2
@@ -53,9 +53,35 @@ psd_stats<-function(y, Dpdata){
   L100<-psd_fun2(100)
   L150<-psd_fun2(150)
 
-  stat_list<-list(DV10=DV10,DV50=DV50,
-                  DV90=DV90, NMD=NMD, D30=D30,
-                  D32=D32,RS=RS,
-                  L141=L141,L100=L100,L150=L150)
+  # Create the dsd plot
+
+  # Format data for plotting
+  Rawdata <- tibble(x = Dpdata, y = y_inc, z = "Input Data")
+
+  # Plot the data
+  dsd_plot <- ggplot(Rawdata, aes(x = x, y = y, color = z)) +
+    geom_point(size = 2) +
+    scale_color_manual(values = c("#3a3f43", "#fc1e1e")) +
+    ylab("Volume fraction (%)") +
+    xlab("Droplet Size (microns)") +
+    guides(colour = guide_legend(override.aes = list(size=4))) +
+    theme_bw() +
+    theme(
+      legend.title = element_blank(),
+      legend.position = "right",
+      legend.text = element_text(size = 16),
+      axis.line = element_line(colour = "black"),
+      axis.text.y = element_text(size = 16),
+      axis.text.x = element_text(size = 16),
+      axis.title.y = element_text(size = 16, vjust= 1.5),
+      axis.title.x = element_text(size = 16)
+    )
+
+ stats<-tibble(DV10=DV10,DV50=DV50,
+             DV90=DV90, NMD=NMD, D30=D30,
+             D32=D32,RS=RS,
+             L141=L141,L100=L100,L150=L150)
+
+  stat_list<-list(plot=dsd_plot,stats=stats)
   return(stat_list)
 }

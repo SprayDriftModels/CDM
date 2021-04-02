@@ -2,12 +2,12 @@
 % Please edit documentation in R/4_Nozzle_Characteristics.R
 \name{charact_cal}
 \alias{charact_cal}
-\title{Title}
+\title{Calculate three velocity components}
 \usage{
 charact_cal(app_p, angle, rhosoln)
 }
 \arguments{
-\item{app_p}{Nozzel Pressure}
+\item{app_p}{Nozzle Pressure}
 
 \item{angle}{Nozzle Angle}
 
@@ -17,5 +17,5 @@ charact_cal(app_p, angle, rhosoln)
 
 }
 \description{
-Title
+Calculate three velocity components
 }

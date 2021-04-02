@@ -10,7 +10,8 @@ runCasanova(
   report_folder = "./sample_data/reports",
   curve_fit_ini_file = "./sample_data/Curve_Fit_Initial_Values.csv",
   report = T,
-  curvefitDSD = F
+  curvefitDSD = F,
+  driver = "text"
 )
 }
 \arguments{

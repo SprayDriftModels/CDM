@@ -8,6 +8,7 @@ params:
   input_params: NA
   step1_results_plot: NA
   step1_results_table: NA
+  step1_results_stats: NA
   step2_results: NA
   step3_results: NAs
   step4_results: NA
@@ -19,6 +20,14 @@ params:
 ```{r, echo = FALSE, warning = FALSE}
 # Input parameter values
 kable(params$input_params, caption = "")
+```
+
+
+## PSD Inputs
+```{r, echo = FALSE, warning = FALSE, comment=NA}
+params$step1_results_stats$plot
+kable(params$step1_results_stats$stats)
+
 ```
 
 ## Step 1: PSD Curve Fitting Results
