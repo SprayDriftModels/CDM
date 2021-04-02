@@ -266,7 +266,10 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
                                "Dpdata" = Dpdata)
       }
 
-      #browser()
+      results$psd_stats<-psd_stats(y,Dpdata)
+
+
+      browser()
       # Part 2, Wet Bulb Calculations
       Twb <- wet_bulb(Tair, Patm, RH)
       results$Twb<-Twb

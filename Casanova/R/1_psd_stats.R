@@ -1,0 +1,61 @@
+#' PSD statistics
+#'
+#' @param y Average DSD fit data:
+#' @param Dpdata Corresponding droplet size (in microns)
+#'
+#' @return list of statical parameters
+#' @export
+#'
+#' @examples
+psd_stats<-function(y, Dpdata){
+#browser()
+
+  psd_fun<-approxfun(y,Dpdata)
+
+  DV10<-psd_fun(10)
+  DV50<-psd_fun(50)
+  DV90<-psd_fun(90)
+  RS<-(DV90-DV10)/DV50
+
+  DropVol<-4/3*pi*(Dpdata/2*0.000001)^3
+
+
+  y_inc<-NULL
+  # Calculate incremental data
+  y_inc[1]<-y[1]
+  for (i in 2:length(y)){
+    y_inc[i]<-y[i]-y[i-1]
+  }
+
+
+  IN<-y_inc/(4/3*pi*(Dpdata/2*0.000001)^3)
+  IN_per<-IN/sum(IN)*100
+  IN_cum<-NULL
+  IN_cum[1]<-IN[1]
+  for (i in 2:length(IN)){
+    IN_cum[i]<-IN[i]+IN_cum[i-1]
+  }
+
+  psd_fun3<-approxfun(IN_cum,Dpdata)
+  NMD<-psd_fun3(50)
+
+
+  drop_num<-y_inc/DropVol
+  calc_vm<-drop_num*y^3
+  calc_sm<-drop_num*y^2
+
+  D30<-(sum(calc_vm)/sum(drop_num))^(1/3)
+  D32<-(sum(calc_sm)/sum(drop_num))^(1/3) # The calculation in the excel appears incorrect; waiting for status
+
+
+  psd_fun2<-approxfun(Dpdata,y)
+  L141<-psd_fun2(141)
+  L100<-psd_fun2(100)
+  L150<-psd_fun2(150)
+
+  stat_list<-list(DV10=DV10,DV50=DV50,
+                  DV90=DV90, NMD=NMD, D30=D30,
+                  D32=D32,RS=RS,
+                  L141=L141,L100=L100,L150=L150)
+  return(stat_list)
+}
