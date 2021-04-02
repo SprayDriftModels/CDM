@@ -31,10 +31,12 @@ write_report <- function(i,
   # replace NULL values with NA in all_inputs
   if (is.null(all_inputs$input_props$z1)){all_inputs$input_props$z1<-NA}
   if (is.null(all_inputs$input_props$ux1)){all_inputs$input_props$ux1<-NA}
+  psipsipsi_rep<-all_inputs$input_props$psipsipsi
+
   wm<-all_inputs$input_props$measurements
   if (wm!=1){
     wm<-NA
-    psipsipsi_rep=NA
+    psipsipsi_rep<-NA
     }
 
   #browser()
@@ -57,7 +59,7 @@ write_report <- function(i,
                          "Downwind field depth" = all_inputs$input_props$FD,
                          "Crosswind field width" = all_inputs$input_props$PL,
                          "Space between nozzles on Boom" = all_inputs$input_props$NozzleSpacing,
-                         "Horizontal variation in wind direction around mean direction, 1 stdev" = all_inputs$input_props$psipsipsi,
+                         "Horizontal variation in wind direction around mean direction, 1 stdev" = psipsipsi_rep,
                          "Dpmax" = all_inputs$input_props$Dpmax,
                          "Dpmin" = all_inputs$input_props$DDpmin,
                          "Number of droplet size bins" = all_inputs$input_props$MMM,

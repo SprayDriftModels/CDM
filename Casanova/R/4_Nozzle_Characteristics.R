@@ -1,7 +1,7 @@
 
-#' Title
+#' Calculate three velocity components
 #'
-#' @param app_p Nozzel Pressure
+#' @param app_p Nozzle Pressure
 #' @param angle Nozzle Angle
 #' @param rhosoln Mix Density
 #'

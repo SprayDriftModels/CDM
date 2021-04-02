@@ -68,6 +68,20 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     print("Could not read DSD Curve-fitting initial value File")
   }
   )
+#
+#   # Read NozzleParams file
+#   NozzleParamData<-NULL
+#   NozzleParamData <- tryCatch({
+#     read_csv(NozzleParamFile,col_types='dd')
+#   },
+#   error=function(e){
+#     print("Could not read Nozzle Parameters Data File")
+#   }
+#   )
+#
+#   p <- NozzleParamData$`p (psig)`
+#   NF <- NozzleParamData$`NF (gpm)`
+
 
   # The following files are read to test whether they can be read without errors
 
@@ -111,6 +125,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     }
     )
 
+
     # Assign variable for Wind/Temperature file
     paramsWTFile<-paste0("./sample_data/",scnData$`Wind_Temp_Filename`[i])
 
@@ -141,6 +156,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       stop('Parameter units should either be in english',units_english, 'or metric', units_metric)
 
     }
+
 
 
     paramsUnits<-scnData$`Params-Units`[i] # This is the unit system of the input parameters
@@ -187,11 +203,6 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       paramsUnits<-scnData$`Params-Units`[i] # This is the unit system of the parameters
       paramsID<-scnData$`Params-ID`[i] # This is the unit system of the parameters
 
-      ## Load hard-coded inputs
-      # AV comment: I think p and NF were not used after all in calculations
-      #Nozzle_params <- as_tibble(read.csv(NozzleParamFile, header = T))
-      #p <- Nozzle_params %>% select(p)
-      #NF <- Nozzle_params %>% select(NF)
 
       # Finished reading input files
 
@@ -284,14 +295,20 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 
         z0<-wvprofilem(paramsWT,method,ch)[1]
         Uf<-wvprofilem(paramsWT,method,ch)[2]
-        psipsipsi<-wvprofilem(paramsWT,method,ch)[3]   # This calculation overrides the input psipsipsi if measurements are more than 1
+        if (!is.nan(wvprofilem(paramsWT,method,ch)[3])){
+          psipsipsi<-wvprofilem(paramsWT,method,ch)[3]   # This calculation overrides the input psipsipsi if measurements are more than 1
+        }
+
         wvprofile_params<-wvprofilem(paramsWT,method,ch)
       }
       results$wvprofile_params<-wvprofile_params
+      # browser()
 
       #Part 4, Droplet Transport Calculations
       tryCatch({
         charac<-charact_cal(app_p,angle, rhosoln)
+        #browser()
+
         DTwb<-Twb[1] # Wetbulb temperature depression, C
         print(paste("Solving Straight Down Problem for Scenario", i))
         #browser()

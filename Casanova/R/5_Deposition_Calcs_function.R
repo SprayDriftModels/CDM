@@ -27,6 +27,7 @@
 deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Cent_inp,Dwnd_inp,Uwnd_inp,
                            Dpmax, DDpmin,a,MMM,lambda,Driver,curvefitDSD, y, Dpdata){
 
+  #Dpmax<-860
 
   v <- FD*PL/43560
 
