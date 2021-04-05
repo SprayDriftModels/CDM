@@ -1,11 +1,11 @@
-#' Read inputs from the csv files and converts units as needed
+#' Input from csv and converts units as needed
 #'
-#' @param DSDData the raw DSDData read from .csv file
-#' @param paramsData the raw paramsData read from .csv file
-#' @param DDDparamsData  the raw DDDparamsData read from .csv file
+#' @param DSDData the raw DSDData
+#' @param paramsData the raw paramsData
+#' @param DDDparamsData  the raw DDDparamsData
 #' @param paramsID the ID for the parameters
 #' @param paramsUnits the type of the parameters
-#' @paramsWTFile is the file containing the Wind/Temperature parameters if more than one measurements are provided
+#' @param WTFile is the file containing the Wind/Temperature parameters if more than one measurements are provided
 #'
 #' @return a list containing all input data
 #' @export
@@ -16,7 +16,7 @@ inputs_from_csv <- function(DSDData,
                             DDDparamsData,
                             paramsID,
                             paramsUnits,
-                            paramsWTFile){
+                            paramsWT){
 
   # Comments in code next to each input parameter provide descriptions of units used in computation modules
   # This function at the end converts units to the units used in computation modules
@@ -75,15 +75,15 @@ inputs_from_csv <- function(DSDData,
     paramsWT<-NULL
 
   }else if (measurements!=1){
-    # In this case the Wind/Temperature file is needed:
-    paramsWT<-NULL
-    paramsWT <- tryCatch({
-      read_csv(paramsWTFile,col_types='dddd')
-    },
-    error=function(e){
-      print("Could not read wind/temperature File")
-    }
-    )
+    # # In this case the Wind/Temperature file is needed:
+    # paramsWT<-NULL
+    # paramsWT <- tryCatch({
+    #   read_csv(paramsWTFile,col_types='dddd')
+    # },
+    # error=function(e){
+    #   print("Could not read wind/temperature File")
+    # }
+    # )
 
     # Part for when we have two wind v. elevation measurements.
     #z1<-as.double(paramsData[which(paramsData$Type=='z1'),][paramsID+3]) # elevation 1, units used in computation module: feet
