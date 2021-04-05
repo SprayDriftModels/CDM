@@ -1,2 +1,2 @@
-Scenario-ID,DSD-Filename,Params-Filename,Params-Units,Params-ID,Wind_Temp_Filename
+Scenario_ID,DSD_Filename,Params_Filename,Params_Units,Params_ID,Wind_Temp_Filename
 1,DSD.csv,Params (Metric).csv,Metric,1,Wind_Temperature (Metric).csv
