@@ -1,0 +1,28 @@
+ID,Description,Units,USA
+Tair,Dry air temperature,Farheneit,70.224
+Patm,Barometric pressure,mmHg abs,836
+RH,Relative humidity,%,39.215
+measurements,Number of wind measurements,NA,1.1
+ch,Crop Heigh,in,4.4
+z1,Elevation of wind speed (1),ft,7.26
+ux1,MPH wind speed (1),mph,14.08
+z2,Elevation of wind speed (2),ft,1.833337
+ux2,MPH wind speed (2),mph,10.384
+rhow,Density of pure water in droplet,lbs/ft3,68.6708
+rhos,Density of dissolved solids in droplet,lbs/ft3,138.4362125
+xs0,Mass fraction total dissolved solids in solution,NA,0.02178
+rhosoln,Mix density,lbs/ft3,69.26823596
+H0,Height of nozzle above ground,in,22
+hcm,Canopy height (Droplet Transport Calculation),in,0.2794
+app_p,Nozzle pressure,psi,55
+angle,Nozzle angle,degrees,121
+IAR,Intended Application Rate,lb/acre,0.66968
+xactive,Conc in tank solution,wtfraction,0.01309
+FD,Downwind field depth,ft,264.176
+PL,Crosswind field width,ft,866.14
+NozzleSpacing,Space between nozzles on Boom,in,22
+psipsipsi,"Horizontal variation in wind direction around mean direction, 1 stdev",degrees,11.77
+Dpmax,Dpmax,µm,1485
+Ddpmin,Dpmin,µm,19.8
+MMM,Number of droplet size bins,#,550
+lambda,Resolution of deposition calculations,NA,2.2

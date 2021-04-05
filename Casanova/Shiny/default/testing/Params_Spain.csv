@@ -1,0 +1,28 @@
+ID,Description,Units,Spain
+Tair,Dry air temperature,Celcius,16.80455
+Patm,Barometric pressure,mmHg abs,722
+RH,Relative humidity,%,33.8675
+measurements,Number of wind measurements,NA,0.95
+ch,Crop Heigh,cm,3.8
+z1,Elevation of wind speed (1),m,6.27
+ux1,MPH wind speed (1),m/s,12.16
+z2,Elevation of wind speed (2),m,1.5833365
+ux2,MPH wind speed (2),m/s,8.968
+rhow,Density of pure water in droplet,g/cm3,0.95
+rhos,Density of dissolved solids in droplet,g/cm3,1.915143
+xs0,Mass fraction total dissolved solids in solution,NA,0.01881
+rhosoln,Mix density,kg/m3,958.265
+H0,Height of nozzle above ground,cm,19
+hcm,Canopy height (Droplet Transport Calculation),cm,0.2413
+app_p,Nozzle pressure,kPa,47.5
+angle,Nozzle angle,degrees,104.5
+IAR,Intended Application Rate,kg/ha,0.57836
+xactive,Conc in tank solution,wtfraction,0.011305
+FD,Downwind field depth,m,228.152
+PL,Crosswind field width,m,748.03
+NozzleSpacing,Space between nozzles on Boom,cm,19
+psipsipsi,"Horizontal variation in wind direction around mean direction, 1 stdev",degrees,10.165
+Dpmax,Dpmax,µm,1282.5
+Ddpmin,Dpmin,µm,17.1
+MMM,Number of droplet size bins,#,475
+lambda,Resolution of deposition calculations,NA,1.9
