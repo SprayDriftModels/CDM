@@ -5,19 +5,20 @@
 #' @param report_folder is the folder to save the .html reports
 #' @param report is a T/F input indicating whether reports need to be printed out
 #' @param curvefitDSD is a T/F indicating whether the DSD will be curve fitted or interpolated
-#' @driver can be "text", "silent", "shiny" to output progress of step 5, no progress or progress for the shiny app respectively
+#' @param driver can be "text", "silent", "shiny" to output progress of step 5, no progress or progress for the shiny app respectively
 #'
 #' @return a list containing all droplet data and deposition for each scenario analyzed
 #' @export
 #'
 #' @examples
-runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
-                        DDDparamsFile="./sample_data/DDD_Params.csv",
-                        report_folder="./sample_data/reports",
-                        curve_fit_ini_file="./sample_data/Curve_Fit_Initial_Values.csv",
-                        report=T,
-                        curvefitDSD=F,
-                        driver="text"){
+runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
+                        DDDparamsFile = "./sample_data/DDD_Params.csv",
+                        report_folder = "./sample_data/reports",
+                        curve_fit_ini_file = "./sample_data/Curve_Fit_Initial_Values.csv",
+                        report = T,
+                        curvefitDSD = F,
+                        driver = "text") {
+
   results <- NULL
   all_results<- NULL
 
@@ -40,113 +41,173 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 
   # Read all the input files; error control if files cannot be read
   # Read scenario file
-  scnData<-NULL
-  scnData <- tryCatch({
-    read_csv(scnFile,col_types='icccic')
-  },
-  error=function(e){
-    print("Could not read scenario File")
+  scnData <- NULL
+  if (driver %in% c("text", "silent")) {
+    scnData <- tryCatch({
+      read_csv(scnFile, col_types = 'icccic')
+    },
+    error = function(e) {
+      print("Could not read scenario File")
+    })
+  } else if(driver == "shiny") {
+    #***SFR check list of scnData
   }
-  )
 
   # Read DDDParameters file
-  DDDparamsData<-NULL
-  DDDparamsData <- tryCatch({
-    read_csv(DDDparamsFile,col_types='ddd')
-  },
-  error=function(e){
-    print("Could not read parameters File")
+  DDDparamsData <- NULL
+  if (driver %in% c("text", "silent")) {
+    DDDparamsData <- tryCatch({
+      read_csv(DDDparamsFile, col_types = 'ddd')
+    },
+    error = function(e) {
+      print("Could not read parameters File")
+    })
+  } else if (driver == "shiny") {
+    DDDparamsData <- scnFile$DDDparamsData
   }
-  )
 
   # Read Curve_Fit_Initial_Values file
-  CFiniData<-NULL
-  CFiniData <- tryCatch({
-    read_csv(curve_fit_ini_file,col_types='ddddd')
-  },
-  error=function(e){
-    print("Could not read DSD Curve-fitting initial value File")
+  CFiniData <- NULL
+  if (driver %in% c("text", "silent")) {
+    CFiniData <- tryCatch({
+      read_csv(curve_fit_ini_file, col_types = 'ddddd')
+    },
+    error = function(e) {
+      print("Could not read DSD Curve-fitting initial value File")
+    })
+  } else if (driver == "shiny") {
+    CFiniData <- curve_fit_ini_file #this is uploaded as a dataset directly in case we allow users to select a different file (or could add to scnFile list if desired)
   }
-  )
 
   # The following files are read to test whether they can be read without errors
 
   # Check the number of scenarios to be input sequentially
-  if(max(scnData$'Scenario-ID')==nrow(scnData)) {
-    i_scn<-max(scnData$'Scenario-ID')
-  }
-  else{
-    stop('Please check the numbering of your scenarios')
-  }
+  if (driver %in% c("text", "silent")) {
+    if (max(scnData$'Scenario_ID') == nrow(scnData)) {
+      i_scn <- max(scnData$Scenario_ID)
+    } else{
+      stop('Please check the numbering of your scenarios')
+    }
 
-  if (i_scn>1){
-    for (i in 2:i_scn){
-      if(scnData$'Scenario-ID'[i]-scnData$'Scenario-ID'[i-1]!=1)
-      (stop('Scenarios should be numbered sequentially'))
+    if (i_scn > 1) {
+      for (i in 2:i_scn) {
+        if (scnData$'Scenario_ID'[i] - scnData$Scenario_ID[i - 1] != 1)
+          (stop('Scenarios should be numbered sequentially'))
+      }
     }
   }
-
 
   # The following files are read to test whether they can be read without errors
-  for (i in 1:i_scn){
-    # Read DSD file
-    DSDFile<-paste0("./sample_data/",scnData$`DSD-Filename`[i])
-    DSDData<-NULL
-    DSDData <- tryCatch({
-      read_csv(DSDFile,col_types='dddd')
-    },
-    error=function(e){
-      print(paste("Could not read DSD File for scenario",i))
-    }
-    )
+  if (driver == "shiny") i_scn <- 1
 
-    # Read Parameters file
-    paramsFile<-paste0("./sample_data/",scnData$`Params-Filename`[i])
-    paramsData<-NULL
-    paramsData <- tryCatch({
-      read_csv(paramsFile,col_types='cccddddddddddddd')
-    },
-    error=function(e){
-      print(paste("Could not read parameters File for scenario",i))
-    }
-    )
+  for (i in 1:i_scn) {
 
-    # Assign variable for Wind/Temperature file
-    paramsWTFile<-paste0("./sample_data/",scnData$`Wind_Temp_Filename`[i])
+    if (driver %in% c("text", "silent")) {
+      # Read DSD file
+      DSDFile <- paste0("./sample_data/", scnData$DSD_Filename[i])
+      DSDData <- NULL
+      DSDData <- tryCatch({
+        read_csv(DSDFile, col_types = 'dddd')
+      },
+      error = function(e) {
+        print(paste("Could not read DSD File for scenario", i))
+      })
+
+      # Read Parameters file
+      paramsFile <-
+        paste0("./sample_data/", scnData$Params_Filename[i])
+      paramsData <- NULL
+      paramsData <- tryCatch({
+        read_csv(paramsFile, col_types = 'cccddddddddddddd')
+      },
+      error = function(e) {
+        print(paste("Could not read parameters File for scenario", i))
+      })
+
+      # Read Wind/Temp file if more than 1 measurement
+      measurements <- as.double(paramsData[which(paramsData$Type=='measurements'),][paramsID+3]) # Number of wind vs. height sets of measurements
+      if (measurements > 1) {
+        # In this case the Wind/Temperature file is needed:
+        paramsWTFile <-
+          paste0("./sample_data/", scnData$Wind_Temp_Filename[i])
+        paramsWTData<-NULL
+        paramsWTData <- tryCatch({
+          read_csv(paramsWTFile,col_types='dddd')
+        },
+        error=function(e){
+          print("Could not read wind/temperature File")
+        }
+        )
+      } else {
+        paramsWTData <- NULL
+      }
+      # Assign variable for Wind/Temperature file
+      # paramsWTFile <-
+      #   paste0("./sample_data/", scnData$Wind_Temp_Filename[i])
 
     # browser()
     # Check the number of parameters to be input sequentially
-    if (ncol(paramsData[which(paramsData$Type=='ID'),])>4){
-      for (j in 5:ncol(paramsData[which(paramsData$Type=='ID'),])){
-        if ((as.double(paramsData[which(paramsData$Type=='ID'),][j])-as.double(paramsData[which(paramsData$Type=='ID'),][j-1]))!=1){
+    if (ncol(paramsData[which(paramsData$Type == 'ID'), ]) > 4) {
+      for (j in 5:ncol(paramsData[which(paramsData$Type == 'ID'), ])) {
+        if ((as.double(paramsData[which(paramsData$Type == 'ID'), ][j]) - as.double(paramsData[which(paramsData$Type ==
+                                                                                                     'ID'), ][j - 1])) != 1) {
           stop('Parameter IDs should be numbered sequentially')
         }
       }
     }
 
-    # Check that the user has not changed the default units:
-    units_english<-c(NA, "Fahrenheit", "mmHg abs", "%", "in", NA,  "ft", "mph",
-                     "degrees", NA, "lbs/ft3", "lbs/ft3",NA, "lbs/ft3", "in", "in", "psi",
-                     "degrees", "lb/acre", "wtfraction", "ft", "ft", "in", "#", NA)
-    units_metric<-c(NA, "Celcius", "mmHg abs", "%", "cm", NA,"m", "m/s",
-                    "degrees", NA, "g/cm3", "g/cm3",NA, "kg/m3", "cm", "cm", "kPa", "degrees",
-                    "kg/ha", "wtfraction", "m", "m", "cm","#", NA)
+    } else if (driver == "shiny") {
+      DDDparamsData <- scnFile$DSDData
+      paramsData <- scnFile$paramsData
+      paramsWTData <- scnFile$paramsWTFile
+    }
 
-    units_type<-c("ID", "Tair", "Patm", "RH", "ch","measurements",  "z1", "ux1",
-                  "psipsipsi", "psipsipsi_method", "rhow", "rhos", "xs0", "rhosoln", "H0", "hcm", "app_p",
-                  "angle", "IAR", "xactive", "FD", "PL", "NozzleSpacing", "MMM", "lambda")
-
-    #browser()
-    if (!(all(paramsData$Units==units_english,na.rm=T) | all(paramsData$Units==units_metric, na.rm=T) )){
-      stop('Parameter units should either be in english',units_english, 'or metric', units_metric)
-
+    if (driver %in% c("text", "silent")) {
+      paramsUnits <-
+        scnData$Params_Units[i] # This is the unit system of the input parameters
+      paramsID <-
+        scnData$Params_ID[i] # This is the unit ID of the input parameters
+    } else if (driver == "shiny") {
+      paramsUnits <- scnFile$Params_Units
+      paramsID <- scnFile$Params_ID
     }
 
 
-    paramsUnits<-scnData$`Params-Units`[i] # This is the unit system of the input parameters
-    paramsID<-scnData$`Params-ID`[i] # This is the unit ID of the input parameters
+    #***SFR these aren't checked. Do we need to check proper order of these as all?
+    # units_type<-c("ID", "Tair", "Patm", "RH", "ch","measurements",  "z1", "ux1",
+    #               "psipsipsi", "psipsipsi_method", "rhow", "rhos", "xs0", "rhosoln", "H0", "hcm", "app_p",
+    #               "angle", "IAR", "xactive", "FD", "PL", "NozzleSpacing", "MMM", "lambda")
+
+    #browser()
+    ## Check that the user has not changed the default units:
+    if (paramsUnits %in% c("Metric", "metric")) {
+      if (!(
+        all(as.character(paramsData$Units) == Casanova::params$Units_Metric, na.rm = T)
+      )) {
+        stop(
+          paste0('Check units for Scenario_ID: ', i_scn, '. ',
+                 'Units should be ', paramsUnits, '. ',
+                 'See Casanova::params for expected units for each parameter.'
+          )
+        )
+      }
+    } else if (paramsUnits %in% c("English", "english")) {
+      if (!(
+        all(as.character(paramsData$Units) == Casanova::params$Units_English, na.rm = T)
+      )) {
+        stop(
+          paste0('Check units for Scenario_ID: ', i_scn, '. ',
+                 'Units should be ', paramsUnits, '. ',
+                 'See Casanova::params for expected units for each parameter.'
+          )
+        )
+      }
+    }
+
+
 
     # Try to assign parameters from loaded files
+    #***SFR is this just a check? should there be a tryCatch for this?
     inputs_from_csv(DSDData,
                     paramsData,
                     DDDparamsData,
@@ -164,7 +225,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     # Error control if a scenario fails
     tryCatch({
       # Read DSD file
-      DSDFile<-paste0("./sample_data/",scnData$`DSD-Filename`[i])
+      DSDFile<-paste0("./sample_data/",scnData$`DSD_Filename`[i])
       DSDData<-NULL
       DSDData <- tryCatch({
         read_csv(DSDFile,col_types='dddd')
@@ -175,7 +236,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
       )
       # browser()
       # Read Parameters file
-      paramsFile<-paste0("./sample_data/",scnData$`Params-Filename`[i])
+      paramsFile<-paste0("./sample_data/",scnData$`Params_Filename`[i])
       paramsData<-NULL
       paramsData <- tryCatch({
         read_csv(paramsFile,col_types='cccddddddddddddd')
@@ -184,8 +245,8 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
         print(paste("Could not read parameters File for scenario",i))
       }
       )
-      paramsUnits<-scnData$`Params-Units`[i] # This is the unit system of the parameters
-      paramsID<-scnData$`Params-ID`[i] # This is the unit system of the parameters
+      paramsUnits<-scnData$`Params_Units`[i] # This is the unit system of the parameters
+      paramsID<-scnData$`Params_ID`[i] # This is the unit system of the parameters
 
       ## Load hard-coded inputs
       # AV comment: I think p and NF were not used after all in calculations
