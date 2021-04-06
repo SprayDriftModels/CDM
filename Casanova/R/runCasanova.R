@@ -25,7 +25,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
   ptm <- proc.time()
 
   ##############################################################################
-  # See if the report output file exists
+  # See if the report output folder exists
   if (report){
     if (file.exists(report_folder)){
       rep_over<-readline(prompt=paste('The report folder',report_folder,'already exists. Overwrite files in folder? (Y/N)'))
@@ -289,12 +289,6 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 
       }else if (measurements>1){
 
-        # Part for when we have more than 1 wind v. elevation measurements.
-        ###########################################
-
-        #z0<-WV2m(z1,z2,ux1,ux2)[1]
-        #Uf<-WV2m(z1,z2,ux1,ux2)[2]
-        #wvprofile_params<-WV2m(z1,z2,ux1,ux2)
 
         z0<-wvprofilem(paramsWT,method,ch)[1]
         Uf<-wvprofilem(paramsWT,method,ch)[2]
@@ -367,7 +361,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 
       tryCatch(
         {
-          #browser()
+          # browser()
           print(paste("Calculating Deposition for Scenario", i))
           deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda,driver,curvefitDSD,y,Dpdata)
           print(paste("Deposition calculations are finished for Scenario", i))

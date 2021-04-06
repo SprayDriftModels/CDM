@@ -27,7 +27,7 @@
 deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Cent_inp,Dwnd_inp,Uwnd_inp,
                            Dpmax, DDpmin,a,MMM,lambda,Driver,curvefitDSD, y, Dpdata){
 
-  #Dpmax<-860
+  #Dpmax<-860 # Temporary
 
   v <- FD*PL/43560
 
@@ -53,7 +53,7 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
     }
   }
 
-  # browser()
+  #browser()
   Dp_inp<-NULL
   for(ij in 1:23){
     Dp_inp[ij]<-17.829*1.193^(ij-1)
@@ -61,7 +61,7 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
   # 3/28/2021
 
   LvsDpa <- data.frame(
-    # 3/28/2021 Dp=c(18.0,25.0,32.0,39.0,46.0,53.0,60.0,67.0,74.0,81.0,88.0,95.0,102.0,132.1,171.0,221.4,286.6,371.1,480.4,622.0,805.4,1042.7,1350.0),
+    #Dp=c(18.0,25.0,32.0,39.0,46.0,53.0,60.0,67.0,74.0,81.0,88.0,95.0,102.0,132.1,171.0,221.4,286.6,371.1,480.4,622.0,805.4,1042.7,1350.0),
     Dp=Dp_inp, # 3/28/2021
     Cent=Cent_inp,
     Dwnd=Dwnd_inp,
@@ -105,11 +105,9 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
   DriftDistb <- ffb(Dpavg)
   DriftDistb[1] <- 0
   DriftDistc <- ffc(Dpavg)
-  DriftDistc[1] <- 0  # JMP: fixed assigning to 0 (note: this is not used later, because Lmax is reset)
+  DriftDistc[1] <- 0  # (note: this is not used later, because Lmax is reset)
 
 
-  Lmax <- max(DriftDista[1],DriftDistb[1],DriftDistc[1]) # This is the original formula that crashed MathCAD
-  # JMP: Lmax seems to be parameter that should be outside of the code, (advanced user)
   Lmax <- 200 # This is new eqn for Lmax; this eqn replaces above eqn
   DWda <- Lmax/Nda
 
@@ -140,8 +138,8 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
 
   for (i in 2:MM) {
 
-     # Increment the progress bar, and update the detail text
-    browser
+    # Increment the progress bar, and update the detail text
+    #browser()
     # ifelse is faster function;
     if ((i%%as.integer(MM/10))==0){
       ifelse(Driver == "shiny",incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5)*100, digits = 0), "% complete - Working on Part 1")),
@@ -170,6 +168,22 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
             ifelse(DriftDistc[i]>((jj-1)*DWsa-X[1:jj])&DriftDistc[i]<=(jj)*DWsa-X[1:jj],SVPs_3[i],0)/
             (DWsa*(PL+2*(X[jj]-X[1:jj])*partial_denom)))
       }
+
+    for (jj in (Nsa+1):(Nsa+Nda)){# Note that this is +1 compared to MathCAD
+      DVM[i,jj]<-sum(
+        ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)+
+          ifelse(DriftDistb[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistb[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)+
+          ifelse(DriftDistc[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistc[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0))
+
+      CM[i,jj]<-sum(
+        ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)/
+          (DWsa*(PL+2*(X[jj]-X[1:Nsa])*partial_denom))+
+          ifelse(DriftDistb[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistb[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)/
+          (DWsa*(PL+2*(X[jj]-X[1:Nsa])*partial_denom))+
+          ifelse(DriftDistc[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistc[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)/
+          (DWsa*(PL+2*(X[jj]-X[1:Nsa])*partial_denom)))
+
+    }
   }
 
 
@@ -191,21 +205,7 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
 #         if(Driver=="Silent"){}else print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 2"))
 #       }
 
-      for (jj in (Nsa+1):(Nsa+Nda)){# Note that this is +1 compared to MathCAD
-        DVM[i,jj]<-sum(
-          ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)+
-            ifelse(DriftDistb[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistb[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)+
-            ifelse(DriftDistc[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistc[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0))
 
-        CM[i,jj]<-sum(
-          ifelse(DriftDista[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDista[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)/
-            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*partial_denom))+
-            ifelse(DriftDistb[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistb[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)/
-            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*partial_denom))+
-            ifelse(DriftDistc[i]>(FD+(jj-1-Nsa)*DWda-X[1:Nsa])&DriftDistc[i]<=FD+(jj-Nsa)*DWda-X[1:Nsa],SVPs_3[i],0)/
-            (DWsa*(PL+2*(X[jj]-X[1:Nsa])*partial_denom)))
-
-      }
     }
 
 
@@ -214,7 +214,8 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
 
   VPS <- matrix(nrow=(Nsa+Nda),ncol=1)
   VPS <- foreach(jj=1:(Nsa+Nda), .combine = c) %dopar% {
-    VPS[jj] <- sum(DVM[,jj],na.rm=TRUE)  # Check for the last line of N/A in DMV and CM
+    VPS <- sum(DVM[,jj],na.rm=TRUE)  # Check for the last line of N/A in DMV and CM
+    VPS
   }
 
   TV <- sum(VPS[1:Nsa])
@@ -227,12 +228,15 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
   NPDR <- matrix(nrow=Nsa+Nda,ncol=1)
   NPDR <- foreach(jj=1:(Nsa+Nda), .combine = c) %dopar% {
 
-    NPDR[jj]<-VPS[jj]/PL/ifelse(jj<=Nsa,DWsa,DWda)
+    NPDR<-VPS[jj]/PL/ifelse(jj<=Nsa,DWsa,DWda) #AV 4/2/2021
+    NPDR
   }
 
   CS <- matrix(nrow=MM,ncol=1)
   CS <- foreach(jj=1:(Nsa+Nda),.combine=c) %dopar% {
-    CS[jj]<-sum(CM[,jj],na.rm=TRUE)*100/AppliedRate
+    #CS[jj]<-sum(CM[,jj],na.rm=TRUE)*100/AppliedRate # AV testing 4/2/2021
+    CS<-sum(CM[,jj],na.rm=TRUE)*100/AppliedRate # AV testing 4/2/2021
+    CS # AV testing 4/2/2021
   }
 
   PercAppliedwithPlume <- CS
@@ -273,6 +277,7 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
   err <- 0.7
   YYYY <- fg(k0,k1,n,XX)
 
+  #browser()
   ## Create tibble for plotting
   dep_data <- tibble("XX" = XX, "APplume" = APplume)
 
