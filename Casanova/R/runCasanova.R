@@ -5,6 +5,7 @@
 #' @param report_folder is the folder to save the .html reports
 #' @param report is a T/F input indicating whether reports need to be printed out
 #' @param curvefitDSD is a T/F indicating whether the DSD will be curve fitted or interpolated
+#' @param curve_fit_ini_file is the file name with initial curve fit values; default file is Curve_Fit_Initial_Values.csv
 #' @driver can be "text", "silent", "shiny" to output progress of step 5, no progress or progress for the shiny app respectively
 #'
 #' @return a list containing all droplet data and deposition for each scenario analyzed
@@ -83,7 +84,7 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
 #   NF <- NozzleParamData$`NF (gpm)`
 
 
-  # The following files are read to test whether they can be read without errors
+  # The following input files are read and examined to test whether they can be read without errors and follow basic input guidelines
 
   # Check the number of scenarios to be input sequentially
   if(max(scnData$'Scenario-ID')==nrow(scnData)) {
@@ -100,8 +101,6 @@ runCasanova <- function(scnFile="./sample_data/Scenarios.csv",
     }
   }
 
-
-  # The following files are read to test whether they can be read without errors
   for (i in 1:i_scn){
     # Read DSD file
     DSDFile<-paste0("./sample_data/",scnData$`DSD-Filename`[i])
