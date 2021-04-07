@@ -28,9 +28,9 @@ psd_stats<-function(y, Dpdata){
   }
 
 
-  IN<-y_inc/(4/3*pi*(Dpdata/2*0.000001)^3)
-  IN_per<-IN/sum(IN)*100
-  IN_cum<-NULL
+  IN<-y_inc/(4/3*pi*(Dpdata/2*0.000001)^3) # Incremental Number
+  IN_per<-IN/sum(IN)*100 # Incremental Number in %
+  IN_cum<-NULL          # Cumulative number
   IN_cum[1]<-IN_per[1]
   for (i in 2:length(IN_per)){
     IN_cum[i]<-IN_per[i]+IN_cum[i-1]
@@ -41,11 +41,11 @@ psd_stats<-function(y, Dpdata){
 
   #browser()
   drop_num<-y_inc/DropVol
-  calc_vm<-drop_num*y^3
-  calc_sm<-drop_num*y^2
+  calc_vm<-drop_num*Dpdata^3
+  calc_sm<-drop_num*Dpdata^2
 
   D30<-(sum(calc_vm)/sum(drop_num))^(1/3)
-  D32<-(sum(calc_sm)/sum(drop_num))^(1/3) # The calculation in the excel appears incorrect; waiting for status
+  D32<-sum(calc_vm)/sum(calc_sm)
 
 
   psd_fun2<-approxfun(Dpdata,y)
@@ -77,6 +77,7 @@ psd_stats<-function(y, Dpdata){
       axis.title.x = element_text(size = 16)
     )
 
+  #browser()
  stats<-tibble(DV10=DV10,DV50=DV50,
              DV90=DV90, NMD=NMD, D30=D30,
              D32=D32,RS=RS,
