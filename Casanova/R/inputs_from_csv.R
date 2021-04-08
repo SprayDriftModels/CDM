@@ -142,22 +142,44 @@ inputs_from_csv <- function(DSDData,
   # browser()
 
   # As provided list of properties:
-  input_props<-list(  y=y,  Dpdata=Dpdata,
-                      Tair=Tair,  Patm=Patm,  RH=RH,
-                      measurements=measurements,
-                      ch=ch,z1=z1,ux1=ux1,
-                      rhow=rhow,  rhos=rhos,  xs0=xs0,  rhosoln=rhosoln,
-                      H0=H0,  hcm=hcm,  app_p=app_p,  angle=angle,
-                      ddd1=ddd1,  ddd2=ddd2,  ddd3=ddd3,
-                      IAR=IAR,   xactive=xactive, FD=FD, PL=PL,
-                      NozzleSpacing=NozzleSpacing,  psipsipsi=psipsipsi,
-                      rhoL=rhoL,  Dpmax=Dpmax, DDpmin=DDpmin,
-                      MMM=MMM,  lambda=lambda,
-                      paramsWT=paramsWT, method=method)
+  input_props <- list(
+    y = y,
+    Dpdata = Dpdata,
+    Tair = Tair,
+    Patm = Patm,
+    RH = RH,
+    measurements = measurements,
+    ch = ch,
+    z1 = z1,
+    ux1 = ux1,
+    rhow = rhow,
+    rhos = rhos,
+    xs0 = xs0,
+    rhosoln = rhosoln,
+    H0 = H0,
+    hcm = hcm,
+    app_p = app_p,
+    angle = angle,
+    ddd1 = ddd1,
+    ddd2 = ddd2,
+    ddd3 = ddd3,
+    IAR = IAR,
+    xactive = xactive,
+    FD = FD,
+    PL = PL,
+    NozzleSpacing = NozzleSpacing,
+    psipsipsi = psipsipsi,
+    rhoL = rhoL,
+    Dpmax = Dpmax,
+    DDpmin = DDpmin,
+    MMM = MMM,
+    lambda = lambda,
+    paramsWT = paramsWT,
+    method = method
+  )
 
   # Convert input units to units used in the computation module
-  if (paramsUnits=='English')
-  {
+  if (paramsUnits=='English') {
     Tair<-(Tair-32)*5/9 # Computation module uses degrees C
     paramsWT[[4]]<-(paramsWT[[4]]-32)*5/9  # Computation module uses degrees C
     rhow<-rhow/62.428 # Computation module uses g/cc
@@ -165,9 +187,7 @@ inputs_from_csv <- function(DSDData,
     rhosoln<-rhosoln/0.062428 # Computation module uses kg/m3
     rhoL<-rhoL/0.062428   # Computation module uses g/cc
     hcm<-hcm*2.54 # Computation module uses cm
-
-  }
-  else {
+  } else {
     ch<-ch/2.54  # Computation module uses in
     z1<-z1*3.28084  # Computation module uses ft
     ux1<-ux1*2.23694     # Computation model used mph
@@ -180,22 +200,44 @@ inputs_from_csv <- function(DSDData,
     FD<-FD*3.28084  # Computation module uses ft
     PL<-PL*3.28084   # Computation module uses ft
     NozzleSpacing<-NozzleSpacing/2.54   # Computation module uses in
-
   }
 
   # Converted list of properties to the units used in computation modules
-  input_props_comp<-list(  y=y,  Dpdata=Dpdata,
-         Tair=Tair,  Patm=Patm,  RH=RH,
-         measurements=measurements,
-         ch=ch,z1=z1,ux1=ux1,
-         rhow=rhow,  rhos=rhos,  xs0=xs0,  rhosoln=rhosoln,
-         H0=H0,  hcm=hcm,  app_p=app_p,  angle=angle,
-         ddd1=ddd1,  ddd2=ddd2,  ddd3=ddd3,
-         IAR=IAR,   xactive=xactive, FD=FD, PL=PL,
-         NozzleSpacing=NozzleSpacing,  psipsipsi=psipsipsi,
-         rhoL=rhoL,  Dpmax=Dpmax, DDpmin=DDpmin,
-         MMM=MMM,  lambda=lambda,
-         paramsWT=paramsWT, method=method)
+  input_props_comp <- list(
+    y = y,
+    Dpdata = Dpdata,
+    Tair = Tair,
+    Patm = Patm,
+    RH = RH,
+    measurements = measurements,
+    ch = ch,
+    z1 = z1,
+    ux1 = ux1,
+    rhow = rhow,
+    rhos = rhos,
+    xs0 = xs0,
+    rhosoln = rhosoln,
+    H0 = H0,
+    hcm = hcm,
+    app_p = app_p,
+    angle = angle,
+    ddd1 = ddd1,
+    ddd2 = ddd2,
+    ddd3 = ddd3,
+    IAR = IAR,
+    xactive = xactive,
+    FD = FD,
+    PL = PL,
+    NozzleSpacing = NozzleSpacing,
+    psipsipsi = psipsipsi,
+    rhoL = rhoL,
+    Dpmax = Dpmax,
+    DDpmin = DDpmin,
+    MMM = MMM,
+    lambda = lambda,
+    paramsWT = paramsWT,
+    method = method
+  )
 
   return(
     list(input_props=input_props, input_props_comp=input_props_comp)
