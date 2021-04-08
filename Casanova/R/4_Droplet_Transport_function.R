@@ -54,25 +54,30 @@ droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm,Uf, z0, Pn,
 
 
   # Note this orginal code # Commented by AV to match new mathcad on 3/28/2021
-  # Xf <- (1350/102)^(1/(22-12))
+  #Xf <- (1350/102)^(1/(22-12))
   #
-  # Dp <- c(0) # Initialize
+  #Dp <- c(0) # Initialize
   #
-  # for(i in 1:13){
-  #   Dp[i]<-18+(i-1)*7
-  # }
-  #
+  #for(i in 1:13){
+  # Dp[i]<-18+(i-1)*7
+  #}
+
   # for(i in 14:23){
   #   Dp[i]<-Dp[i-1]*Xf
   # }
 
-  # This is new mathcad code; added by AV to match new mathacde on 3/28/2021
+  # This is new mathcad code; added by AV to match new mathcad on 3/28/2021
+  Dp<-NULL
   for(i in 1:23){
     Dp[i]<-17.829*1.193^(i-1)
   }
 
-  Psw<-function(T){
-    exp(18.3036+log(1/760)-3816.44/(T+227.02))
+  #Psw<-function(T){
+  #  exp(18.3036+log(1/760)-3816.44/(T+227.02))
+  #}
+
+  Psw<-function(T){  # Temporary to match Mathcad only
+    exp(18.92676+log(1/760)-4169.627/(T+239.582))
   }
 
   #Water Vapor Pressure Equation, in atmospheres, T in C
@@ -89,9 +94,11 @@ droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm,Uf, z0, Pn,
   ttt <- 0
 
 
-  Tdp <- 3816.44/(3816.44/(Tair+227.02)-log(RH/100))-227.02
+  #Tdp <- 3816.44/(3816.44/(Tair+227.02)-log(RH/100))-227.02
+  Tdp <- 4169.627/(4169.627/(Tair+239.582)-log(RH/100))-239.52 # Temporary to match latest mathcad
   DPD <- Tair-Tdp
   Ywinf <- Psw(Tdp)/1
+  #Ywinf <- Psw(Tdp)/(735.3/760) # Temporary
 
   theta <- xs0/rhos/(xs0/rhos+(1-xs0)/rhow)
 

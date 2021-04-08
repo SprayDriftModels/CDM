@@ -61,8 +61,8 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
   # 3/28/2021
 
   LvsDpa <- data.frame(
-    #Dp=c(18.0,25.0,32.0,39.0,46.0,53.0,60.0,67.0,74.0,81.0,88.0,95.0,102.0,132.1,171.0,221.4,286.6,371.1,480.4,622.0,805.4,1042.7,1350.0),
-    Dp=Dp_inp, # 3/28/2021
+    Dp=c(18.0,25.0,32.0,39.0,46.0,53.0,60.0,67.0,74.0,81.0,88.0,95.0,102.0,132.1,171.0,221.4,286.6,371.1,480.4,622.0,805.4,1042.7,1350.0),
+    #Dp=Dp_inp, # 3/28/2021
     Cent=Cent_inp,
     Dwnd=Dwnd_inp,
     Uwnd=Uwnd_inp
@@ -108,7 +108,7 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
   DriftDistc[1] <- 0  # (note: this is not used later, because Lmax is reset)
 
 
-  Lmax <- 200 # This is new eqn for Lmax; this eqn replaces above eqn
+  Lmax <- 750 # This is new eqn for Lmax; this eqn replaces above eqn
   DWda <- Lmax/Nda
 
   SprayedArea <- FD*PL/43560

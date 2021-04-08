@@ -6,6 +6,7 @@
 #' @param report is a T/F input indicating whether reports need to be printed out
 #' @param curvefitDSD is a T/F indicating whether the DSD will be curve fitted or interpolated
 #' @param driver can be "text", "silent", "shiny" to output progress of step 5, no progress or progress for the shiny app respectively
+#' @param curve_fit_ini_file is the file name with initial curve fit values; default file is Curve_Fit_Initial_Values.csv
 #'
 #' @return a list containing all droplet data and deposition for each scenario analyzed
 #' @export
@@ -26,7 +27,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
   ptm <- proc.time()
 
   ##############################################################################
-  # See if the report output file exists
+  # See if the report output folder exists
   if (report){
     if (file.exists(report_folder)){
       rep_over<-readline(prompt=paste('The report folder',report_folder,'already exists. Overwrite files in folder? (Y/N)'))
@@ -79,8 +80,6 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
     CFiniData <- curve_fit_ini_file #this is uploaded as a dataset directly in case we allow users to select a different file (or could add to scnFile list if desired)
   }
 
-  # The following files are read to test whether they can be read without errors
-
   # Check the number of scenarios to be input sequentially
   if (driver %in% c("text", "silent")) {
     if (max(scnData$'Scenario_ID') == nrow(scnData)) {
@@ -99,7 +98,6 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
 
   # The following files are read to test whether they can be read without errors
   if (driver == "shiny") i_scn <- 1
-
   for (i in 1:i_scn) {
 
     if (driver %in% c("text", "silent")) {
@@ -144,6 +142,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
       # Assign variable for Wind/Temperature file
       # paramsWTFile <-
       #   paste0("./sample_data/", scnData$Wind_Temp_Filename[i])
+
 
     # browser()
     # Check the number of parameters to be input sequentially
@@ -205,6 +204,8 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
     }
 
 
+    # paramsUnits<-scnData$`Params-Units`[i] # This is the unit system of the input parameters
+    # paramsID<-scnData$`Params-ID`[i] # This is the unit ID of the input parameters
 
     # Try to assign parameters from loaded files
     #***SFR is this just a check? should there be a tryCatch for this?
@@ -254,11 +255,6 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
       # Don't need to do anything, everything already loaded
     }
 
-      ## Load hard-coded inputs
-      # AV comment: I think p and NF were not used after all in calculations
-      #Nozzle_params <- as_tibble(read.csv(NozzleParamFile, header = T))
-      #p <- Nozzle_params %>% select(p)
-      #NF <- Nozzle_params %>% select(NF)
 
       # Finished reading input files
 
@@ -322,7 +318,10 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
         )
       }
 
-      #browser()
+      results$psd_stats<-psd_stats(y,Dpdata)
+
+
+      # browser()
       # Part 2, Wet Bulb Calculations
       Twb <- wet_bulb(Tair, Patm, RH)
       results$Twb <- Twb
@@ -342,27 +341,24 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
 
       } else if (measurements > 1) {
 
-        # Part for when we have more than 1 wind v. elevation measurements.
-        ###########################################
 
-        #z0<-WV2m(z1,z2,ux1,ux2)[1]
-        #Uf<-WV2m(z1,z2,ux1,ux2)[2]
-        #wvprofile_params<-WV2m(z1,z2,ux1,ux2)
+        z0<-wvprofilem(paramsWT,method,ch)[1]
+        Uf<-wvprofilem(paramsWT,method,ch)[2]
+        if (!is.nan(wvprofilem(paramsWT,method,ch)[3])){
+          psipsipsi<-wvprofilem(paramsWT,method,ch)[3]   # This calculation overrides the input psipsipsi if measurements are more than 1
+        }
 
-        z0 <- wvprofilem(paramsWT, method, ch)[1]
-        Uf <- wvprofilem(paramsWT, method, ch)[2]
-        psipsipsi <-
-          wvprofilem(paramsWT, method, ch)[3]   # This calculation overrides the input psipsipsi if measurements are more than 1
-        wvprofile_params <- wvprofilem(paramsWT, method, ch)
+        wvprofile_params<-wvprofilem(paramsWT,method,ch)
       }
-
-      results$wvprofile_params <- wvprofile_params
+      results$wvprofile_params<-wvprofile_params
+      # browser()
 
       #Part 4, Droplet Transport Calculations
       tryCatch({
-        charac <- charact_cal(app_p, angle, rhosoln)
-        DTwb <- Twb[1] # Wetbulb temperature depression, C
+        charac<-charact_cal(app_p,angle, rhosoln)
+        #browser()
 
+        DTwb<-Twb[1] # Wetbulb temperature depression, C
         print(paste("Solving Straight Down Problem for Scenario", i))
         #browser()
 
@@ -467,7 +463,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
 
       tryCatch(
         {
-          #browser()
+          # browser()
           print(paste("Calculating Deposition for Scenario", i))
           deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda,driver,curvefitDSD,y,Dpdata)
           print(paste("Deposition calculations are finished for Scenario", i))

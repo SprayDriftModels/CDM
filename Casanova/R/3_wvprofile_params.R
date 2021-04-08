@@ -14,11 +14,8 @@ wvprofile <- function(z1, ux1, ch){
   zcm <- z1*12*2.54
   Vcms <- ux1*5280*12*2.54/3600
 
-  #######################
-  # Example Override; different equations:
   z0 <- (0.00340738473+0.1244537*ch)*100 # in cm
   Uf <- Vcms*0.41/log(zcm/z0) # in cm/s
-  #######################
 
   return(c(z0, Uf))
 }

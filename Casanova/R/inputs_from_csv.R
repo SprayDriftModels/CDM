@@ -37,11 +37,12 @@ inputs_from_csv <- function(DSDData,
   }
 
   ## Determine where to draw the cut-off (begin with first value over zero and end with first value that reaches 100)
-  i_firsty <- max(min(which(y_temp > 0))-1,1)
+  i_firsty <- max(min(which(y_temp > 0)),1)
   i_lasty <- max(which(y_temp < 100)) + 1
   y<-y_temp[i_firsty:i_lasty]
+  y<-c(0,y)
   Dpdata<-unname(DSDData$Droplet_Size_microns[i_firsty:i_lasty]) # Corresponding droplet size, units used in computation module: microns
-
+  Dpdata<-c(0,Dpdata)
 
   # Change the first element of the Dpdata vector
   Dpdata[1]<-Dpdata[2]-(Dpdata[3]-Dpdata[2])/(y[3]-y[2])*y[2]
