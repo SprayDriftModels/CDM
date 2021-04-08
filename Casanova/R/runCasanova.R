@@ -130,8 +130,8 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
         # In this case the Wind/Temperature file is needed:
         paramsWTFile <-
           paste0("./sample_data/", scnData$Wind_Temp_Filename[i])
-        paramsWTData<-NULL
-        paramsWTData <- tryCatch({
+        paramsWT<-NULL
+        paramsWT <- tryCatch({
           read_csv(paramsWTFile,col_types='dddd')
         },
         error=function(e){
@@ -139,7 +139,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
         }
         )
       } else {
-        paramsWTData <- NULL
+        paramsWT <- NULL
       }
       # Assign variable for Wind/Temperature file
       # paramsWTFile <-
@@ -159,7 +159,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
     } else if (driver == "shiny") {
       DDDparamsData <- scnFile$DSDData
       paramsData <- scnFile$paramsData
-      paramsWTData <- scnFile$paramsWTFile
+      paramsWT <- scnFile$paramsWTFile
     }
 
     if (driver %in% c("text", "silent")) {
@@ -208,12 +208,12 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
 
     # Try to assign parameters from loaded files
     #***SFR is this just a check? should there be a tryCatch for this?
-    inputs_from_csv(DSDData,
-                    paramsData,
-                    DDDparamsData,
-                    paramsID,
-                    paramsUnits,
-                    paramsWTFile)
+    Casanova::inputs_from_csv(DSDData,
+                              paramsData,
+                              DDDparamsData,
+                              paramsID,
+                              paramsUnits,
+                              paramsWTFile)
 
   }
 
@@ -224,6 +224,8 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
   for (i in 1:i_scn) {
     # Error control if a scenario fails
     tryCatch({
+
+      if (driver %in% c("text", "silent")) {
       # Read DSD file
       DSDFile<-paste0("./sample_data/",scnData$`DSD_Filename`[i])
       DSDData<-NULL
@@ -248,6 +250,10 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
       paramsUnits<-scnData$`Params_Units`[i] # This is the unit system of the parameters
       paramsID<-scnData$`Params_ID`[i] # This is the unit system of the parameters
 
+    } else if (driver == "shiny") {
+      # Don't need to do anything, everything already loaded
+    }
+
       ## Load hard-coded inputs
       # AV comment: I think p and NF were not used after all in calculations
       #Nozzle_params <- as_tibble(read.csv(NozzleParamFile, header = T))
@@ -257,84 +263,84 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
       # Finished reading input files
 
       # Assign parameters from loaded files
-      all_inputs<-inputs_from_csv(DSDData,
-                                  paramsData,
-                                  DDDparamsData,
-                                  paramsID,
-                                  paramsUnits,
-                                  paramsWTFile)
+      all_inputs <- inputs_from_csv(DSDData,
+                                    paramsData,
+                                    DDDparamsData,
+                                    paramsID,
+                                    paramsUnits,
+                                    paramsWTFile)
 
       # The following assigns the inputs converted to the computational units
-      y<-all_inputs$input_props_comp$y
-      Dpdata<-all_inputs$input_props_comp$Dpdata
-      Tair<-all_inputs$input_props_comp$Tair
-      Patm<-all_inputs$input_props_comp$Patm
-      RH<-all_inputs$input_props_comp$RH
-      measurements<-all_inputs$input_props_comp$measurements
-      ch<-all_inputs$input_props_comp$ch
-      z1<-all_inputs$input_props_comp$z1
-      ux1<-all_inputs$input_props_comp$ux1
-      rhow<-all_inputs$input_props_comp$rhow
-      rhos<-all_inputs$input_props_comp$rhos
-      xs0<-all_inputs$input_props_comp$xs0
-      rhosoln<-all_inputs$input_props_comp$rhosoln
-      H0<-all_inputs$input_props_comp$H0
-      hcm<-all_inputs$input_props_comp$hcm
-      app_p<-all_inputs$input_props_comp$app_p
-      angle<-all_inputs$input_props_comp$angle
-      ddd1<-all_inputs$input_props_comp$ddd1
-      ddd2<-all_inputs$input_props_comp$ddd2
-      ddd3<-all_inputs$input_props_comp$ddd3
-      IAR<-all_inputs$input_props_comp$IAR
-      xactive<-all_inputs$input_props_comp$xactive
-      FD<-all_inputs$input_props_comp$FD
-      PL<-all_inputs$input_props_comp$PL
-      NozzleSpacing<-all_inputs$input_props_comp$NozzleSpacing
-      psipsipsi<-all_inputs$input_props_comp$psipsipsi
-      rhoL<-all_inputs$input_props_comp$rhoL
-      Dpmax<-all_inputs$input_props_comp$Dpmax
-      DDpmin<-all_inputs$input_props_comp$DDpmin
-      MMM<-all_inputs$input_props_comp$MMM
-      lambda<-all_inputs$input_props_comp$lambda
-      paramsWT<-all_inputs$input_props_comp$paramsWT
-      method<-all_inputs$input_props_comp$method
+      y <- all_inputs$input_props_comp$y
+      Dpdata <- all_inputs$input_props_comp$Dpdata
+      Tair <- all_inputs$input_props_comp$Tair
+      Patm <- all_inputs$input_props_comp$Patm
+      RH <- all_inputs$input_props_comp$RH
+      measurements <- all_inputs$input_props_comp$measurements
+      ch <- all_inputs$input_props_comp$ch
+      z1 <- all_inputs$input_props_comp$z1
+      ux1 <- all_inputs$input_props_comp$ux1
+      rhow <- all_inputs$input_props_comp$rhow
+      rhos <- all_inputs$input_props_comp$rhos
+      xs0 <- all_inputs$input_props_comp$xs0
+      rhosoln <- all_inputs$input_props_comp$rhosoln
+      H0 <- all_inputs$input_props_comp$H0
+      hcm <- all_inputs$input_props_comp$hcm
+      app_p <- all_inputs$input_props_comp$app_p
+      angle <- all_inputs$input_props_comp$angle
+      ddd1 <- all_inputs$input_props_comp$ddd1
+      ddd2 <- all_inputs$input_props_comp$ddd2
+      ddd3 <- all_inputs$input_props_comp$ddd3
+      IAR <- all_inputs$input_props_comp$IAR
+      xactive <- all_inputs$input_props_comp$xactive
+      FD <- all_inputs$input_props_comp$FD
+      PL <- all_inputs$input_props_comp$PL
+      NozzleSpacing <- all_inputs$input_props_comp$NozzleSpacing
+      psipsipsi <- all_inputs$input_props_comp$psipsipsi
+      rhoL <- all_inputs$input_props_comp$rhoL
+      Dpmax <- all_inputs$input_props_comp$Dpmax
+      DDpmin <- all_inputs$input_props_comp$DDpmin
+      MMM <- all_inputs$input_props_comp$MMM
+      lambda <- all_inputs$input_props_comp$lambda
+      paramsWT <- all_inputs$input_props_comp$paramsWT
+      method <- all_inputs$input_props_comp$method
 
 
       #browser()
 
-      if (curvefitDSD==T){
+      if (curvefitDSD == T) {
         # Part 1, Curve fitting: Variable pars contains the fitted parameters of the drop size distribution model
-        pars <- psd(y,Dpdata,CFiniData)
-        results$psd_pars<-pars
-      }
-      else
-      {
-        results$psd_pars<-list("res" = 'No DSD fitting',
-                               "plot" = 'No DSD fitting',
-                               "table" = 'No DSD fitting',
-                               "y" = y,
-                               "Dpdata" = Dpdata)
+        pars <- psd(y, Dpdata, CFiniData)
+        results$psd_pars <- pars
+      } else {
+        results$psd_pars <- list(
+          "res" = 'No DSD fitting',
+          "plot" = 'No DSD fitting',
+          "table" = 'No DSD fitting',
+          "y" = y,
+          "Dpdata" = Dpdata
+        )
       }
 
       #browser()
       # Part 2, Wet Bulb Calculations
       Twb <- wet_bulb(Tair, Patm, RH)
-      results$Twb<-Twb
+      results$Twb <- Twb
 
       #browser()
 
       # Part 3, Wind profile and turbulence (psipsipsi) parameters
-      if (measurements==1){
+      if (measurements == 1) {
         # This first part is when we have only one wind v. elevation measurement.
         # Outputs are Uh, Ufriction, z1, z0, alpha_avg, k2
 
-        profile<-wvprofile(z1, ux1, ch)
-        z0<-profile[1]
-        Uf<-profile[2]
+        profile <- wvprofile(z1, ux1, ch)
+        z0 <- profile[1]
+        Uf <- profile[2]
 
-        wvprofile_params <-profile
+        wvprofile_params <- profile
 
-      }else if (measurements>1){
+      } else if (measurements > 1) {
 
         # Part for when we have more than 1 wind v. elevation measurements.
         ###########################################
@@ -343,24 +349,77 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
         #Uf<-WV2m(z1,z2,ux1,ux2)[2]
         #wvprofile_params<-WV2m(z1,z2,ux1,ux2)
 
-        z0<-wvprofilem(paramsWT,method,ch)[1]
-        Uf<-wvprofilem(paramsWT,method,ch)[2]
-        psipsipsi<-wvprofilem(paramsWT,method,ch)[3]   # This calculation overrides the input psipsipsi if measurements are more than 1
-        wvprofile_params<-wvprofilem(paramsWT,method,ch)
+        z0 <- wvprofilem(paramsWT, method, ch)[1]
+        Uf <- wvprofilem(paramsWT, method, ch)[2]
+        psipsipsi <-
+          wvprofilem(paramsWT, method, ch)[3]   # This calculation overrides the input psipsipsi if measurements are more than 1
+        wvprofile_params <- wvprofilem(paramsWT, method, ch)
       }
-      results$wvprofile_params<-wvprofile_params
+
+      results$wvprofile_params <- wvprofile_params
 
       #Part 4, Droplet Transport Calculations
       tryCatch({
-        charac<-charact_cal(app_p,angle, rhosoln)
-        DTwb<-Twb[1] # Wetbulb temperature depression, C
+        charac <- charact_cal(app_p, angle, rhosoln)
+        DTwb <- Twb[1] # Wetbulb temperature depression, C
+
         print(paste("Solving Straight Down Problem for Scenario", i))
         #browser()
-        droplet_1<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[1],charac[2],ddd1,"text")
+
+        droplet_1 <-
+          Casanova::droplet_transport(Tair,
+                                      RH,
+                                      rhow,
+                                      rhos,
+                                      xs0,
+                                      H0,
+                                      DTwb,
+                                      hcm,
+                                      Uf,
+                                      z0,
+                                      app_p,
+                                      charac[1],
+                                      charac[2],
+                                      ddd1,
+                                      "text")
+
         print(paste("Solving with Wind Problem for Scenario", i))
-        droplet_2<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[3],charac[4],ddd2,"text")
+
+        droplet_2 <-
+          Casanova::droplet_transport(Tair,
+                                      RH,
+                                      rhow,
+                                      rhos,
+                                      xs0,
+                                      H0,
+                                      DTwb,
+                                      hcm,
+                                      Uf,
+                                      z0,
+                                      app_p,
+                                      charac[3],
+                                      charac[4],
+                                      ddd2,
+                                      "text")
+
         print(paste("Solving against Wind Problem for Scenario", i))
-        droplet_3<-droplet_transport(Tair,RH,rhow,rhos,xs0,H0,DTwb,hcm,Uf,z0,app_p,charac[5],charac[6],ddd3,"text")
+
+        droplet_3 <-
+          Casanova::droplet_transport(Tair,
+                                      RH,
+                                      rhow,
+                                      rhos,
+                                      xs0,
+                                      H0,
+                                      DTwb,
+                                      hcm,
+                                      Uf,
+                                      z0,
+                                      app_p,
+                                      charac[5],
+                                      charac[6],
+                                      ddd3,
+                                      "text")
 
         print(paste("Finished Solving for Droplet Transport for Scenario", i))
 
