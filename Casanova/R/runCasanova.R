@@ -98,6 +98,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
 
   # The following files are read to test whether they can be read without errors
   if (driver == "shiny") i_scn <- 1
+
   for (i in 1:i_scn) {
 
     if (driver %in% c("text", "silent")) {
@@ -156,7 +157,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
     }
 
     } else if (driver == "shiny") {
-      DDDparamsData <- scnFile$DSDData
+      DSDData <- scnFile$DSDData
       paramsData <- scnFile$paramsData
       paramsWT <- scnFile$paramsWTFile
     }
@@ -214,7 +215,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
                               DDDparamsData,
                               paramsID,
                               paramsUnits,
-                              paramsWTFile)
+                              paramsWT)
 
   }
 
@@ -264,7 +265,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
                                     DDDparamsData,
                                     paramsID,
                                     paramsUnits,
-                                    paramsWTFile)
+                                    paramsWT)
 
       # The following assigns the inputs converted to the computational units
       y <- all_inputs$input_props_comp$y
@@ -377,7 +378,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
                                       charac[1],
                                       charac[2],
                                       ddd1,
-                                      "text")
+                                      driver)
 
         print(paste("Solving with Wind Problem for Scenario", i))
 
@@ -396,7 +397,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
                                       charac[3],
                                       charac[4],
                                       ddd2,
-                                      "text")
+                                      driver)
 
         print(paste("Solving against Wind Problem for Scenario", i))
 
@@ -415,7 +416,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
                                       charac[5],
                                       charac[6],
                                       ddd3,
-                                      "text")
+                                      driver)
 
         print(paste("Finished Solving for Droplet Transport for Scenario", i))
 
@@ -442,7 +443,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
 
       },
 
-      error=function(e){
+      error = function(e) {
         "Could not run part 4, Droplet Transfer Function"
       }
       )
@@ -450,50 +451,66 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
       # Part 5
       # ________________________________________
 
-      if (curvefitDSD==T){
-        a<-unname(pars$res)  # Calibration from step #1 (removing the stored names)
+      if (curvefitDSD == T){
+        a <- unname(pars$res)  # Calibration from step #1 (removing the stored names)
       }
       else {
-        a<-NULL
+        a <- NULL
       }
       # Input from previous function
-      Cent<-droplet_1[2]$Xdist
-      Dwnd<-droplet_2[2]$Xdist
-      Uwnd<-droplet_3[2]$Xdist
+      Cent <- droplet_1[2]$Xdist
+      Dwnd <- droplet_2[2]$Xdist
+      Uwnd <- droplet_3[2]$Xdist
 
-      tryCatch(
-        {
-          # browser()
-          print(paste("Calculating Deposition for Scenario", i))
-          deposition<-deposition_calcs(IAR,xactive,FD,PL, NozzleSpacing, psipsipsi,rhoL, Cent,Dwnd,Uwnd, Dpmax, DDpmin,a,MMM, lambda,driver,curvefitDSD,y,Dpdata)
-          print(paste("Deposition calculations are finished for Scenario", i))
-        },
-        error=function(e){
-          print("Could not run part 5, Deposition Calculations")
-        }
-
-      )
+      tryCatch({
+        # browser()
+        print(paste("Calculating Deposition for Scenario", i))
+        deposition <-
+          deposition_calcs(
+            IAR,
+            xactive,
+            FD,
+            PL,
+            NozzleSpacing,
+            psipsipsi,
+            rhoL,
+            Cent,
+            Dwnd,
+            Uwnd,
+            Dpmax,
+            DDpmin,
+            a,
+            MMM,
+            lambda,
+            driver,
+            curvefitDSD,
+            y,
+            Dpdata
+          )
+        print(paste("Deposition calculations are finished for Scenario", i))
+      },
+      error = function(e) {
+        print("Could not run part 5, Deposition Calculations")
+      })
       results$deposition <- deposition
-
-
     },
-    error=function(e){
-      print(paste("Could not run scenario",i))
+    error = function(e) {
+      print(paste("Could not run scenario", i))
     }
-
     )
 #browser()
     # The following generates one .html report per scenario
-    if (report==T){
-      write_report(i,all_inputs, results, report_folder, paramsUnits)
-
+    if (report == T) {
+      write_report(i, all_inputs, results, report_folder, paramsUnits)
     }
 
-    all_results[[i]]<-results # This list stores all results so that they can be output
+    all_results[[i]] <-
+      results # This list stores all results so that they can be output
 
   }  # This is the end of the loop for all scenarios
 
-  try(dev.off(),silent = T) # This prevents a bug that causes Rstudio to crash sometimes if one accesses the plots from the return value
+  try(dev.off(), silent = T)
+  # This prevents a bug that causes Rstudio to crash sometimes if one accesses the plots from the return value
   print(paste('Computation time was:', (proc.time() - ptm)[[3]]))
   return(all_results)
 }
