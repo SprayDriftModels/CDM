@@ -523,8 +523,8 @@ server <- function(input, output, session) {
           max = 5000
         )
       )
-      ## If two measurements
-    } else if (input$NumberMeasures_chosen == 2) {
+      ## If more than one measurement
+    } else if (input$NumberMeasures_chosen > 1) {
       tagList(
         numericInput(
           inputId = "z1",

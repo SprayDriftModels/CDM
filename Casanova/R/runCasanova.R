@@ -182,7 +182,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
     ## Check that the user has not changed the default units:
     if (paramsUnits %in% c("Metric", "metric")) {
       if (!(
-        all(as.character(paramsData$Units) == Casanova::params$Units_Metric, na.rm = T)
+        all(as.character(paramsData$Units) == Casanova::params_metric$Units, na.rm = T)
       )) {
         stop(
           paste0('Check units for Scenario_ID: ', i_scn, '. ',
@@ -193,7 +193,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
       }
     } else if (paramsUnits %in% c("English", "english")) {
       if (!(
-        all(as.character(paramsData$Units) == Casanova::params$Units_English, na.rm = T)
+        all(as.character(paramsData$Units) == Casanova::params_english$Units, na.rm = T)
       )) {
         stop(
           paste0('Check units for Scenario_ID: ', i_scn, '. ',

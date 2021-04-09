@@ -4,7 +4,7 @@
 #'
 #' @docType data
 #'
-#' @usage data(params)
+#' @usage data(params_english)
 #'
 #' @format An object of class \code{"cross"}; see \code{\link[qtl]{read.cross}}.
 #'
@@ -12,5 +12,5 @@
 #'
 #'
 #' @examples
-#' data(params)
-"params"
+#' data(params_english)
+"params_english"

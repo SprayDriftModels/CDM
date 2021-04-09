@@ -1,4 +1,4 @@
-Type,Description,Units,Values,Values,Values
+Type,Description,Units,Values_1,Values_2,Values_3
 ID,Sequencial ID,NA,1,2,3
 Tair,Dry air temperature,Fahreneit,63.84,70,70
 Patm,Barometric pressure,mmHg abs,760,760,760
