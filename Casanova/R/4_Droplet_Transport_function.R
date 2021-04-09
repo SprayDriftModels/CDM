@@ -20,8 +20,23 @@
 #' @export
 #'
 #' @examples
-droplet_transport<-function(Tair, RH, rhow, rhos, xs0, H0, DTwb, hcm,Uf, z0, Pn,  vz0, vx0, ddd_inp,
-                            Driver){
+droplet_transport <-
+  function(Tair,
+           RH,
+           rhow,
+           rhos,
+           xs0,
+           H0,
+           DTwb,
+           hcm,
+           Uf,
+           z0,
+           Pn,
+           vz0,
+           vx0,
+           ddd_inp,
+           Driver) {
+
 
   rhoL0 <- 1/(xs0/rhos+(1-xs0)/rhow) # Initial solution density (as applied), gram/cm^3
 
