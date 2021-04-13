@@ -1,28 +1,26 @@
-ID,Description,Units,Germany
-Tair,Dry air temperature,Celcius,18.57345
-Patm,Barometric pressure,mmHg abs,798
-RH,Relative humidity,%,37.4325
-measurements,Number of wind measurements,NA,1.05
-ch,Crop Heigh,cm,4.2
-z1,Elevation of wind speed (1),m,6.93
-ux1,MPH wind speed (1),m/s,13.44
-z2,Elevation of wind speed (2),m,1.7500035
-ux2,MPH wind speed (2),m/s,9.912
-rhow,Density of pure water in droplet,g/cm3,1.05
-rhos,Density of dissolved solids in droplet,g/cm3,2.116737
-xs0,Mass fraction total dissolved solids in solution,NA,0.02079
-rhosoln,Mix density,kg/m3,1059.135
-H0,Height of nozzle above ground,cm,21
-hcm,Canopy height (Droplet Transport Calculation),cm,0.2667
-app_p,Nozzle pressure,kPa,52.5
-angle,Nozzle angle,degrees,115.5
-IAR,Intended Application Rate,kg/ha,0.63924
-xactive,Conc in tank solution,wtfraction,0.012495
-FD,Downwind field depth,m,252.168
-PL,Crosswind field width,m,826.77
-NozzleSpacing,Space between nozzles on Boom,cm,21
-psipsipsi,"Horizontal variation in wind direction around mean direction, 1 stdev",degrees,11.235
-Dpmax,Dpmax,µm,1417.5
-Ddpmin,Dpmin,µm,18.9
-MMM,Number of droplet size bins,#,525
-lambda,Resolution of deposition calculations,NA,2.1
+Type,Description,Units,Values_1
+ID,Sequencial ID,NA,1
+Tair,Dry air temperature,Celcius,17.689
+Patm,Barometric pressure,mmHg abs,760
+RH,Relative humidity,%,35.65
+ch,Crop Height,cm,4
+measurements,Number of wind measurements; input 1 for one measurement or any value greater than 1 for more than one measurement,NA,2
+z1,Elevation of wind speed (1); put NA if more than one measurements,m,NA
+ux1,Wind speed (1); put NA if more than one measurements,m/s,NA
+psipsipsi,"Horizontal variation in wind direction around mean direction, 1 stdev (put NA if number of wind measurements is not 1)",degrees,10.7
+psipsipsi_method,"Method 1 interpolates value, method 2 uses SDTF function; Method to estimate psipsipsi when more than number of temperature and wind speed are available",NA,1
+rhow,Density of pure water in droplet,g/cm3,1
+rhos,Density of dissolved solids in droplet,g/cm3,2.01594
+xs0,Mass fraction total dissolved solids in solution,NA,0.0198
+rhosoln,Mix density,kg/m3,1008.7
+H0,Height of nozzle above ground,cm,20
+hcm,Canopy height (Droplet Transport Calculation),cm,0.254
+app_p,Nozzle pressure,kPa,50
+angle,Nozzle angle,degrees,110
+IAR,Intended Application Rate,kg/ha,0.6088
+xactive,Conc in tank solution,wtfraction,0.0119
+FD,Downwind field depth,m,240.16
+PL,Crosswind field width,m,787.4
+NozzleSpacing,Space between nozzles on Boom,cm,20
+MMM,Number of droplet size bins; if MMM is NA droplet bin of 0.5 microns is assumed,#,20
+lambda,Resolution of deposition calculations,NA,2
