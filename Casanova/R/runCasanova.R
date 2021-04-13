@@ -172,38 +172,14 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
       paramsID <- scnFile$Params_ID
     }
 
-
-    #***SFR these aren't checked. Do we need to check proper order of these as all?
+    #***SFR these aren't checked. Do we need to check correct names and proper order of these?
     # units_type<-c("ID", "Tair", "Patm", "RH", "ch","measurements",  "z1", "ux1",
     #               "psipsipsi", "psipsipsi_method", "rhow", "rhos", "xs0", "rhosoln", "H0", "hcm", "app_p",
     #               "angle", "IAR", "xactive", "FD", "PL", "NozzleSpacing", "MMM", "lambda")
 
     #browser()
     ## Check that the user has not changed the default units:
-    if (paramsUnits %in% c("Metric", "metric")) {
-      if (!(
-        all(as.character(paramsData$Units) == Casanova::params_metric$Units, na.rm = T)
-      )) {
-        stop(
-          paste0('Check units for Scenario_ID: ', i_scn, '. ',
-                 'Units should be ', paramsUnits, '. ',
-                 'See Casanova::params for expected units for each parameter.'
-          )
-        )
-      }
-    } else if (paramsUnits %in% c("English", "english")) {
-      if (!(
-        all(as.character(paramsData$Units) == Casanova::params_english$Units, na.rm = T)
-      )) {
-        stop(
-          paste0('Check units for Scenario_ID: ', i_scn, '. ',
-                 'Units should be ', paramsUnits, '. ',
-                 'See Casanova::params for expected units for each parameter.'
-          )
-        )
-      }
-    }
-
+    check_units(paramsUnits, paramsData, driver)
 
     # paramsUnits<-scnData$`Params-Units`[i] # This is the unit system of the input parameters
     # paramsID<-scnData$`Params-ID`[i] # This is the unit ID of the input parameters
