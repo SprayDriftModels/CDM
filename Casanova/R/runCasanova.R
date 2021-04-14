@@ -123,28 +123,6 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
         print(paste("Could not read parameters File for scenario", i))
       })
 
-      # Read Wind/Temp file if more than 1 measurement
-      measurements <- as.double(paramsData[which(paramsData$Type=='measurements'),][paramsID+3]) # Number of wind vs. height sets of measurements
-      if (measurements > 1) {
-        # In this case the Wind/Temperature file is needed:
-        paramsWTFile <-
-          paste0("./sample_data/", scnData$Wind_Temp_Filename[i])
-        paramsWT<-NULL
-        paramsWT <- tryCatch({
-          read_csv(paramsWTFile,col_types='dddd')
-        },
-        error=function(e){
-          print("Could not read wind/temperature File")
-        }
-        )
-      } else {
-        paramsWT <- NULL
-      }
-      # Assign variable for Wind/Temperature file
-      # paramsWTFile <-
-      #   paste0("./sample_data/", scnData$Wind_Temp_Filename[i])
-
-
     # browser()
     # Check the number of parameters to be input sequentially
     if (ncol(paramsData[which(paramsData$Type == 'ID'), ]) > 4) {
@@ -171,6 +149,28 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
       paramsUnits <- scnFile$Params_Units
       paramsID <- scnFile$Params_ID
     }
+
+    # Read Wind/Temp file if more than 1 measurement
+    measurements <- as.double(paramsData[which(paramsData$Type=='measurements'),][paramsID+3]) # Number of wind vs. height sets of measurements
+    if (measurements > 1) {
+      # In this case the Wind/Temperature file is needed:
+      paramsWTFile <-
+        paste0("./sample_data/", scnData$Wind_Temp_Filename[i])
+      paramsWT<-NULL
+      paramsWT <- tryCatch({
+        read_csv(paramsWTFile,col_types='dddd')
+      },
+      error=function(e){
+        print("Could not read wind/temperature File")
+      }
+      )
+    } else {
+      paramsWT <- NULL
+    }
+    # Assign variable for Wind/Temperature file
+    # paramsWTFile <-
+    #   paste0("./sample_data/", scnData$Wind_Temp_Filename[i])
+
 
     #***SFR these aren't checked. Do we need to check correct names and proper order of these?
     # units_type<-c("ID", "Tair", "Patm", "RH", "ch","measurements",  "z1", "ux1",
