@@ -334,71 +334,62 @@ ui <- material_page(
 ##################################################################################
 server <- function(input, output, session) {
 
-  # ## Create options for canopy/wind speed
-  # MeasurementOptions = c("Yes", "No")
-
-  #***SFR use as a template for validation
-  # validate(
-  #   need(nrow(geochem_filtered()) != 0,
-  #        "No Monte Carlo simulations are available for chosen selections. Consider making a different set of selections or selecting âNo Selection (all included)â for clay and/or oxide content on the User Selections page.")
-  # )
-
   #####
   # Set state of file so they can be set to NULL if reset button pressed
   #borrowed from https://stackoverflow.com/questions/44203728/how-to-reset-a-value-of-fileinput-in-shiny
   #***SFR not currently working
 
-  ## params
-  paramsvalues <- reactiveValues(
-    upload_state = NULL
-  )
+      ## params
+      paramsvalues <- reactiveValues(
+        upload_state = NULL
+      )
 
-  observeEvent(input$params_file_name, {
-    paramsvalues$upload_state <- 'uploaded'
-  })
+      observeEvent(input$params_file_name, {
+        paramsvalues$upload_state <- 'uploaded'
+      })
 
-  observeEvent(input$reset, {
-    paramsvalues$upload_state <- 'reset'
-  })
+      observeEvent(input$reset, {
+        paramsvalues$upload_state <- 'reset'
+      })
 
-  ## paramsWT
-  paramsWTvalues <- reactiveValues(
-    upload_state = NULL
-  )
+      ## paramsWT
+      paramsWTvalues <- reactiveValues(
+        upload_state = NULL
+      )
 
-  observeEvent(input$paramsWT_file_name, {
-    paramsWTvalues$upload_state <- 'uploaded'
-  })
+      observeEvent(input$paramsWT_file_name, {
+        paramsWTvalues$upload_state <- 'uploaded'
+      })
 
-  observeEvent(input$reset, {
-    paramsWTvalues$upload_state <- 'reset'
-  })
+      observeEvent(input$reset, {
+        paramsWTvalues$upload_state <- 'reset'
+      })
 
-  ## DSD
-  DSDvalues <- reactiveValues(
-    upload_state = NULL
-  )
+      ## DSD
+      DSDvalues <- reactiveValues(
+        upload_state = NULL
+      )
 
-  observeEvent(input$DSD_file_name, {
-    DSDvalues$upload_state <- 'uploaded'
-  })
+      observeEvent(input$DSD_file_name, {
+        DSDvalues$upload_state <- 'uploaded'
+      })
 
-  observeEvent(input$reset, {
-    DSDvalues$upload_state <- 'reset'
-  })
+      observeEvent(input$reset, {
+        DSDvalues$upload_state <- 'reset'
+      })
 
-  ## DDD
-  DDDvalues <- reactiveValues(
-    upload_state = NULL
-  )
+      ## DDD
+      DDDvalues <- reactiveValues(
+        upload_state = NULL
+      )
 
-  observeEvent(input$DDD_file_name, {
-    DDDvalues$upload_state <- 'uploaded'
-  })
+      observeEvent(input$DDD_file_name, {
+        DDDvalues$upload_state <- 'uploaded'
+      })
 
-  observeEvent(input$reset, {
-    DDDvalues$upload_state <- 'reset'
-  })
+      observeEvent(input$reset, {
+        DDDvalues$upload_state <- 'reset'
+      })
 
   #####
   ## Create UI for naming scenario
