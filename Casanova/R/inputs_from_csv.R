@@ -65,17 +65,18 @@ inputs_from_csv <- function(DSDData,
   #
 
   # Only need to put appropriate params for the appropriate case (1 vs 2 measurements)
-  measurements<-as.double(paramsData[which(paramsData$Type=='measurements'),][paramsID+3]) # Number of wind vs. height sets of measurements
-  if (measurements==1){
+  # measurements<-as.double(paramsData[which(paramsData$Type=='measurements'),][paramsID+3]) # Number of wind vs. height sets of measurements
+  measurements <- paramsWT %>% select(c(1)) %>% na.omit() %>% nrow() %>% as.integer()
+  if (measurements == 1){
     # This first part is when we have only one wind v. elevation measurement.
-    ch<-as.double(paramsData[which(paramsData$Type=='ch'),][paramsID+3]) # crop height, units used in computation module: inches
-    z1<-as.double(paramsData[which(paramsData$Type=='z1'),][paramsID+3]) # elevation of wind velocity, units used in computation module: ft
-    ux1<-as.double(paramsData[which(paramsData$Type=='ux1'),][paramsID+3]) # wind velocity at elevation, units used in computation module: mph
+    ch <- as.double(paramsData[which(paramsData$Type == 'ch'), ][paramsID + 3]) # crop height, units used in computation module: inches
+    z1 <- as.double(paramsWT %>% select(starts_with("zw")) %>% deframe()) # elevation of wind velocity, units used in computation module: ft
+    ux1 <- as.double(paramsWT %>% select(starts_with("u")) %>% deframe()) # wind velocity at elevation, units used in computation module: mph
     #z2<-NULL
     #ux2<-NULL
-    paramsWT<-NULL
+    paramsWT <- NULL #***SFR why is this here?
 
-  }else if (measurements!=1){
+  } else if (measurements > 1){
     # # In this case the Wind/Temperature file is needed:
     # paramsWT<-NULL
     # paramsWT <- tryCatch({
@@ -91,11 +92,11 @@ inputs_from_csv <- function(DSDData,
     #z2<-as.double(paramsData[which(paramsData$Type=='z2'),][paramsID+3]) # elevation 2, units used in computation module: feet
     #ux1<-as.double(paramsData[which(paramsData$Type=='ux1'),][paramsID+3]) # wind speed 1, units used in computation module: mph
     #ux2<-as.double(paramsData[which(paramsData$Type=='ux2'),][paramsID+3]) # wind speed 2, units used in computation module: mph
-    z1<-NULL
+    z1 <- NULL
     #z2<-NULL
-    ux1<-NULL
+    ux1 <- NULL
     #ux2<-NULL
-    ch<-as.double(paramsData[which(paramsData$Type=='ch'),][paramsID+3]) # crop height, units used in computation module: inches
+    ch <- as.double(paramsData[which(paramsData$Type == 'ch'), ][paramsID + 3]) # crop height, units used in computation module: inches
   }
 
   # Part 4

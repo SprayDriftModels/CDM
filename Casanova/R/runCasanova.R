@@ -151,12 +151,31 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
     }
 
     # Read Wind/Temp file if more than 1 measurement
-    measurements <- as.double(paramsData[which(paramsData$Type=='measurements'),][paramsID+3]) # Number of wind vs. height sets of measurements
-    if (measurements > 1) {
-      # In this case the Wind/Temperature file is needed:
+    # measurements <- as.double(paramsData[which(paramsData$Type=='measurements'),][paramsID+3]) # Number of wind vs. height sets of measurements
+    # if (measurements > 1) {
+    #   # In this case the Wind/Temperature file is needed:
+    #   paramsWTFile <-
+    #     paste0("./sample_data/", scnData$Wind_Temp_Filename[i])
+    #   paramsWT<-NULL
+    #   paramsWT <- tryCatch({
+    #     read_csv(paramsWTFile,col_types='dddd')
+    #   },
+    #   error=function(e){
+    #     print("Could not read wind/temperature File")
+    #   }
+    #   )
+    # } else {
+    #   paramsWT <- NULL
+    # }
+    # Assign variable for Wind/Temperature file
+    # paramsWTFile <-
+    #   paste0("./sample_data/", scnData$Wind_Temp_Filename[i])
+
+    # Read paramsWT
+    paramsWT <- NULL
+    if (driver %in% c("text", "silent")) {
       paramsWTFile <-
         paste0("./sample_data/", scnData$Wind_Temp_Filename[i])
-      paramsWT<-NULL
       paramsWT <- tryCatch({
         read_csv(paramsWTFile,col_types='dddd')
       },
@@ -164,12 +183,9 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
         print("Could not read wind/temperature File")
       }
       )
-    } else {
-      paramsWT <- NULL
+    } else if (driver == "shiny") {
+      paramsWT <- scnFile$paramsWTFile
     }
-    # Assign variable for Wind/Temperature file
-    # paramsWTFile <-
-    #   paste0("./sample_data/", scnData$Wind_Temp_Filename[i])
 
 
     #***SFR these aren't checked. Do we need to check correct names and proper order of these?
@@ -180,6 +196,8 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
     #browser()
     ## Check that the user has not changed the default units:
     check_units(paramsUnits, paramsData, driver)
+
+    #***SFR Need to also check units of paramsWT match params AND MAYBE that paramsWT column names are correct (or at least start with correct prefix, zw, u, zt, T )
 
     # paramsUnits<-scnData$`Params-Units`[i] # This is the unit system of the input parameters
     # paramsID<-scnData$`Params-ID`[i] # This is the unit ID of the input parameters
@@ -192,7 +210,6 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
                               paramsID,
                               paramsUnits,
                               paramsWT)
-
   }
 
   print("Able to read successfully input files; continuing to run the prescribed scenarios")
@@ -227,6 +244,18 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
       )
       paramsUnits<-scnData$`Params_Units`[i] # This is the unit system of the parameters
       paramsID<-scnData$`Params_ID`[i] # This is the unit system of the parameters
+
+      # Read paramsWT
+      paramsWT <- NULL
+      paramsWTFile <-
+        paste0("./sample_data/", scnData$Wind_Temp_Filename[i])
+      paramsWT <- tryCatch({
+        read_csv(paramsWTFile, col_types = 'dddd')
+      },
+      error = function(e) {
+        print("Could not read wind/temperature File")
+      })
+
 
     } else if (driver == "shiny") {
       # Don't need to do anything, everything already loaded
@@ -306,6 +335,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
       #browser()
 
       # Part 3, Wind profile and turbulence (psipsipsi) parameters
+      measurements <- paramsWT %>% select(c(1)) %>% na.omit() %>% nrow() %>% as.integer()
       if (measurements == 1) {
         # This first part is when we have only one wind v. elevation measurement.
         # Outputs are Uh, Ufriction, z1, z0, alpha_avg, k2
@@ -319,20 +349,20 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
       } else if (measurements > 1) {
 
 
-        z0<-wvprofilem(paramsWT,method,ch)[1]
-        Uf<-wvprofilem(paramsWT,method,ch)[2]
-        if (!is.nan(wvprofilem(paramsWT,method,ch)[3])){
-          psipsipsi<-wvprofilem(paramsWT,method,ch)[3]   # This calculation overrides the input psipsipsi if measurements are more than 1
+        z0 <- wvprofilem(paramsWT, method, ch)[1]
+        Uf <- wvprofilem(paramsWT, method, ch)[2]
+        if (!is.nan(wvprofilem(paramsWT, method, ch)[3])) {
+          psipsipsi<-wvprofilem(paramsWT, method, ch)[3]   # This calculation overrides the input psipsipsi if measurements are more than 1
         }
 
-        wvprofile_params<-wvprofilem(paramsWT,method,ch)
+        wvprofile_params <- wvprofilem(paramsWT, method, ch)
       }
-      results$wvprofile_params<-wvprofile_params
+      results$wvprofile_params <- wvprofile_params
       # browser()
 
       #Part 4, Droplet Transport Calculations
       tryCatch({
-        charac<-charact_cal(app_p,angle, rhosoln)
+        charac<-charact_cal(app_p, angle, rhosoln)
         #browser()
 
         DTwb<-Twb[1] # Wetbulb temperature depression, C
