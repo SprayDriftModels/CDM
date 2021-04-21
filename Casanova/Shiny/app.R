@@ -1135,32 +1135,31 @@ server <- function(input, output, session) {
         ) {
       shinyalert("Oops!", "Check inputs. All parameters must be entered including at least one wind velocity and height measurement", type = "error")
     } else {
-      withProgress(message = 'Calculation in progress',
-                   detail = 'This may take a while...', value = 0, {
-                     for (i in 1:15) {
-                       incProgress(1/15)
-                       Sys.sleep(0.25)
-                       print(i)
-                     }
-                   })
+      ##***SFR this chunk used to try to debug progress bar not working
+      # withProgress(message = 'Calculation in progress',
+      #              detail = 'This may take a while...', value = 0, {
+      #                for (i in 1:15) {
+      #                  incProgress(1/15)
+      #                  Sys.sleep(0.25)
+      #                  print(i)
+      #                }
+      #              })
+      ## Provide progress for user
+      withProgress(message = 'Performing calculations', detail = "percent complete", value = 0, {
 
-
-      # ## Provide progress for user
-      # withProgress(message = 'Performing calculations', detail = "percent complete", value = 0, {
-      #
-      # ## Perform all calculations
-      # results$calcs <-
-      #   Casanova::runCasanova(
-      #     scnFile = scnData(),
-      #     DDDparamsFile = NULL,
-      #     report_folder = NULL,
-      #     curve_fit_ini_file = NULL, #could create input$curvefitDSD as advanced feature
-      #     report = F,
-      #     curvefitDSD = F,
-      #     driver = "shiny"
-      #   )
-      # cat("finished calcs\n")
-      # })
+      ## Perform all calculations
+      results$calcs <-
+        Casanova::runCasanova(
+          scnFile = scnData(),
+          DDDparamsFile = NULL,
+          report_folder = NULL,
+          curve_fit_ini_file = NULL, #could create input$curvefitDSD as advanced feature
+          report = F,
+          curvefitDSD = F,
+          driver = "shiny"
+        )
+      cat("finished calcs\n")
+      })
     }
   })
 
