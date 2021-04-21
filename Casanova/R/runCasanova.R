@@ -117,7 +117,11 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
         paste0("./sample_data/", scnData$Params_Filename[i])
       paramsData <- NULL
       paramsData <- tryCatch({
-        read_csv(paramsFile, col_types = 'cccddddddddddddd')
+        #first need to know how many value columns there are
+        temp <- read_csv(paramsFile)
+        n_value_cols <- ncol(temp) - 3
+        col_types_i <- paste0("ccc", strrep("d",n_value_cols))
+        read_csv(paramsFile, col_types = col_types_i)
       },
       error = function(e) {
         print(paste("Could not read parameters File for scenario", i))
@@ -137,7 +141,6 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
     } else if (driver == "shiny") {
       DSDData <- scnFile$DSDData
       paramsData <- scnFile$paramsData
-      paramsWT <- scnFile$paramsWTFile
     }
 
     if (driver %in% c("text", "silent")) {
@@ -184,7 +187,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
       }
       )
     } else if (driver == "shiny") {
-      paramsWT <- scnFile$paramsWTFile
+      paramsWT <- scnFile$paramsWT
     }
 
 
@@ -196,6 +199,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
     #browser()
     ## Check that the user has not changed the default units:
     check_units(paramsUnits, paramsData, driver)
+
 
     #***SFR Need to also check units of paramsWT match params AND MAYBE that paramsWT column names are correct (or at least start with correct prefix, zw, u, zt, T )
 
@@ -236,7 +240,11 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
       paramsFile<-paste0("./sample_data/",scnData$`Params_Filename`[i])
       paramsData<-NULL
       paramsData <- tryCatch({
-        read_csv(paramsFile,col_types='cccddddddddddddd')
+        #first need to know how many value columns there are
+        temp <- read_csv(paramsFile)
+        n_value_cols <- ncol(temp) - 3
+        col_types_i <- paste0("ccc", strrep("d",n_value_cols))
+        read_csv(paramsFile,col_types = col_types_i)
       },
       error=function(e){
         print(paste("Could not read parameters File for scenario",i))
@@ -255,10 +263,6 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
       error = function(e) {
         print("Could not read wind/temperature File")
       })
-
-
-    } else if (driver == "shiny") {
-      # Don't need to do anything, everything already loaded
     }
 
 
@@ -348,7 +352,6 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
 
       } else if (measurements > 1) {
 
-
         z0 <- wvprofilem(paramsWT, method, ch)[1]
         Uf <- wvprofilem(paramsWT, method, ch)[2]
         if (!is.nan(wvprofilem(paramsWT, method, ch)[3])) {
@@ -366,8 +369,15 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
         #browser()
 
         DTwb<-Twb[1] # Wetbulb temperature depression, C
-        print(paste("Solving Straight Down Problem for Scenario", i))
+
+        # Increment the progress bar, and update the detail text
+        # if (driver %in% c("text", "silent")) {
+            print(paste("Solving Straight Down Problem for Scenario", i))
+        if (driver == "shiny") {
+        incProgress(1/6, detail = paste0("Solving Straight Down Problem"))
+        }
         #browser()
+
 
         droplet_1 <-
           Casanova::droplet_transport(Tair,
@@ -385,8 +395,12 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
                                       charac[2],
                                       ddd1,
                                       driver)
-
-        print(paste("Solving with Wind Problem for Scenario", i))
+        ## Progress update
+        # if (driver %in% c("text", "silent")) {
+          print(paste("Solving with Wind Problem for Scenario", i))
+        if (driver == "shiny") {
+        incProgress(1/6, detail = paste0("Solving with Wind Problem"))
+        }
 
         droplet_2 <-
           Casanova::droplet_transport(Tair,
@@ -405,7 +419,12 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
                                       ddd2,
                                       driver)
 
-        print(paste("Solving against Wind Problem for Scenario", i))
+        ## Progress update
+        # if (driver %in% c("text", "silent")) {
+          print(paste("Solving against Wind Problem for Scenario", i))
+        if (driver == "shiny") {
+        incProgress(1/6, detail = paste0("Solving against Wind Problem"))
+        }
 
         droplet_3 <-
           Casanova::droplet_transport(Tair,
@@ -424,7 +443,12 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
                                       ddd3,
                                       driver)
 
-        print(paste("Finished Solving for Droplet Transport for Scenario", i))
+        ## Progress update
+        # if (driver %in% c("text", "silent")) {
+          print(paste("Finished Solving for Droplet Transport for Scenario", i))
+        if (driver == "shiny") {
+        incProgress(1/6, detail = paste0("Finished Solving for Droplet Transport"))
+        }
 
         droplet1_data <- as_tibble(droplet_1) %>%
           mutate(Droplet = "Centerline",
@@ -457,10 +481,9 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
       # Part 5
       # ________________________________________
 
-      if (curvefitDSD == T){
+      if (curvefitDSD == T) {
         a <- unname(pars$res)  # Calibration from step #1 (removing the stored names)
-      }
-      else {
+      } else {
         a <- NULL
       }
       # Input from previous function
@@ -470,7 +493,13 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
 
       tryCatch({
         # browser()
+        ## Progress update
+        # if (driver %in% c("text", "silent")) {
         print(paste("Calculating Deposition for Scenario", i))
+        if (driver == "shiny") {
+          incProgress(1/6, detail = paste0("Calculating Deposition"))
+        }
+
         deposition <-
           deposition_calcs(
             IAR,
@@ -493,7 +522,11 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
             y,
             Dpdata
           )
+        # if (driver %in% c("text", "silent")) {
         print(paste("Deposition calculations are finished for Scenario", i))
+        if (driver == "shiny") {
+          incProgress(1/6, detail = paste0("Deposition calculations finished"))
+        }
       },
       error = function(e) {
         print("Could not run part 5, Deposition Calculations")
@@ -507,7 +540,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
 #browser()
     # The following generates one .html report per scenario
     if (report == T) {
-      write_report(i, all_inputs, results, report_folder, paramsUnits)
+      write_report(i, all_inputs, results, report_folder, paramsUnits, driver, Scenario_ID = i, paramsWT)
     }
 
     all_results[[i]] <-
@@ -518,5 +551,14 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
   try(dev.off(), silent = T)
   # This prevents a bug that causes Rstudio to crash sometimes if one accesses the plots from the return value
   print(paste('Computation time was:', (proc.time() - ptm)[[3]]))
+
+  if (driver %in% c("text", "silent")) {
   return(all_results)
+  } else if (driver == "shiny") {
+    return(list(all_inputs = all_inputs,
+                results = results,
+                paramsUnits = paramsUnits))
+  }
+
+
 }
