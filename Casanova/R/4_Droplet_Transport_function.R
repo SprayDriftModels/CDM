@@ -153,11 +153,11 @@ droplet_transport <-
     # Note that Xdist within the foreach loop has scope only within the loop
 
     # Increment the progress bar, and update the detail text
-    if(Driver == "shiny"){
-      incProgress(1/23, detail = paste0(round((i/23)*100, digits = 0), "% complete"))
-    } else{
+    # if(Driver == "shiny"){
+    #   incProgress(1/23, detail = paste0(round((i/23)*100, digits = 0), "% complete"))
+    # } else{
       print(i)
-    }
+    # }
 
     ddd <- ddd_inp[i]
 

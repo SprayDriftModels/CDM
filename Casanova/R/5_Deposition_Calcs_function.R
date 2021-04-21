@@ -141,10 +141,10 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
     # Increment the progress bar, and update the detail text
     #browser()
     # ifelse is faster function;
-    if ((i%%as.integer(MM/10))==0){
-      ifelse(Driver == "shiny",incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5)*100, digits = 0), "% complete - Working on Part 1")),
-             ifelse(Driver=="Silent",'',print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 1"))))
-    }
+    # if ((i%%as.integer(MM/10))==0){
+    #   ifelse(Driver == "shiny", incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5)*100, digits = 0), "% complete - Working on Part 1")),
+    #          ifelse(Driver=="Silent",'',print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 1"))))
+    # }
 #    if(Driver == "shiny"){
 #        incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5)*100, digits = 0), "% complete - Working on Part 1"))
 #      } else {
@@ -193,16 +193,16 @@ deposition_calcs<-function(IAR, xactive, FD, PL,NozzleSpacing,psipsipsi, rhoL,Ce
 
       # Increment the progress bar, and update the detail text
       #ifelse is faster function; giving it a try
-      if ((i%%as.integer(MM/10))==0){
-        ifelse(Driver == "shiny",incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5)*100, digits = 0), "% complete - Working on Part 2")),
-               ifelse(Driver=="Silent",'',print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 2"))))
-      }
+      # if ((i%%as.integer(MM/10))==0){
+      #   ifelse(Driver == "shiny",incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5)*100, digits = 0), "% complete - Working on Part 2")),
+      #          ifelse(Driver=="Silent",'',print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 2"))))
+      # }
 
 
 #       if(Driver == "shiny"){
 #         incProgress((1/MM)*0.5, detail = paste0(round(((i/MM)*0.5+0.5)*100, digits = 0), "% complete - Working on Part 2"))
 #       } else{
-#         if(Driver=="Silent"){}else print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 2"))
+        # if(Driver=="Silent"){}else print(paste0(round((i/MM)*100, digits = 0), "% complete - Part 2"))
 #       }
 
 
