@@ -10,6 +10,9 @@ library(scales)
 library(quantreg)
 library(shinyjs)
 library(shinyWidgets)
+library(Casanova)
+library(DT)
+library(shinyalert)
 
 ## Set Driver
 driver = "shiny"
@@ -29,13 +32,10 @@ Wind_Temperature_English_template <- read_csv("../sample_data/Wind_Temperature (
 Wind_Temperature_Metric_template <- read_csv("../sample_data/Wind_Temperature (Metric).csv") #need to set encoding to deal with µ
 
 #***SFR could instead add these to the R package and load
-DDDparamsData_default <- DDDparamsData <- read_csv("../sample_data/DDD_Params.csv", col_types = 'ddd')
+DDDData_default <- read_csv("../sample_data/DDD_Params.csv", col_types = 'ddd')
 
 #***SFR could instead add these to the R package and load
 DSDData <- read.csv("../sample_data/DSD.csv")
-
-#***SFR could instead add these to the R package and load
-DDDData <- read.csv("../sample_data/DDD_Params.csv")
 
 
 ## Currently sourcing these but could add to R package
@@ -44,7 +44,7 @@ source("../R/check_units.R")
 source("../R/create_params_ui.R")
 
 # #***SFR could instead add these to the R package and load
-# paramsWT_English <- read.csv("../sample_data/Wind_Temperature (English).csv")
+paramsWT_English <- read.csv("../sample_data/Wind_Temperature (English).csv")
 # paramsWT_Metric <- read.csv("../sample_data/Wind_Temperature (Metric).csv")
 
 
@@ -52,6 +52,7 @@ source("../R/create_params_ui.R")
 
 #### UI for Shiny App ####
 ui <- material_page(
+  useShinyalert(),  # Set up shinyalert
   title = "Casanova Drift Model (CDM)",
   nav_bar_color =  "green lighten-1",
   background_color = "green lighten-4",
@@ -60,18 +61,19 @@ ui <- material_page(
 
   material_side_nav(
     fixed = TRUE,
-    # shiny::tags$li(
-    #   a(
-    #     href = 'https://www.bayer.com/en/',
-    #     img(
-    #       src = "Bayer_logo.png",
-    #       height = "40px",
-    #       .noWS = "outside"
-    #     ),
-    #     style = "padding-top:5px; padding-bottom:5px"
-    #   ),
-    #   class = "dropdown"
-    # ),
+    shiny::tags$li(
+      a(
+        href = 'https://www.bayer.com/en/',
+        img(
+          src = "Bayer_logo.png",
+          height = "40px",
+          .noWS = "outside"
+        ),
+        style = "padding-top:5px; padding-bottom:5px",
+        target = "_blank"
+      ),
+      class = "dropdown"
+    ),
     tags$br(),
     material_side_nav_tabs(
       side_nav_tabs = c(
@@ -99,18 +101,10 @@ ui <- material_page(
                                 )
   ),
   material_side_nav_tab_content(side_nav_tab_id = "user_data_input",
-
-                                # material_row(
-                                #   material_column(
-                                #     width = 12,
                                 material_row(
                                   offset = 1,
                                   material_column(width = 12,
                                                   offset = 0.5,
-
-                                                  # tags$br(),
-                                                  # tags$br(),
-                                                  ## Input: Select a file ----
 
                                                   ## Reset all inputs button
                                                   material_card(
@@ -153,32 +147,7 @@ ui <- material_page(
                                                     )
                                                   ),
 
-                                                  ## Load Scenario
-                                                  # material_card(
-                                                  #   title = "Load Data",
-                                                  # uiOutput('load_params_data_ui'),
-                                                  # ),
-
-                                                  # ## Load Input files
-                                                  # material_card(
-                                                  #   title = "Load User Input Files",
-                                                  #   uiOutput('infiles_ui')
-                                                  #   #***delete line below
-                                                  #   # fileInput("file1", "Choose CSV File", accept = ".csv")
-                                                  #
-                                                  # ),
-                                                  # uiOutput('units_ui'),
-
                                                   material_card(
-                                                    # title = "Manual input",
-
-                                                    # tags$head(
-                                                    #   tags$style(
-                                                    #     type = "text/css", #***SFR need to figure out how to set this to material design style
-                                                    #     ".nav-tabs {font-size: 16px} ",
-                                                    #     "input:invalid {background-color: #FFCCCC;}" #turn red if entry is invalid
-                                                    #   )
-                                                    # ),
                                                     material_row(
                                                       material_column(
                                                         width = 8,
@@ -202,26 +171,6 @@ ui <- material_page(
                                                       #   )
                                                       # )
                                                     ),
-                                                    # material_row(
-                                                    #   material_column(
-                                                    #     width = 4,
-                                                    #
-                                                    #     uiOutput("env_ui"),
-                                                    #     uiOutput("wind_ui")
-                                                    #
-                                                    #   ),
-                                                    #   material_column(
-                                                    #     width = 4,
-                                                    #
-                                                    #     uiOutput("droplet_ui")
-                                                    #   ),
-                                                    #   material_column(
-                                                    #     width = 4,
-                                                    #
-                                                    #     uiOutput("deposition_ui")
-                                                    #
-                                                    #   )
-                                                    # ),
                                                     ## Row for all variables
                                                     material_row(
 
@@ -235,8 +184,6 @@ ui <- material_page(
                                                             material_column(
                                                               width = 12,
                                                               uiOutput("env_ui")
-                                                              # uiOutput("windtemp_number_ui"),
-                                                              # DTOutput('x1')
                                                             )
                                                           )
                                                         ),
@@ -246,6 +193,7 @@ ui <- material_page(
                                                           material_row(
                                                             material_column(
                                                               width = 12,
+                                                              uiOutput("windtemp_ui"),
                                                               DTOutput('x1')
                                                             )
                                                           )
@@ -269,7 +217,6 @@ ui <- material_page(
                                                             )
                                                           )
                                                         )
-                                                        # uiOutput("wind_ui")
                                                       )
                                                     ),
 
@@ -281,41 +228,32 @@ ui <- material_page(
 
                                                       )
                                                     )
-
-
-
-
-
                                                   )
                                   ),
-
                                 )
-
-                                #   )
-                                # )
   ),
   material_side_nav_tab_content(side_nav_tab_id = "calculate",
                                 material_row(
                                   width = 5,
                                   offset = 1,
                                   material_column(
+                                    # actionButton("generate", "Perform calculations and generate Results")
                                     material_button(
                                       "generate",
-                                      "Generate Results",
+                                      "Perform calculations and generate Results",
                                       icon = "offline_bolt",
                                       depth = 3,
                                       color = "light-blue accent-1"
-                                    ),
-                                    # width = 10,
-                                    # offset = 1,
-                                    # plotOutput("Water_conc_plot")
+                                    )
                                   )
                                 )
   ),
-  # material_side_nav_tab_content(side_nav_tab_id = "output",
-  #
-  #                               )
-  # ),
+  material_side_nav_tab_content(side_nav_tab_id = "output",
+                                material_card(depth = 1,
+                                              downloadButton("report_download", "HTML report"),
+                                              uiOutput('md_file')
+                                              )
+                                ),
   material_side_nav_tab_content(side_nav_tab_id = "advanced",
                                 material_row(),
                                 material_row(
@@ -398,7 +336,7 @@ server <- function(input, output, session) {
 
     textInput(inputId = "Scenario_ID",
               label = NULL,
-              value = "Default Metric Scenario")
+              value = "Name of scenario")
 
   })
 
@@ -428,19 +366,15 @@ server <- function(input, output, session) {
 
     ## material_dropdown does not reset correctly so using selectInput
     tagList(
-      # width = 4,
-    selectInput(
-      inputId = "selected_WTparams_dataset",
-      label = "Choose wind/temp params dataset",
-      choices = c(
-        "Build your own",
-        # "Example Metric",
-        #           "Example Imperial",
-                  "Upload file"),
-      selected = "Example Metric",
-      selectize = TRUE,
-      multiple = FALSE
-    )
+      selectInput(
+        inputId = "selected_WTparams_dataset",
+        label = "Choose wind/temp params dataset",
+        choices = c("Build your own",
+                    "Upload file"),
+        selected = "Example Metric",
+        selectize = TRUE,
+        multiple = FALSE
+      )
     )
 
   })
@@ -450,7 +384,6 @@ server <- function(input, output, session) {
 
     ## material_dropdown does not reset correctly so using selectInput
     tagList(
-      # width = 4,
       selectInput(
         inputId = "selected_DSD_dataset",
         label = "Choose DSD dataset",
@@ -469,7 +402,6 @@ server <- function(input, output, session) {
 
     ## material_dropdown does not reset correctly so using selectInput
     tagList(
-      # width = 4,
       selectInput(
         inputId = "selected_DDD_dataset",
         label = "Choose DDD dataset",
@@ -519,14 +451,12 @@ server <- function(input, output, session) {
   })
 
   #####
-  ## User Inputs for Wind Profile (depends on whether uploaded, scenario, manual entry)
-  ##### Elevation
+  ## User Inputs for params_data
   output$env_ui <- renderUI({
     req(params_data())
 
     params_data <- params_data()$data
 
-    # if (input$selected_params_dataset != "Regulatory Scenarios") {
     ## Input dry air temp
     tagList(
       useShinyjs(),
@@ -565,19 +495,44 @@ server <- function(input, output, session) {
         step = 0.001,
         min = 0,
         max = 100
-      ),
-        ## Input Number of Measurements to use
-      numericInput(
-        inputId = "WTmeasurements",
-        label = 'Max number of wind/temp measurements',
-        value = as.numeric(params_data[params_data$Type == "measurements", 4]),
-        step = 1,
-        min = 1,
-        max = Inf # limit for this?
       )
     )
 
   })
+
+  #####
+  ## User Inputs for paramsWT
+  output$windtemp_ui <- renderUI({
+    req(input$selected_WTparams_dataset)
+    req(params_data)
+
+    params_data <- params_data()$data
+
+    if (input$selected_WTparams_dataset == "Upload file") {
+      measurements <- paramsWT_file() %>% select(c(1)) %>% na.omit() %>% nrow() %>% as.integer()
+    } else if (input$selected_WTparams_dataset == "Build your own") {
+      measurements <- 1
+    }
+    ## Input Number of Measurements to use
+    tagList(
+      useShinyjs(),
+      numericInput(
+        inputId = "WTmeasurements",
+        label = 'Max number of wind/temp measurements',
+        value = measurements,
+        step = 1,
+        min = 1,
+        max = Inf # limit for this?
+      ),
+      selectInput(
+        inputId = "psipsipsi_method",
+        label = paste0("Select method to estimate psipsipsi\nOnly applies if more than one measurement"),
+        choices = c(1, 2),
+        selected = as.numeric(params_data[params_data$Type == "psipsipsi_method", 4])
+      )
+    )
+  })
+
 
 
   ## Create intermediate filename that can be reset (original remains cached)
@@ -600,10 +555,10 @@ server <- function(input, output, session) {
     if (input$selected_WTparams_dataset == "Upload file") {
       req(WTfile_input())
         inFile <- WTfile_input()
-        paramsWT_file <- as.data.frame(read_csv(inFile$datapath, locale = readr::locale(encoding = "ISO-8859-1")))
+        paramsWT_file <- as.data.frame(read_csv(inFile$datapath, locale = readr::locale(encoding = "ISO-8859-1"), col_types='dddd'))
       #***SFR add validation step
     } else if (input$selected_WTparams_dataset == "Build your own") {
-      paramsWT_file = NULL
+      paramsWT_file = paramsWT_English
     }
 
     return(paramsWT_file)
@@ -614,16 +569,12 @@ server <- function(input, output, session) {
   ## Create WT dataset for UI
   paramsWT <- reactive({
     req(input$WTmeasurements)
-    # req(paramsWT_file())
     req(input$selected_WTparams_dataset)
     input$reset
 
-    # ## Get units used
-    # params_units <- params_data()$units
-
     ## If wind_temp file not uploaded
     if (input$selected_WTparams_dataset == "Build your own") {
-      #***SFR - can come back and figure out way to adjust example number of rows
+
       paramsWT <-
         data.frame(
           "zx" = as.numeric(rep(NA, input$WTmeasurements)),
@@ -631,6 +582,7 @@ server <- function(input, output, session) {
           "zt" = as.numeric(rep(NA, input$WTmeasurements)),
           "T" = as.numeric(rep(NA, input$WTmeasurements))
       )
+
       # Encoding(colnames(paramsWT)) <- "ISO-8859-1"
       return(paramsWT)
     } else {
@@ -718,7 +670,7 @@ server <- function(input, output, session) {
     input$reset
 
     if (input$selected_DDD_dataset == "Example DDD") {
-      DDD_data = DDDData
+      DDD_data = DDDData_default
     } else if (input$selected_DDD_dataset == "Upload file") {
       req(DDDfile_input())
       inFile <- DDDfile_input()
@@ -926,20 +878,6 @@ server <- function(input, output, session) {
                      min = 0,
                      max = 100),
 
-        # numericInput(inputId = "Dpmax",
-        #              label = paste0("Dpmax (", params_data[params_data$Type == "Dpmax", "Units"], "):"),
-        #              value = as.numeric(params_data[params_data$Type == "Dpmax", 4]),
-        #              step = 0.001,
-        #              min = 0,
-        #              max = 10000),
-        #
-        # numericInput(inputId = "Ddpmin",
-        #              label = paste0("Ddpmin (", params_data[params_data$Type == "Ddpmin", "Units"], "):"),
-        #              value = as.numeric(params_data[params_data$Type == "Ddpmin", 4]),
-        #              step = 0.001,
-        #              min = 0,
-        #              max = 1000),
-
         numericInput(inputId = "MMM",
                      label = paste0("Number of droplet size bins (", params_data[params_data$Type == "MMM", "Units"], "):"),
                      value = as.numeric(params_data[params_data$Type == "MMM", 4]),
@@ -999,20 +937,6 @@ server <- function(input, output, session) {
                        min = 0,
                        max = 100),
 
-          # numericInput(inputId = "Dpmax",
-          #              label = paste0("Dpmax (", params_data[params_data$Type == "Dpmax", "Units"], "):"),
-          #              value = as.numeric(params_data[params_data$Type == "Dpmax", 4]),
-          #              step = 0.001,
-          #              min = 0,
-          #              max = 10000),
-          #
-          # numericInput(inputId = "Ddpmin",
-          #              label = paste0("Ddpmin (", params_data[params_data$Type == "Ddpmin", "Units"], "):"),
-          #              value = as.numeric(params_data[params_data$Type == "Ddpmin", 4]),
-          #              step = 0.001,
-          #              min = 0,
-          #              max = 1000),
-
           numericInput(inputId = "MMM",
                        label = paste0("Number of droplet size bins (", params_data[params_data$Type == "MMM", "Units"], "):"),
                        value = as.numeric(params_data[params_data$Type == "MMM", 4]),
@@ -1069,14 +993,18 @@ server <- function(input, output, session) {
     } else if (input$selected_params_dataset == "Upload file") {
       req(input$params_file_name)
       inFile <- input$params_file_name
+      #**SFR we could add in ability for user to select which set of values to use if more
+      #than one column of data (i.e., read column names and create drop down menu)
       params_file_data <- as.data.frame(read_csv(inFile$datapath, locale = readr::locale(encoding = "ISO-8859-1")))
-
       # Guess units
       if ("celcius" %in% tolower(params_file_data$Units)) {
         params_file_units <- "Metric"
       } else if ("fahreneit" %in% tolower(params_file_data$Units)) {
         params_file_units <- "English"
+      } else {
+        params_file_units <- "Something is wrong with file or units"
       }
+      #***SFR need to add in a units validation step
 
       params <-
         list(
@@ -1114,15 +1042,14 @@ server <- function(input, output, session) {
   #####
   ## Recreate dataset of params (based on selection and possible modification)
   paramsData <- reactive({
+  #***SFR need to find way to reset paramsData if params_data() changes
+    req(params_data())
 
     paramsData <- create_paramsData(
       input$Tair,
       input$Patm,
       input$RH,
       input$ch,
-      input$WTmeasurements,
-      input$z1,
-      input$ux1,
       input$psipsipsi,
       input$psipsipsi_method,
       input$rhow,
@@ -1139,121 +1066,334 @@ server <- function(input, output, session) {
       input$PL,
       input$NozzleSpacing,
       input$MMM,
-      input$lambda
+      input$lambda,
+      params_data()$units
     )
 
     return(paramsData)
 
   })
 
+## Gather inputs and create Scenario file
+  scnData <- reactive({
+    input$reset
+    # req(input$Scenario_ID)
+    # req(DDD_data())
+    # req(DSD_data())
+    # req(paramsData())
+    # req(params_data()$units)
+    # req(paramsWT_reactive$data)
+
+    scnData <-
+    list(
+      Scenario_ID = input$Scenario_ID,
+      DDDparamsData = DDD_data(),
+      DSDData = DSD_data(),
+      paramsData = paramsData(),
+      Params_Units = params_data()$units,
+      Params_ID = 1, #***SFR Just setting to 1
+      paramsWT = paramsWT_reactive$data
+    )
+
+    return(scnData)
+  })
 
 
 
 ## Run the models
-  results <- observeEvent(input$generate, {
-    req(paramsWT_reactive$data)
-    req(input$Scenario_ID)
+  # results <- eventReactive(input$generate, {
+  #
+  #   cat("Begin calculations")
+  #
+  #     Casanova::runCasanova(
+  #     scnFile = scnData(),
+  #     DDDparamsFile = NULL,
+  #     report_folder = NULL,
+  #     curve_fit_ini_file = NULL, #could create input$curvefitDSD as advanced feature
+  #     report = F,
+  #     curvefitDSD = F,
+  #     driver = "shiny"
+  #   )
+  #
+  # })
 
-    #***SFR need to create user input for curvefitDSD and curve_fit_ini_file
-    #***SFR for now just set to NULL, this will need to be an advanced feature
+  ## Run the models
+  results <- reactiveValues(calcs = NULL)
 
-    ## Gather all inputs needed for runCasanova
-    # scnData <-
-    #   list(
-    #     Scenario_ID = input$Scenario_ID, #*-* UI portion
-    #     DDDparamsData = input$paramsData,
-    #     DSDData = DSDData(),
-    #     paramsData = paramsData(),
-    #     Params_Units = Params_Units(), #*-* need server side to check and record these for when file loaded manually
-    #     Params_ID = 1, #***SFR Just setting to 1
-    #     paramsWT = paramsWT()
-    #   )
+  observeEvent(input$generate, {
+    # cat("starting calcs\n")
 
-    #***SFR if report = F can it still be created? Probably best to do it outside of runCasanova
-    # Casanova::runCasanova(scnFile = scnData,
-    #                       DDDparamsFile = NULL,
-    #                       report_folder = NULL,
-    #                       curve_fit_ini_file = NULL,
-    #                       report = F,
-    #                       curvefitDSD = input$curvefitDSD,
-    #                       driver = "shiny")
+    ## Check that there is wind/height data
+    if (!all(apply(scnData()$paramsWT %>%
+                  replace(is.na(.), 0) %>%
+                  select(c(1, 2)),
+                  2,
+                  function(x)
+                    any(x > 0)),
+            na.rm =  T) |
+        is.null(scnData())
+        ) {
+      shinyalert("Oops!", "Check inputs. All parameters must be entered including at least one wind velocity and height measurement", type = "error")
+    } else {
+      withProgress(message = 'Calculation in progress',
+                   detail = 'This may take a while...', value = 0, {
+                     for (i in 1:15) {
+                       incProgress(1/15)
+                       Sys.sleep(0.25)
+                       print(i)
+                     }
+                   })
+
+
+      # ## Provide progress for user
+      # withProgress(message = 'Performing calculations', detail = "percent complete", value = 0, {
+      #
+      # ## Perform all calculations
+      # results$calcs <-
+      #   Casanova::runCasanova(
+      #     scnFile = scnData(),
+      #     DDDparamsFile = NULL,
+      #     report_folder = NULL,
+      #     curve_fit_ini_file = NULL, #could create input$curvefitDSD as advanced feature
+      #     report = F,
+      #     curvefitDSD = F,
+      #     driver = "shiny"
+      #   )
+      # cat("finished calcs\n")
+      # })
+    }
   })
 
 
 
+  ## Download report
+  output$report_download <- downloadHandler(
+    # For PDF output, change this to "report.pdf"
+    filename = "report.html",
 
-  ## Use for validation purposes
-  # req(file)
-  # file <- input$params_file_name
-  # ext <- tools::file_ext(file$datapath)
-  # validate(need(ext == "csv", "Please upload a csv file"))
+    # filename = paste0(input$Scenario_ID, "_report.html"),
+    content = function(file) {
+      # Copy the report file to a temporary directory before processing it, in
+      # case we don't have write permissions to the current working dir (which
+      # can happen when deployed).
+      tempReport <- file.path(tempdir(), "report.Rmd")
+      file.copy("../R/report.Rmd", tempReport, overwrite = TRUE)
 
-  ## For Debugging purposes
-  output$contents <- renderTable({
-    paramsData()
-  })
+      ## Set up parameters to pass to Rmd document
+      # Create table of paramaeters used
 
-  ## For Debugging purposes
-  output$contents2 <- renderTable({
-    paramsData <- tibble(
-      Type = c(
-        "Tair",
-        "Patm",
-        "RH",
-        "ch",
-        "WTmeasurements",
-        "z1"
-        # "ux1",
-        # "psipsipsi",
-        # "psipsipsi_method",
-        # "rhow",
-        # "rhos",
-        # "xs0"
-        # "rhosoln",
-        # "H0",
-        # "hcm",
-        # "app_p",
-        # "angle",
-        # "IAR",
-        # "xactive",
-        # "FD",
-        # "PL",
-        # "NozzleSpacing",
-        # "MMM",
-        # "lambda"
-      ),
-      Value_1 = c(
-        input$Tair,
-        input$Patm,
-        input$RH,
-        input$ch,
-        input$WTmeasurements,
-        input$z1
-        # input$ux1,
-        # input$psipsipsi,
-        # input$psipsipsi_method,
-        # input$rhow,
-        # input$rhos,
-        # input$xs0
-        # rhosoln,
-        # H0,
-        # hcm,
-        # app_p,
-        # angle,
-        # IAR,
-        # xactive,
-        # FD,
-        # PL,
-        # NozzleSpacing,
-        # MMM,
-        # lambda
+
+      all_inputs <- results$calcs$all_inputs
+      results <- results$calcs$results
+
+
+      # replace NULL values with NA in all_inputs
+      if (is.null(all_inputs$input_props$z1)){all_inputs$input_props$z1<-NA}
+      if (is.null(all_inputs$input_props$ux1)){all_inputs$input_props$ux1<-NA}
+      psipsipsi_rep<-all_inputs$input_props$psipsipsi
+
+      wm<-all_inputs$input_props$measurements
+      if (wm!=1){
+        wm<-NA
+        psipsipsi_rep<-NA
+      }
+
+      #browser()
+      input_params <- tibble("Dry air temperature" = all_inputs$input_props$Tair,
+                             "Barometric pressure" = all_inputs$input_props$Patm,
+                             "Relative humidity" = all_inputs$input_props$RH,
+                             # "Number of wind measurements" = wm,
+                             # "Elevation of wind speed (1)" = psipsipsi_rep,
+                             # "MPH wind speed (1)" = all_inputs$input_props$ux1,
+                             "Density of pure water in droplet" = all_inputs$input_props$rhow,
+                             "Density of dissolved solids in droplet" = all_inputs$input_props$rhos,
+                             "Mass fraction total dissolved solids in solution" = all_inputs$input_props$xs0,
+                             "Height of nozzle above ground" = all_inputs$input_props$H0,
+                             "Canopy height (Droplet Transport Calculation)" = all_inputs$input_props$hcm,
+                             "Nozzle pressure" = all_inputs$input_props$app_p,
+                             "Nozzle angle" = all_inputs$input_props$angle,
+                             "Mix density" = all_inputs$input_props$rhosoln,
+                             "Intended Application Rate" = all_inputs$input_props$IAR,
+                             "Conc in tank solution" = all_inputs$input_props$xactive,
+                             "Downwind field depth" = all_inputs$input_props$FD,
+                             "Crosswind field width" = all_inputs$input_props$PL,
+                             "Space between nozzles on Boom" = all_inputs$input_props$NozzleSpacing,
+                             "Horizontal variation in wind direction around mean direction, 1 stdev" = psipsipsi_rep,
+                             "Dpmax" = all_inputs$input_props$Dpmax,
+                             "Dpmin" = all_inputs$input_props$DDpmin,
+                             "Number of droplet size bins" = all_inputs$input_props$MMM,
+                             "Resolution of deposition calculations" = all_inputs$input_props$lambda
+      ) %>%
+        pivot_longer(everything(),
+                     names_to = "Parameters",
+                     values_to = "Value")
+
+      if (params_data()$units == 'English'){
+        param_units <- tibble("Dry air temperature" = "Farhenheit",
+                              "Barometric pressure" = "mmHg abs",
+                              "Relative humidity" = "%",
+                              # "Number of wind measurements" = "NA",
+                              # "Elevation of wind speed (1)" = "ft",
+                              # "MPH wind speed (1)" = "mph",
+                              "Density of pure water in droplet" = "lbs/ft3",
+                              "Density of dissolved solids in droplet" = "lbs/ft3",
+                              "Mass fraction total dissolved solids in solution" = "NA",
+                              "Height of nozzle above ground" = "in",
+                              "Canopy height" = "in",
+                              "Nozzle pressure" = "psi",
+                              "Nozzle angle" = "degrees",
+                              "Mix density" = "lbs/ft3",
+                              "Intended Application Rate" = "lb/acre",
+                              "Conc in tank solution" = "wtfraction",
+                              "Downwind field depth" = "ft",
+                              "Crosswind field width" = "ft",
+                              "Space between nozzles on Boom" = "in",
+                              "Horizontal variation in wind direction around mean direction, 1 stdev" = "degrees",
+                              "Dpmax" = "µm",
+                              "Dpmin" = "µm",
+                              "Number of droplet size bins" = "MMM",
+                              "Resolution of deposition calculations" = "NA"
+        ) %>%
+          pivot_longer(everything(),
+                       names_to = "Parameters",
+                       values_to = "Units")
+      }
+      else if (params_data()$units == 'Metric'){
+        param_units <- tibble("Dry air temperature" = "Celcius",
+                              "Barometric pressure" = "mmHg abs",
+                              "Relative humidity" = "%",
+                              # "Number of wind measurements" = "NA",
+                              #"Elevation of wind speed (1)" = "m",
+                              #"MPH wind speed (1)" = "m/s",
+                              "Density of pure water in droplet" = "g/cm3",
+                              "Density of dissolved solids in droplet" = "g/cm3",
+                              "Mass fraction total dissolved solids in solution" = "NA",
+                              "Height of nozzle above ground" = "cm",
+                              "Canopy height" = "cm",
+                              "Nozzle pressure" = "kPa",
+                              "Nozzle angle" = "degrees",
+                              "Mix density" = "kg/m3",
+                              "Intended Application Rate" = "kg/ha",
+                              "Conc in tank solution" = "wtfraction",
+                              "Downwind field depth" = "m",
+                              "Crosswind field width" = "m",
+                              "Space between nozzles on Boom" = "cm",
+                              "Horizontal variation in wind direction around mean direction, 1 stdev" = "degrees",
+                              "Dpmax" = "µm",
+                              "Dpmin" = "µm",
+                              "Number of droplet size bins" = "MMM",
+                              "Resolution of deposition calculations" = "NA"
+        ) %>%
+          pivot_longer(everything(),
+                       names_to = "Parameters",
+                       values_to = "Units")
+      }
+
+      #browser()
+
+      input_params_units <- left_join(x = input_params,
+                                      y = param_units,
+                                      by = "Parameters")
+
+
+      # Need to edits this one: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXs
+      params <- list(#input_filename = "Superceded code",
+        input_scenarioID = input$Scenario_ID,
+        input_params = input_params_units,
+        step1_results_plot = results$psd_pars$plot,
+        step1_results_table = results$psd_pars$table,
+        step1_results_stats = results$psd_stats,
+        step2_results = results$Twb,
+        step3_results = results$wvprofile_params,
+        step4_results = results$All_droplet_data,
+        step5_results = results$deposition,
+        input_paramsWT = scnData()$paramsWT
       )
-    )
-    return(paramsData)
-    })
+
+      # Knit the document, passing in the `params` list, and eval it in a
+      # child of the global environment (this isolates the code in the document
+      # from the code in this app).
+      rmarkdown::render(tempReport, output_file = file,
+                        params = params,
+                        envir = new.env(parent = globalenv())
+      )
+    }
+  )
+
+  # ## Generate report
+  # report <- reactive({
+  #
+  #   # report <- "../sample_data/reports/Scenario 1 report.html"
+  #   cat("creating report")
+  #
+    # report <- Casanova::write_report(i = 1,
+    #                        all_inputs = results$calcs$all_inputs,
+    #                        results = results$calcs$results,
+    #                        report_folder = NULL,
+    #                        paramsUnits = results$calcs$paramsUnits,
+    #                        driver = "shiny")
+  #   return(report)
+  # })
+  #
+  # ## Display report in the app
+  # output$md_file <- renderUI({
+  #   req(report())
+  #
+  #   includeHTML(report())
+  #   # includeMarkdown(report)
+  # })
+
+  # ## Display report in the app
+  # output$md_file <- renderUI({
+  #   # req(results$calcs)
+  #   input$reset
+  #
+  #   if (is.null(results$calcs)) {
+  #     return(NULL)
+  #   } else {
+  #
+  #   includeHTML(Casanova::write_report(i = 1,
+  #                                        all_inputs = results$calcs$all_inputs,
+  #                                        results = results$calcs$results,
+  #                                        report_folder = NULL,
+  #                                        paramsUnits = results$calcs$paramsUnits,
+  #                                        driver = "shiny"))
+  #
+  #   }
+  #   # includeMarkdown(report)
+  # })
 
 
 
+  # ## Download report
+  # output$report_pdf <- downloadHandler(downloadHandler(
+  #   filename = paste0(input$Scenario_ID, "_report.pdf"),
+  #   content =
+  #     function(file) {
+  #       out <- Casanova::write_report(
+  #         i = 1,
+  #         all_inputs = practice$all_inputs,
+  #         results = practice$results,
+  #         report_folder = filename,
+  #         paramsUnits = practice$paramsUnits,
+  #         driver = "shiny"
+  #       )
+  #
+  #       file.rename(out, file)
+  #     }
+  # ))
+
+
+
+
+
+
+
+
+  # # For Debugging purposes
+  # output$contents <- renderTable({
+  #   scnData()$paramsData
+  #   })
 
 
   #***SFR this can be added in next itteration of the app
