@@ -1,3 +1,14 @@
+#' Check units of params input file
+#'
+#' @param paramsUnits expected units
+#' @param paramsData input params
+#' @param driver can be "text", "silent", "shiny"; determines whether and how units are checked
+#'
+#' @return
+#' @export
+#'
+#' @examples
+
 check_units <- function(paramsUnits, paramsData, driver) {
 
   shiny_check <- "PASS"
