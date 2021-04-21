@@ -4,9 +4,6 @@ Tair,Dry air temperature,Fahreneit,63.84
 Patm,Barometric pressure,mmHg abs,760
 RH,Relative humidity,%,35.65
 ch,Crop Height,in,4
-measurements,Number of wind measurements; input 1 for one measurement or any value greater than 1 for more than one measurement,NA,1
-z1,Elevation of wind speed (1); put NA if more than one measurements,ft,6.6
-ux1,Wind speed (1); put NA if more than one measurements,mph,12.8
 psipsipsi,"Horizontal variation in wind direction around mean direction, 1 stdev (put NA if number of wind measurements is not 1)",degrees,10.7
 psipsipsi_method,"Method 1 interpolates value, method 2 uses SDTF function; Method to estimate psipsipsi when more than number of temperature and wind speed are available",NA,1
 rhow,Density of pure water in droplet,lbs/ft3,62.428
