@@ -12,18 +12,22 @@ write_report <- function(i,
                          all_inputs,
                          results,
                          report_folder,
-                         paramsUnits)
+                         paramsUnits,
+                         driver,
+                         Scenario_ID,
+                         paramsWT)
 
   {
-  # For PDF output, change this to "report.pdf"
-  filename = paste("Scenario",i,"report.html")
-  dir.create(report_folder)
-  # Copy the report file to a temporary directory before processing it, in
-  # case we don't have write permissions to the current working dir (which
-  # can happen when deployed).
-  #tempReport <- file.path(tempdir(), "\\report.Rmd")
-  tempReport <- ('./R/report.Rmd')
-  file.copy("report.Rmd", tempReport, overwrite = TRUE)
+
+  if (driver %in% c("text", "silent")) {
+    filename = paste("Scenario", i,"report.html")
+    dir.create(report_folder)
+    template_rmd <- ('./R/report.Rmd')
+  } else if (driver == "shiny") {
+    template_rmd <- ('../R/report.Rmd')
+    filename = report_folder
+  }
+
 
   ## Set up parameters to pass to Rmd document
   # Create table of parameters used
@@ -43,9 +47,9 @@ write_report <- function(i,
   input_params <- tibble("Dry air temperature" = all_inputs$input_props$Tair,
                          "Barometric pressure" = all_inputs$input_props$Patm,
                          "Relative humidity" = all_inputs$input_props$RH,
-                         "Number of wind measurements" = wm,
-                         "Elevation of wind speed (1)" = psipsipsi_rep,
-                         "MPH wind speed (1)" = all_inputs$input_props$ux1,
+                         # "Number of wind measurements" = wm,
+                         # "Elevation of wind speed (1)" = psipsipsi_rep,
+                         # "MPH wind speed (1)" = all_inputs$input_props$ux1,
                          "Density of pure water in droplet" = all_inputs$input_props$rhow,
                          "Density of dissolved solids in droplet" = all_inputs$input_props$rhos,
                          "Mass fraction total dissolved solids in solution" = all_inputs$input_props$xs0,
@@ -101,9 +105,9 @@ write_report <- function(i,
   param_units <- tibble("Dry air temperature" = "Farhenheit",
                         "Barometric pressure" = "mmHg abs",
                         "Relative humidity" = "%",
-                        "Number of wind measurements" = "NA",
-                        "Elevation of wind speed (1)" = "ft",
-                        "MPH wind speed (1)" = "mph",
+                        # "Number of wind measurements" = "NA",
+                        # "Elevation of wind speed (1)" = "ft",
+                        # "MPH wind speed (1)" = "mph",
                         "Density of pure water in droplet" = "lbs/ft3",
                         "Density of dissolved solids in droplet" = "lbs/ft3",
                         "Mass fraction total dissolved solids in solution" = "NA",
@@ -131,7 +135,7 @@ write_report <- function(i,
     param_units <- tibble("Dry air temperature" = "Celcius",
                           "Barometric pressure" = "mmHg abs",
                           "Relative humidity" = "%",
-                          "Number of wind measurements" = "NA",
+                          # "Number of wind measurements" = "NA",
                           #"Elevation of wind speed (1)" = "m",
                           #"MPH wind speed (1)" = "m/s",
                           "Density of pure water in droplet" = "g/cm3",
@@ -167,6 +171,7 @@ write_report <- function(i,
 
   # Need to edits this one: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXs
   params <- list(#input_filename = "Superceded code",
+                 input_scenarioID = Scenario_ID,
                  input_params = input_params_units,
                  step1_results_plot = results$psd_pars$plot,
                  step1_results_table = results$psd_pars$table,
@@ -174,13 +179,16 @@ write_report <- function(i,
                  step2_results = results$Twb,
                  step3_results = results$wvprofile_params,
                  step4_results = results$All_droplet_data,
-                 step5_results = results$deposition
+                 step5_results = results$deposition,
+                 input_paramsWT = paramsWT
   )
 
   # Knit the document, passing in the `params` list, and eval it in a
   # child of the global environment (this isolates the code in the document
   # from the code in this app).
-  rmarkdown::render(tempReport, output_file = filename, output_dir=report_folder,
+  rmarkdown::render(template_rmd,
+                    output_file = filename,
+                    output_dir = report_folder,
                     params = params,
                     envir = new.env(parent = globalenv()),
                     quiet=T
