@@ -526,7 +526,7 @@ server <- function(input, output, session) {
       ),
       selectInput(
         inputId = "psipsipsi_method",
-        label = paste0("Select method to estimate psipsipsi\nOnly applies if more than one measurement"),
+        label = paste0("Select method to estimate psipsipsi.\n(Only applies if more than one measurement)"),
         choices = c(1, 2),
         selected = as.numeric(params_data[params_data$Type == "psipsipsi_method", 4])
       )
@@ -585,8 +585,18 @@ server <- function(input, output, session) {
 
       # Encoding(colnames(paramsWT)) <- "ISO-8859-1"
       return(paramsWT)
+
     } else {
       paramsWT <- paramsWT_file()
+
+      ## Adjust the number of rows based on user input
+      if (input$WTmeasurements > nrow(paramsWT)) {
+        extra_rows <- input$WTmeasurements - nrow(paramsWT)
+        paramsWT[nrow(paramsWT)+1:extra_rows, ] <- NA
+      } else if (input$WTmeasurements < nrow(paramsWT)) {
+        paramsWT <- paramsWT[1:input$WTmeasurements, ]
+      }
+      return(paramsWT)
     }
 
   })
@@ -960,18 +970,6 @@ server <- function(input, output, session) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
   #####
   ## Upload params data
   params_data <- reactive({
@@ -1042,7 +1040,6 @@ server <- function(input, output, session) {
   #####
   ## Recreate dataset of params (based on selection and possible modification)
   paramsData <- reactive({
-  #***SFR need to find way to reset paramsData if params_data() changes
     req(params_data())
 
     paramsData <- create_paramsData(
@@ -1167,11 +1164,16 @@ server <- function(input, output, session) {
 
   ## Download report
   output$report_download <- downloadHandler(
+
     # For PDF output, change this to "report.pdf"
     filename = "report.html",
 
     # filename = paste0(input$Scenario_ID, "_report.html"),
-    content = function(file) {
+      content = function(file) {
+        shiny::withProgress(
+          message = paste0("Downloading", input$dataset, " Data"),
+          value = 0,
+{
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
       # can happen when deployed).
@@ -1316,6 +1318,8 @@ server <- function(input, output, session) {
                         params = params,
                         envir = new.env(parent = globalenv())
       )
+}
+)
     }
   )
 
@@ -1391,7 +1395,8 @@ server <- function(input, output, session) {
 
   # # For Debugging purposes
   # output$contents <- renderTable({
-  #   scnData()$paramsData
+  #   params_data()$units
+  #   # scnData()$paramsWT
   #   })
 
 
