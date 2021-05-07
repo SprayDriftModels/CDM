@@ -51,7 +51,7 @@ runCasanova <- function(scnFile = "./sample_data/Scenarios.csv",
       print("Could not read scenario File")
     })
   } else if(driver == "shiny") {
-    #***SFR check list of scnData
+    #scnData already contains a list of inputs
   }
 
   # Read DDDParameters file
