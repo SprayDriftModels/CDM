@@ -5,21 +5,22 @@
 
 namespace cdm {
 
-struct NozzleVelocityParams {
-    double vx1; // Centerline velocity, horizontal, m/s
-    double vz1; // Centerline velocity, vertical, m/s
-    double vx2; // Downwind velocity, horizontal, m/s
-    double vz2; // Downwind velocity, vertical, m/s
-    double vx3; // Upwind velocity, horizontal, m/s
-    double vz3; // Upwind velocity, vertical, m/s
+struct NozzleVelocityResult {
+    double vx1; // Centerline velocity, horizontal [m/s]
+    double vz1; // Centerline velocity, vertical [m/s]
+    double vx2; // Downwind velocity, horizontal [m/s]
+    double vz2; // Downwind velocity, vertical [m/s]
+    double vx3; // Upwind velocity, horizontal [m/s]
+    double vz3; // Upwind velocity, vertical [m/s]
 };
 
 /**
  * Calculates nozzle straight down, downwind and upwind velocity components.
- * \param[in] PN Nozzle pressure, Pa.
- * \param[in] thetaN Nozzle angle, degrees.
- * \param[in] rhoL Mixture density, g/cm³.
+ * \param[in] PN Nozzle pressure [Pa]
+ * \param[in] thetaN Nozzle angle [degrees]
+ * \param[in] rhoL Mixture density [g/cm³]
+ * \return Nozzle velocity components [m/s]
  */
-NozzleVelocityParams NozzleVelocity(double P, double angle, double rhoL);
+NozzleVelocityResult NozzleVelocity(double P, double angle, double rhoL);
 
 } // namespace cdm

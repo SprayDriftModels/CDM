@@ -27,7 +27,7 @@
 #include "WetBulbTemperature.hpp"
 #include "WVProfile.hpp"
 
-#ifdef CASANOVA_USE_IMGUI
+#ifdef CDM_USE_IMGUI
 #include "gui/PlotWindow.hpp"
 #endif
 
@@ -74,33 +74,44 @@ int main(int argc, char *argv[])
     // Derive liquid density from solids fraction and density.
     double rhoL = 1. / ((p.xs0 / p.rhoS) + ((1. - p.xs0) / p.rhoW));
 
-    fmt::print("\n{:->{}}\n", "", 80);
-    fmt::print("Droplet Size Distribution\n");
-    fmt::print("{:->{}}\n\n", "", 80);
+    DropletSizeModel dsdmodel;
 
-    DropletSizeModel model(p.dsd);
-    auto dsdparams = model.params();
-    fmt::print(model.report());
-    fmt::print("\n");
-    fmt::print("\nParameters\n");
-    fmt::print("a1 = {}\n", dsdparams.a1);
-    fmt::print("a2 = {}\n", dsdparams.a2);
-    fmt::print("d1 = {}\n", dsdparams.d1);
-    fmt::print("d2 = {}\n", dsdparams.d2);
-    fmt::print("k1 = {}\n", dsdparams.k1);
+    if (p.dsdfit)
+    {
+        fmt::print("\n{:->{}}\n", "", 80);
+        fmt::print("Droplet Size Distribution\n");
+        fmt::print("{:->{}}\n\n", "", 80);
 
-    fmt::print("\n{:<6} {:>6} {:>6}\n", "x", "obs", "pred");
-    for (const auto& xy : p.dsd) {
-        fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, model.cdf(xy.first)*100);
+        dsdmodel.fit(p.dsd);
+        auto dsdparams = dsdmodel.params();
+        fmt::print(dsdmodel.report());
+        fmt::print("\n");
+        fmt::print("\nParameters\n");
+        fmt::print("a1 = {}\n", dsdparams.a1);
+        fmt::print("a2 = {}\n", dsdparams.a2);
+        fmt::print("d1 = {}\n", dsdparams.d1);
+        fmt::print("d2 = {}\n", dsdparams.d2);
+        fmt::print("k1 = {}\n", dsdparams.k1);
+
+        fmt::print("\n{:<6} {:>6} {:>6}\n", "x", "obs", "pred");
+        for (const auto& xy : p.dsd) {
+            fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, dsdmodel.cdf(xy.first)*100);
+        }
     }
 
     fmt::print("\n{:->{}}\n", "", 80);
     fmt::print("Wind Velocity Profile\n");
     fmt::print("{:->{}}\n\n", "", 80);
 
-    WVProfileParams wvp = WVProfile(p.z1, p.z2, p.ux1, p.ux2);
+    auto wvp = WVProfile(p.wvu, p.wvT, p.psipsipsiMethod, p.hC);
+    
+    double psipsipsi = p.psipsipsi.value_or(0);
+    if (wvp.psipsipsi.has_value())
+        psipsipsi = wvp.psipsipsi.value();
+    
     fmt::print("Uf = {}\n", wvp.Uf); 
     fmt::print("z0 = {}\n", wvp.z0);
+    fmt::print("psipsipsi = {}\n", psipsipsi);
 
     fmt::print("\n{:->{}}\n", "", 80);
     fmt::print("Wet Bulb Temperature\n");
@@ -111,8 +122,8 @@ int main(int argc, char *argv[])
     try {
         Twb = WetBulbTemperature(p.Tair, p.Patm, p.RH);
         dTwb = p.Tair - Twb; // Wet bulb T depression
-        fmt::print("dTwb = {}\n", dTwb); 
-        fmt::print("Twb = {}\n", Twb);
+        fmt::print("Twb  = {}\n", Twb);
+        fmt::print("dTwb = {}\n", dTwb);
     } catch (const std::exception& e) {
         fmt::print("Error: {}\n", e.what());
     }
@@ -159,7 +170,12 @@ int main(int argc, char *argv[])
     fmt::print("{:->{}}\n\n", "", 80);
 
     try {
-        Deposition(p.iar, p.xactive, p.fd, p.pl, p.dN, p.psipsipsi, rhoL, xdist, p.dsd, p.dpmin, p.dpmax, p.lambda);
+        if (p.dsdfit) {
+            Deposition(p.iar, p.xactive, p.fd, p.pl, p.dN, psipsipsi, rhoL, xdist, p.dsd, &dsdmodel, p.dpmin, p.dpmax, p.lmax, p.lambda);
+        }
+        else {
+            Deposition(p.iar, p.xactive, p.fd, p.pl, p.dN, psipsipsi, rhoL, xdist, p.dsd, nullptr, p.dpmin, p.dpmax, p.lmax, p.lambda);
+        }
     } catch (const std::exception& e) {
         fmt::print("Error: {}\n", e.what());
     }

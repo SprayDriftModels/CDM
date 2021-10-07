@@ -45,7 +45,10 @@ private:
     const double dpmin_;
 };
 
-DropletSizeModel::DropletSizeModel(const std::vector<std::pair<double, double>>& dsd)
+DropletSizeModel::DropletSizeModel()
+{}
+
+void DropletSizeModel::fit(const std::vector<std::pair<double, double>>& dsd)
 {
     // Initial estimates.
     params_.a1 = 300;
@@ -82,39 +85,39 @@ DropletSizeModel::DropletSizeModel(const std::vector<std::pair<double, double>>&
     report_ = summary.BriefReport(); // FullReport
 }
 
-const char* DropletSizeModel::ceresVersion()
+const char* DropletSizeModel::ceresVersion() const
 {
     return CERES_VERSION_STRING;
 }
 
-double DropletSizeModel::dpmin()
+double DropletSizeModel::dpmin() const
 {
     return dpmin_;
 }
 
-double DropletSizeModel::dpmax()
+double DropletSizeModel::dpmax() const
 {
     return dpmax_;
 }
 
-DropletSizeModelParams DropletSizeModel::params()
+DropletSizeModelParams DropletSizeModel::params() const
 {
     return params_;
 }
 
-std::string DropletSizeModel::report()
+std::string DropletSizeModel::report() const
 {
     return report_;
 }
 
-double DropletSizeModel::pdf(double x)
+double DropletSizeModel::pdf(double x) const
 {
     double y1 = params_.k1      / params_.d1 * exp(-pow(x-params_.a1,2.) / 2. / pow(params_.d1,2.));
     double y2 = (1.-params_.k1) / params_.d2 * exp(-pow(x-params_.a2,2.) / 2. / pow(params_.d2,2.));
     return (1./sqrt(2.*M_PI)) * (y1 + y2);
 }
 
-double DropletSizeModel::cdf(double x)
+double DropletSizeModel::cdf(double x) const
 {
     using namespace boost::math::quadrature;
     auto f1 = [=](double x) { return exp(-pow(x-params_.a1,2.) / (2.*pow(params_.d1,2.))) / (params_.d1*sqrt(2.*M_PI)); };
@@ -124,7 +127,7 @@ double DropletSizeModel::cdf(double x)
     return params_.k1 * q1 + (1 - params_.k1) * q2;
 }
 
-std::vector<std::pair<double, double>> DropletSizeModel::calibration()
+std::vector<std::pair<double, double>> DropletSizeModel::calibration() const
 {
     size_t n = (size_t)(dpmax_ - dpmin_);
     std::vector<std::pair<double, double>> result;
@@ -137,7 +140,6 @@ std::vector<std::pair<double, double>> DropletSizeModel::calibration()
         double y1 = y0 + (pdf(x0) + pdf(x1)) / 2 * (x1 - x0);
         result.push_back({x1, y1});
     }
-    
     return result;
 }
 

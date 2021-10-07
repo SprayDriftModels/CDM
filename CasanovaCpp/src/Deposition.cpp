@@ -24,7 +24,8 @@ namespace cdm {
 void Deposition(double iar, double xactive, double fd, double pl, double dN, double psipsipsi, double rhoL,
                 const std::array<std::vector<std::pair<double, double>>, 3>& xdist,
                 const std::vector<std::pair<double, double>>& dsd,
-                double dpmin, double dpmax, double lambda)
+                const DropletSizeModel *dsdmodel,
+                double dpmin, double dpmax, std::optional<double> lmax, double lambda)
 {
     // nsa = number of segments in sprayed area along field depth.
     // nda = number of segments in drift field.
@@ -54,32 +55,44 @@ void Deposition(double iar, double xactive, double fd, double pl, double dN, dou
         }
     }
 
-    //const double lmax = 200;
-    const double lmax = std::max({*std::max_element(driftdist[0].begin(), driftdist[0].end()),
-                                  *std::max_element(driftdist[1].begin(), driftdist[1].end()),
-                                  *std::max_element(driftdist[2].begin(), driftdist[2].end())});
+    // Use maximum drift distance for lmax if value was not provided.
+    if (!lmax.has_value()) {
+        lmax = std::max({*std::max_element(driftdist[0].begin(), driftdist[0].end()),
+                         *std::max_element(driftdist[1].begin(), driftdist[1].end()),
+                         *std::max_element(driftdist[2].begin(), driftdist[2].end())});
+    }
     
     // dwsa = width of spray segments, meters.
     // dwda = width of drift segments, meters.
     const double dwsa = fd / nsa;
-    const double dwda = lmax / nda; 
+    const double dwda = lmax.value() / nda;
 
     // 1 ha = 10000 m²
     // 1 g/cm³ = 1000 kg/m³
     const double sprayedArea = 0.0001 * fd * pl; // ha
     const double volumeSprayed = iar * sprayedArea / (rhoL * xactive); // L
-    const double volumeAppRate = volumeSprayed / sprayedArea;
+    const double volumeAppRate = volumeSprayed / sprayedArea; // L/ha
 
     // Calculate partial volume for each droplet size.
-    // Approximation using numeric derivative with central differences.
     blaze::DynamicVector<double> svp(dpavg.size(), 0);
-    const auto dsdfunc = Interpolate1D(dsd);
-    for (size_t i = 1; i < svp.size(); ++i) {
-        const double h = 0.001; // 0.5/mmm, mmm=500
-        double grad = (dsdfunc(dpavg[i] + h*dpavg[i]) -
-                       dsdfunc(dpavg[i] - h*dpavg[i])) / (2*h);
-        svp[i] = grad/dpavg[i] * ddp * volumeSprayed / nsa;
+    if (dsdmodel != nullptr) {
+        // Use non-linear least squares curve fit.
+        for (size_t i = 1; i < svp.size(); ++i) {
+            double y = dsdmodel->pdf(dpavg[i]);
+            svp[i] = y * ddp * volumeSprayed / nsa;
+        }
     }
+    else {
+        // Approximation using numeric derivative with central differences.
+        const auto dsdfunc = Interpolate1D(dsd);
+        for (size_t i = 1; i < svp.size(); ++i) {
+            const double h = 0.001; // 0.5/mmm, mmm=500
+            double grad = (dsdfunc(dpavg[i] + h*dpavg[i]) -
+                           dsdfunc(dpavg[i] - h*dpavg[i])) / (2*h);
+            svp[i] = grad/dpavg[i] * ddp * volumeSprayed / nsa;
+        }
+    }
+    
     
     // Width of each segment.
     blaze::DynamicVector<double> dwx = blaze::generate(nsa+nda, [=](size_t i)
@@ -132,21 +145,20 @@ void Deposition(double iar, double xactive, double fd, double pl, double dN, dou
     blaze::DynamicVector<double, blaze::rowVector> vps = blaze::sum<blaze::columnwise>(dvm);
     blaze::DynamicVector<double, blaze::rowVector> cs = blaze::sum<blaze::columnwise>(cm);
     auto npdr = vps / (blaze::trans(dwx) * pl);
-    double tv = blaze::sum(blaze::subvector(vps, 0UL, nsa));
     auto propAppliedPlume = cs / (volumeAppRate / 10000.);
     auto propAppliedNoPlume = npdr / (volumeAppRate / 10000.);
 
-    fmt::print("Nsa = {}\n", nsa);
-    fmt::print("Nda = {}\n", nda);
-    fmt::print("DWsa = {}\n", dwsa);
-    fmt::print("DWda = {}\n", dwda);
-    fmt::print("SprayedArea = {}\n", sprayedArea);
-    fmt::print("VolumeSprayed = {}\n", volumeSprayed);
-    fmt::print("sum(SVP) * Nsa = {}\n", blaze::sum(svp) * nsa);
-    fmt::print("sum(VPS) = {}\n", blaze::sum(vps));
-    fmt::print("sum(CS) = {}\n", blaze::sum(cs));
-    fmt::print("TV = {}\n", tv);
-    fmt::print("VolumeSprayed - TV = {}\n", volumeSprayed - tv);
+    fmt::print("Spray Segment Count (Nsa)  = {}\n", nsa);
+    fmt::print("Drift Segment Count (Nda)  = {}\n", nda);
+    fmt::print("Spray Segment Width (DWsa) = {}\n", dwsa);
+    fmt::print("Drift Segment Width (DWda) = {}\n", dwda);
+    fmt::print("Max. Drift Distance (Lmax) = {}\n", *lmax);
+    fmt::print("Sprayed Area               = {}\n", sprayedArea);
+    fmt::print("Volume Sprayed             = {}\n", volumeSprayed);
+    fmt::print("sum(SVP) * Nsa             = {}\n", blaze::sum(svp) * nsa);
+    fmt::print("sum(VPS[0..Nsa+Nda])       = {}\n", blaze::sum(vps));
+    fmt::print("sum(VPS[0..Nsa])           = {}\n",  blaze::sum(blaze::subvector(vps, 0UL, nsa)));
+    fmt::print("sum(CS)                    = {}\n", blaze::sum(cs));
 
     std::vector<std::pair<double, double>> propAppliedPlumeXY;
     propAppliedPlumeXY.reserve(nsa+nda);
@@ -155,13 +167,16 @@ void Deposition(double iar, double xactive, double fd, double pl, double dN, dou
     }
 
     const auto apfunc = Interpolate1D(propAppliedPlumeXY);
-    std::vector<double> applume(100, 0);
+    std::vector<std::pair<double, double>> applume(100);
     for (size_t i = 0; i < applume.size(); ++i) {
-        applume.at(i) = apfunc(i*lmax/applume.size()) * 100.;
+        double x = i*lmax.value()/applume.size();
+        double y = apfunc(x) * 100.;
+        applume.at(i) = std::make_pair(x, y);
     }
+
     fmt::print("\n{:<8} {:>9}\n", "Distance", "Plume");
     for (size_t i = 0; i < applume.size(); ++i) {
-        fmt::print("{:<8.3f} {:>8.4f}%\n", i*lmax/applume.size(), applume.at(i));
+        fmt::print("{:<8.3f} {:>8.4f}%\n", applume.at(i).first, applume.at(i).second);
     }
 }
 

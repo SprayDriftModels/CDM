@@ -11,9 +11,10 @@
 
 namespace cdm {
 
-NozzleVelocityParams NozzleVelocity(double PN, double thetaN, double rhoL)
+NozzleVelocityResult NozzleVelocity(double PN, double thetaN, double rhoL)
 {
-    NozzleVelocityParams result;
+    NozzleVelocityResult result;
+    
     // 1 Pa = 1 kg·m⁻¹·s⁻²
     // 1 g·cm⁻³ = 1000 kg·m⁻³
     // √(kg·m⁻¹·s⁻²)(kg⁻¹·m³) = m·s⁻¹

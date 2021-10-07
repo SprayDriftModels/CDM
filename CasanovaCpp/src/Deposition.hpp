@@ -3,14 +3,22 @@
 
 #pragma once
 
+#include <optional>
 #include <utility>
 #include <vector>
 
+#include "DropletSizeModel.hpp"
+
 namespace cdm {
+
+//struct DepositionResult {
+//    std::vector<std::pair<double, double>> applume;
+//};
 
 void Deposition(double iar, double xactive, double fd, double pl, double dN, double psipsipsi, double rhoL,
                 const std::array<std::vector<std::pair<double, double>>, 3>& xdist,
                 const std::vector<std::pair<double, double>>& dsd,
-                double dpmin, double dpmax, double lambda);
+                const DropletSizeModel *dsdmodel,
+                double dpmin, double dpmax, std::optional<double> lmax, double lambda);
 
 } // namespace cdm

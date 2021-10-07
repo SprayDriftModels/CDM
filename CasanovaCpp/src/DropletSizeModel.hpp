@@ -20,56 +20,58 @@ struct DropletSizeModelParams
 
 struct DropletSizeModel
 {
+    DropletSizeModel();
+
     /**
      * Fit a non-linear least squares model to a droplet size vs. cumulative volume fraction distribution.
      */
-    explicit DropletSizeModel(const std::vector<std::pair<double, double>>& dsd);
+    void fit(const std::vector<std::pair<double, double>>& dsd);
 
     /**
      * Returns the Ceres version string.
      */
-    const char* ceresVersion();
+    const char* ceresVersion() const;
 
     /**
      * Returns the minimum droplet size from the input distribution.
      */
-    double dpmin();
+    double dpmin() const;
 
     /**
      * Returns the maximum droplet size from the input distribution.
      */
-    double dpmax();
+    double dpmax() const;
 
     /**
      * Returns the parameter estimates for the non-linear least squares model.
      */
-    DropletSizeModelParams params();
+    DropletSizeModelParams params() const;
 
     /**
      * Returns the Ceres solver report.
      */
-    std::string report();
+    std::string report() const;
 
     /**
      * Density function for the non-linear least squares model.
      */
-    double pdf(double x);
+    double pdf(double x) const;
 
     /**
      * Cumulative distribution function for the non-linear least squares model.
      */
-    double cdf(double x);
+    double cdf(double x) const;
 
     /**
      * Returns the predicted cdf values between dpmin and dpmax calculated at 1 μm increments.
      * This implementation integrates the PDF using simple trapezoidal quadrature.
      */
-    std::vector<std::pair<double, double>> calibration();
+    std::vector<std::pair<double, double>> calibration() const;
 
 private:
     DropletSizeModelParams params_;
-    double dpmin_;
-    double dpmax_;
+    double dpmin_ = 0;
+    double dpmax_ = 0;
     std::string report_;
 };
 
