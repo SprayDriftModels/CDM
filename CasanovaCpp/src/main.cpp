@@ -1,7 +1,3 @@
-#ifndef _USE_MATH_DEFINES
-#define _USE_MATH_DEFINES
-#endif
-
 #include <array>
 #include <chrono>
 #include <cmath>
@@ -26,10 +22,6 @@
 #include "Serialization.hpp"
 #include "WetBulbTemperature.hpp"
 #include "WVProfile.hpp"
-
-#ifdef CDM_USE_IMGUI
-#include "gui/PlotWindow.hpp"
-#endif
 
 using namespace cdm;
 
@@ -190,13 +182,6 @@ int main(int argc, char *argv[])
 
     auto end = std::chrono::steady_clock::now();
     fmt::print("\nElapsed: {} ms\n", std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
-
-#ifdef CDM_USE_IMGUI
-    std::vector<std::pair<double, double>> dsd1;
-    for (double x = model.dpmin(); x < model.dpmax()+0.5/2; x += 0.5)
-        dsd1.emplace_back(std::make_pair(x, model.cdf(x)));
-    gui::ShowPlotWindow(p.dsd, dsd1);
-#endif
 
     return 0;
 }
