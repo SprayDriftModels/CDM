@@ -18,6 +18,12 @@ struct Interpolate1D
         points_(points)
     {
         std::sort(points_.begin(), points_.end());
+
+        // Ensure each X value is associated with one Y value.
+        points_.erase(std::unique(points_.begin(), points_.end(),
+            [](const auto& a, const auto& b) {
+                return a.first == b.first;
+            }), points_.end());
     }
 
     double operator()(double x) const
