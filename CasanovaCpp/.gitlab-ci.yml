@@ -1,0 +1,28 @@
+.shared_windows_runners:
+  tags:
+  - shared-windows
+  - windows
+  - windows-1809
+
+stages:
+  - build
+
+before_script:
+ - Set-Variable -Name "time" -Value (date -Format "%H:%m")
+ - echo ${time}
+ - echo "started by ${GITLAB_USER_NAME}"
+
+build:
+  extends:
+  - .shared_windows_runners
+  stage: build
+  script:
+  - cmake -G "Ninja" -B build -S .
+          -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+          -DVCPKG_TARGET_TRIPLET=x64-windows-static
+          -DCMAKE_BUILD_TYPE=Release
+  - cmake --build build
+  artifacts:
+    paths:
+      - bin/cdm.exe
+ 

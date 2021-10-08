@@ -19,32 +19,6 @@ find_package(fmt CONFIG REQUIRED)
 find_package(SUNDIALS CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 
-find_package(imgui CONFIG REQUIRED)
-find_package(implot CONFIG REQUIRED)
-find_package(freetype CONFIG REQUIRED)
-
-#-------------------------------------------------------------------------------
-# Plot GUI
-#-------------------------------------------------------------------------------
-
-add_library(libplot STATIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/gui/PlotWindow.cpp
-)
-
-set_property(TARGET libplot PROPERTY CXX_STANDARD 17)
-set_property(TARGET libplot PROPERTY CXX_STANDARD_REQUIRED ON)
-
-if(MSVC)
-  target_compile_definitions(libplot PRIVATE _UNICODE UNICODE)
-endif()
-
-target_link_libraries(libplot PRIVATE
-  d3d11.lib
-  d3dcompiler.lib
-  imgui::imgui
-  implot::implot
-)
-
 #-------------------------------------------------------------------------------
 # Main Executable
 #-------------------------------------------------------------------------------
@@ -60,8 +34,6 @@ add_executable(cdm
   ${CMAKE_CURRENT_SOURCE_DIR}/src/WVProfile.cpp
 )
 
-add_dependencies(cdm libplot)
-
 set_property(TARGET cdm PROPERTY CXX_STANDARD 17)
 set_property(TARGET cdm PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET cdm PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
@@ -71,10 +43,7 @@ if(MSVC)
   target_compile_definitions(cdm PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()
 
-#target_compile_definitions(cdm PRIVATE -DCDM_USE_IMGUI)
-
 target_link_libraries(cdm PRIVATE
-  libplot
   Boost::headers
   blaze::blaze
   Ceres::ceres
