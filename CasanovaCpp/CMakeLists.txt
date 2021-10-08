@@ -36,7 +36,7 @@ set_property(TARGET libplot PROPERTY CXX_STANDARD 17)
 set_property(TARGET libplot PROPERTY CXX_STANDARD_REQUIRED ON)
 
 if(MSVC)
-  target_compile_definitions(libplot PRIVATE -D_UNICODE -DUNICODE)
+  target_compile_definitions(libplot PRIVATE _UNICODE UNICODE)
 endif()
 
 target_link_libraries(libplot PRIVATE
@@ -68,7 +68,8 @@ set_property(TARGET cdm PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET cdm PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
 if(MSVC)
-  target_compile_definitions(cdm PRIVATE -D_CRT_SECURE_NO_WARNINGS)
+  target_compile_options(cdm PRIVATE "/utf-8")
+  target_compile_definitions(cdm PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()
 
 #target_compile_definitions(cdm PRIVATE -DCDM_USE_IMGUI)
