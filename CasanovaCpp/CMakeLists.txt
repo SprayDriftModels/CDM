@@ -12,12 +12,11 @@ endif()
 
 project(cdm LANGUAGES CXX)
 
-find_package(Boost REQUIRED)
 find_package(blaze CONFIG REQUIRED)
+find_package(Boost REQUIRED)
 find_package(Ceres CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(SUNDIALS CONFIG REQUIRED)
-find_package(units CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 
 find_package(imgui CONFIG REQUIRED)
@@ -82,6 +81,5 @@ target_link_libraries(cdm PRIVATE
   fmt::fmt
   SUNDIALS::cvode
   SUNDIALS::nvecserial
-  units::units
   nlohmann_json::nlohmann_json
 )
