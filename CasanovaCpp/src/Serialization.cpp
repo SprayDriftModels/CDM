@@ -1,6 +1,7 @@
 // Copyright (c) 2021 John Buonagurio <jbuonagurio@exponent.com>
 
 #include <optional>
+
 #include <nlohmann/json.hpp>
 
 #include "Serialization.hpp"

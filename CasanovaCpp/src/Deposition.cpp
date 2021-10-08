@@ -1,16 +1,14 @@
 // Copyright (c) 2021 John Buonagurio <jbuonagurio@exponent.com>
 // Copyright (c) 2021 Ed Casanova <eduardo.casanova@bayer.com>
 
-#ifndef _USE_MATH_DEFINES
-#define _USE_MATH_DEFINES
-#endif
-
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <iterator>
 #include <numeric>
 #include <vector>
+
+#include <boost/math/constants/constants.hpp>
 
 #include <blaze/Math.h>
 
@@ -27,12 +25,14 @@ void Deposition(double iar, double xactive, double fd, double pl, double dN, dou
                 const DropletSizeModel *dsdmodel,
                 double dpmin, double dpmax, std::optional<double> lmax, double lambda)
 {
+    using boost::math::double_constants::pi;
+
     // nsa = number of segments in sprayed area along field depth.
     // nda = number of segments in drift field.
     size_t nsa = static_cast<size_t>(fd / dN);
     size_t nda = static_cast<size_t>(nsa * lambda);
 
-    // Multiplier for one sigma variation in wind direction, degrees.
+    // Multiplier for one sigma variation in wind direction (ζ), degrees.
     const double zeta = 2.5;
 
     // Droplet sizes to evaluate.
@@ -123,7 +123,7 @@ void Deposition(double iar, double xactive, double fd, double pl, double dN, dou
                 auto dvms = blaze::submatrix(dvm, i, j, 1UL, nsa-j); // dvm[i,j:Nsa]
                 auto cms = blaze::submatrix(cm, i, j, 1UL, nsa-j); // cm[i,j:Nsa]
                 dvms += svp[i]/3;
-                cms += (svp[i]/3) / (dwsa*(pl+2*(x[j]-0.5*dwsa)*tan(psipsipsi*M_PI*zeta/180.)));
+                cms += (svp[i]/3) / (dwsa*(pl+2*(x[j]-0.5*dwsa)*tan(psipsipsi*pi*zeta/180.)));
             }
 
             for (size_t j = nsa; j < nsa+nda; ++j) {
@@ -136,7 +136,7 @@ void Deposition(double iar, double xactive, double fd, double pl, double dN, dou
                 }
                 for (ptrdiff_t k = dalower; k < daupper; ++k) {
                     dvm(i,j) += svp[i]/3;
-                    cm(i,j) += (svp[i]/3) / (dwda*(pl+2*(x[j]-x[nsa-k])*tan(psipsipsi*M_PI*zeta/180.)));
+                    cm(i,j) += (svp[i]/3) / (dwda*(pl+2*(x[j]-x[nsa-k])*tan(psipsipsi*pi*zeta/180.)));
                 }
             }
         }
@@ -150,14 +150,14 @@ void Deposition(double iar, double xactive, double fd, double pl, double dN, dou
 
     fmt::print("Spray Segment Count (Nsa)  = {}\n", nsa);
     fmt::print("Drift Segment Count (Nda)  = {}\n", nda);
-    fmt::print("Spray Segment Width (DWsa) = {}\n", dwsa);
-    fmt::print("Drift Segment Width (DWda) = {}\n", dwda);
+    fmt::print("Spray Segment Width (ΔWsa) = {}\n", dwsa);
+    fmt::print("Drift Segment Width (ΔWda) = {}\n", dwda);
     fmt::print("Max. Drift Distance (Lmax) = {}\n", *lmax);
     fmt::print("Sprayed Area               = {}\n", sprayedArea);
     fmt::print("Volume Sprayed             = {}\n", volumeSprayed);
     fmt::print("sum(SVP) * Nsa             = {}\n", blaze::sum(svp) * nsa);
     fmt::print("sum(VPS[0..Nsa+Nda])       = {}\n", blaze::sum(vps));
-    fmt::print("sum(VPS[0..Nsa])           = {}\n",  blaze::sum(blaze::subvector(vps, 0UL, nsa)));
+    fmt::print("sum(VPS[0..Nsa])           = {}\n", blaze::sum(blaze::subvector(vps, 0UL, nsa)));
     fmt::print("sum(CS)                    = {}\n", blaze::sum(cs));
 
     std::vector<std::pair<double, double>> propAppliedPlumeXY;

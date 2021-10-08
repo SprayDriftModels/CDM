@@ -1,10 +1,6 @@
 // Copyright (c) 2021 John Buonagurio <jbuonagurio@exponent.com>
 // Copyright (c) 2021 Ed Casanova <eduardo.casanova@bayer.com>
 
-#ifndef _USE_MATH_DEFINES
-#define _USE_MATH_DEFINES
-#endif
-
 #include <array>
 #include <chrono>
 #include <cmath>
@@ -14,6 +10,7 @@
 
 #include <fmt/core.h>
 
+#include <boost/math/constants/constants.hpp>
 #include <boost/math/tools/roots.hpp>
 
 #include "CVodeIntegrator.hpp"
@@ -42,12 +39,15 @@ auto CD = [=](double Re)
 
 // Water evaporation function, g/sec
 auto W = [=](double Mw, double Re) {
+    using boost::math::double_constants::pi;
     const double lw = 76.4e-8; // Unknown Constant
-    return (3. * pow(M_PI, 2./3.) / 2. / pow(6., 2./3.)) * (lw * dTwb) * rhoW * pow(Ms/rhoS + Mw/rhoW, 1./3.) * (1. + 0.276 * sqrt(Re)) * Mw / (Ms + Mw);
+    return (3. * pow(pi, 2./3.) / 2. / pow(6., 2./3.)) * (lw * dTwb) * rhoW * pow(Ms/rhoS + Mw/rhoW, 1./3.) * (1. + 0.276 * sqrt(Re)) * Mw / (Ms + Mw);
 };
 
 static int RhsFn(double t, N_Vector nvx, N_Vector nvdxdt, void *userdata)
 {
+    using boost::math::double_constants::pi;
+
     double *x = N_VGetArrayPointer(nvx);
     double *dxdt = N_VGetArrayPointer(nvdxdt);
 
@@ -64,14 +64,14 @@ static int RhsFn(double t, N_Vector nvx, N_Vector nvdxdt, void *userdata)
     else {
         const double gc = 980.665;                               // Standard Gravity
         const double VD = Mw/rhoW + Ms/rhoS;                     // Droplet volume
-        const double DD = cbrt(6./M_PI * VD);                    // Droplet diameter
+        const double DD = cbrt(6./pi * VD);                      // Droplet diameter
         const double Re = rhoa0 * DD * hypot(Vz,Vvwx-Vx) / ma0;  // Reynolds number
 
         /* dZ    */ dxdt[0] = Vz;
         /* dX    */ dxdt[1] = Vx;
-        /* dVz   */ dxdt[2] = ( M_PI * CD((rhoa0 * DD * abs(Vz)) / ma0) * rhoa0 * pow(DD,2.) * (-Vz) * abs(-Vz) / 8.
+        /* dVz   */ dxdt[2] = ( pi * CD((rhoa0 * DD * abs(Vz)) / ma0) * rhoa0 * pow(DD,2.) * (-Vz) * abs(-Vz) / 8.
                                 + Vz * W(Mw,Re) + VD * gc * (rhoa0-(Mw+Ms)/VD) ) / (Mw+Ms);
-        /* dVx   */ dxdt[3] = ( M_PI * CD((rhoa0 * DD * abs(Vx-Vvwx)) / ma0) * rhoa0 * pow(DD,2.) * (-Vx+Vvwx) * abs(-Vx+Vvwx) / 8.
+        /* dVx   */ dxdt[3] = ( pi * CD((rhoa0 * DD * abs(Vx-Vvwx)) / ma0) * rhoa0 * pow(DD,2.) * (-Vx+Vvwx) * abs(-Vx+Vvwx) / 8.
                                 + Vx * W(Mw,Re) ) / (Mw+Ms) * (Vvwx <= 0. ? 0. : 1.);
         /* dMw   */ dxdt[4] = -W(Mw,Re);
         /* dVvwx */ dxdt[5] = Z <= z0 ? 0. : Vz * (Uf/0.4) / (Z-hC);
@@ -120,6 +120,8 @@ static double EstimateVt(double dp, double rhoL0, double rhoa0, double ma0)
 
 double DropletTransport(double Tair, double RH, double dTwb, double z0, double Uf, double rhoW, double rhoS, double xs0, double hN, double hC, double vz, double vx, double dp, double ddd)
 {
+    using boost::math::double_constants::pi;
+
     z0 = z0 * 100.; // m to cm
     Uf = Uf * 100.; // m/s to cm/s
     hN = hN * 100.; // m to cm
@@ -136,11 +138,11 @@ double DropletTransport(double Tair, double RH, double dTwb, double z0, double U
 
     // Mass of sprayed solution in droplet, g
     auto Ms = [](double dp, double xs, double rhoS, double rhoW)
-        { return M_PI / 6. * pow(dp, 3.) * xs / ((xs / rhoS) + ((1. - xs) / rhoW)); };
+        { return pi / 6. * pow(dp, 3.) * xs / ((xs / rhoS) + ((1. - xs) / rhoW)); };
 
     // Mass of water in droplet, g
     auto Mw = [](double dp, double xs, double rhoS, double rhoW) 
-        { return M_PI / 6. * pow(dp, 3.) * (1. - xs) / ((xs / rhoS) + ((1. - xs) / rhoW)); };
+        { return pi / 6. * pow(dp, 3.) * (1. - xs) / ((xs / rhoS) + ((1. - xs) / rhoW)); };
 
     // Ambient dewpoint temperature, °C
     auto Tdp = [](double Tair, double RH)

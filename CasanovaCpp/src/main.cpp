@@ -67,35 +67,35 @@ int main(int argc, char *argv[])
 {
     auto start = std::chrono::steady_clock::now();
     
-    std::vector<InputParameters> cases;
-    std::string filename = argc > 1 ? argv[1] : "config.json";
-    InputParameters p = ParseJSON(filename).front();
-
-    // Derive liquid density from solids fraction and density.
-    double rhoL = 1. / ((p.xs0 / p.rhoS) + ((1. - p.xs0) / p.rhoW));
+    const std::vector<InputParameters> cases;
+    const std::string filename = argc > 1 ? argv[1] : "config.json";
+    const InputParameters p = ParseJSON(filename).front();
 
     DropletSizeModel dsdmodel;
-
     if (p.dsdfit)
     {
         fmt::print("\n{:->{}}\n", "", 80);
         fmt::print("Droplet Size Distribution\n");
         fmt::print("{:->{}}\n\n", "", 80);
 
-        dsdmodel.fit(p.dsd);
-        auto dsdparams = dsdmodel.params();
-        fmt::print(dsdmodel.report());
-        fmt::print("\n");
-        fmt::print("\nParameters\n");
-        fmt::print("a1 = {}\n", dsdparams.a1);
-        fmt::print("a2 = {}\n", dsdparams.a2);
-        fmt::print("d1 = {}\n", dsdparams.d1);
-        fmt::print("d2 = {}\n", dsdparams.d2);
-        fmt::print("k1 = {}\n", dsdparams.k1);
+        try {
+            dsdmodel.fit(p.dsd);
+            const auto dsdparams = dsdmodel.params();
+            fmt::print(dsdmodel.report());
+            fmt::print("\n");
+            fmt::print("\nParameters\n");
+            fmt::print("a1 = {}\n", dsdparams.a1);
+            fmt::print("a2 = {}\n", dsdparams.a2);
+            fmt::print("d1 = {}\n", dsdparams.d1);
+            fmt::print("d2 = {}\n", dsdparams.d2);
+            fmt::print("k1 = {}\n", dsdparams.k1);
 
-        fmt::print("\n{:<6} {:>6} {:>6}\n", "x", "obs", "pred");
-        for (const auto& xy : p.dsd) {
-            fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, dsdmodel.cdf(xy.first)*100);
+            fmt::print("\n{:<6} {:>6} {:>6}\n", "x", "obs", "pred");
+            for (const auto& xy : p.dsd) {
+                fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, dsdmodel.cdf(xy.first)*100);
+            }
+        } catch (const std::exception& e) {
+            fmt::print("Error: {}\n", e.what());
         }
     }
 
@@ -103,15 +103,21 @@ int main(int argc, char *argv[])
     fmt::print("Wind Velocity Profile\n");
     fmt::print("{:->{}}\n\n", "", 80);
 
-    auto wvp = WVProfile(p.wvu, p.wvT, p.psipsipsiMethod, p.hC);
+    WVProfileResult wvp;
+    try {
+        wvp = WVProfile(p.wvu, p.wvT, p.psipsipsiMethod, p.hC);
+    } catch (const std::exception& e) {
+        fmt::print("Error: {}\n", e.what());
+        return 1;
+    }
     
     double psipsipsi = p.psipsipsi.value_or(0);
     if (wvp.psipsipsi.has_value())
         psipsipsi = wvp.psipsipsi.value();
     
-    fmt::print("Uf = {}\n", wvp.Uf); 
-    fmt::print("z0 = {}\n", wvp.z0);
-    fmt::print("psipsipsi = {}\n", psipsipsi);
+    fmt::print("Uf  = {}\n", wvp.Uf); 
+    fmt::print("z0  = {}\n", wvp.z0);
+    fmt::print("ψψψ = {}\n", psipsipsi);
 
     fmt::print("\n{:->{}}\n", "", 80);
     fmt::print("Wet Bulb Temperature\n");
@@ -123,15 +129,17 @@ int main(int argc, char *argv[])
         Twb = WetBulbTemperature(p.Tair, p.Patm, p.RH);
         dTwb = p.Tair - Twb; // Wet bulb T depression
         fmt::print("Twb  = {}\n", Twb);
-        fmt::print("dTwb = {}\n", dTwb);
+        fmt::print("ΔTwb = {}\n", dTwb);
     } catch (const std::exception& e) {
         fmt::print("Error: {}\n", e.what());
+        return 1;
     }
 
     fmt::print("\n{:->{}}\n", "", 80);
     fmt::print("Nozzle Velocity\n");
     fmt::print("{:->{}}\n\n", "", 80);
 
+    double rhoL = 1. / ((p.xs0 / p.rhoS) + ((1. - p.xs0) / p.rhoW));
     auto nv = NozzleVelocity(p.PN, p.thetaN, rhoL);
     fmt::print("vz1 = {}\n", nv.vz1);
     fmt::print("vx1 = {}\n", nv.vx1);
@@ -178,6 +186,7 @@ int main(int argc, char *argv[])
         }
     } catch (const std::exception& e) {
         fmt::print("Error: {}\n", e.what());
+        return 1;
     }
 
     auto end = std::chrono::steady_clock::now();
