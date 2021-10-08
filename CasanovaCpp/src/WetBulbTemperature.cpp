@@ -61,7 +61,7 @@ double WetBulbTemperature(double Tair, double Patm, double RH)
     double guess = Tair - (Tair - Tdp) / 3.; // Initial guess (1/3 rule).
     double lower = guess / 2; // Lower bound for the initial bracket of the root.
     double upper = guess * 2; // Upper bound for the initial bracket of the root.
-    uintmax_t max_iter = 20;  // Iteration limit.
+    uintmax_t max_iter = 50;  // Iteration limit.
 
     // Termination condition functor for specified number of bits.
     // Maximum value is std::numeric_limits<double>::digits - 1.
