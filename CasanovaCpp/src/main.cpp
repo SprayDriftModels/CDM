@@ -78,24 +78,23 @@ int main(int argc, char *argv[])
         fmt::print("Droplet Size Distribution\n");
         fmt::print("{:->{}}\n\n", "", 80);
 
-        try {
-            dsdmodel.fit(p.dsd);
-            const auto dsdparams = dsdmodel.params();
-            fmt::print(dsdmodel.report());
-            fmt::print("\n");
-            fmt::print("\nParameters\n");
-            fmt::print("a1 = {}\n", dsdparams.a1);
-            fmt::print("a2 = {}\n", dsdparams.a2);
-            fmt::print("d1 = {}\n", dsdparams.d1);
-            fmt::print("d2 = {}\n", dsdparams.d2);
-            fmt::print("k1 = {}\n", dsdparams.k1);
+        bool rc = dsdmodel.fit(p.dsd);
+        fmt::print(dsdmodel.report());
+        fmt::print("\n");
+        if (rc == false)
+            return 1;
 
-            fmt::print("\n{:<6} {:>6} {:>6}\n", "x", "obs", "pred");
-            for (const auto& xy : p.dsd) {
-                fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, dsdmodel.cdf(xy.first)*100);
-            }
-        } catch (const std::exception& e) {
-            fmt::print("Error: {}\n", e.what());
+        const auto dsdparams = dsdmodel.params();
+        fmt::print("\nParameters\n");
+        fmt::print("a1 = {}\n", dsdparams.a1);
+        fmt::print("a2 = {}\n", dsdparams.a2);
+        fmt::print("d1 = {}\n", dsdparams.d1);
+        fmt::print("d2 = {}\n", dsdparams.d2);
+        fmt::print("k1 = {}\n", dsdparams.k1);
+
+        fmt::print("\n{:<6} {:>6} {:>6}\n", "x", "obs", "pred");
+        for (const auto& xy : p.dsd) {
+            fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, dsdmodel.cdf(xy.first)*100);
         }
     }
 
