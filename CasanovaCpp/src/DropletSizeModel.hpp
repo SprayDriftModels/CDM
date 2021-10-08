@@ -25,7 +25,7 @@ struct DropletSizeModel
     /**
      * Fit a non-linear least squares model to a droplet size vs. cumulative volume fraction distribution.
      */
-    void fit(const std::vector<std::pair<double, double>>& dsd);
+    bool fit(const std::vector<std::pair<double, double>>& dsd);
 
     /**
      * Returns the Ceres version string.
