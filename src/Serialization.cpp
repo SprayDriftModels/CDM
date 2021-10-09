@@ -9,7 +9,7 @@
 namespace nlohmann {
 namespace detail {
 
-template <typename BasicJsonType, typename T>
+template<typename BasicJsonType, typename T>
 void from_json(const BasicJsonType& j, std::optional<T>& opt) {
     if (j.is_null())
         opt = std::nullopt;
@@ -17,8 +17,8 @@ void from_json(const BasicJsonType& j, std::optional<T>& opt) {
         opt = j.template get<T>();
 }
 
-template <typename BasicJsonType, typename T,
-          std::enable_if_t<std::is_constructible<BasicJsonType, T>::value, int> = 0>
+template<typename BasicJsonType, typename T,
+         std::enable_if_t<std::is_constructible<BasicJsonType, T>::value, int> = 0>
 void to_json(BasicJsonType& j, const std::optional<T>& opt) {
     if (opt.has_value())
         j = *opt;

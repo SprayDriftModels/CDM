@@ -32,24 +32,18 @@ static std::vector<InputParameters> ParseJSON(const std::string& filename)
     std::ifstream ifs;
     std::stringstream buffer;
     std::vector<InputParameters> result;
-
-    try {
-        ifs.open(filename);
-        buffer << ifs.rdbuf();
-        json j = json::parse(buffer.str(),
-                             /* callback */ nullptr,
-                             /* allow_exceptions */ true,
-                             /* ignore_comments */ true);
-        
-        for (auto& element : j) {
-            InputParameters p;
-            from_json(element, p);
-            result.push_back(p);
-        }
-    } catch (json::exception& e) {
-        fmt::print(e.what());
-    } catch (std::exception& e) {
-        fmt::print(e.what());
+   
+    ifs.open(filename);
+    buffer << ifs.rdbuf();
+    json j = json::parse(buffer.str(),
+                         /* callback */ nullptr,
+                         /* allow_exceptions */ true,
+                         /* ignore_comments */ true);
+    
+    for (auto& element : j) {
+        InputParameters p;
+        from_json(element, p);
+        result.push_back(p);
     }
 
     return result;
@@ -61,33 +55,46 @@ int main(int argc, char *argv[])
     
     const std::vector<InputParameters> cases;
     const std::string filename = argc > 1 ? argv[1] : "config.json";
-    const InputParameters p = ParseJSON(filename).front();
+    
+    InputParameters p;
+    try {
+        p = ParseJSON(filename).front();
+    } catch (nlohmann::json::exception& e) {
+        fmt::print("{}\n", e.what());
+        return 1;
+    } catch (std::exception& e) {
+        fmt::print("{}\n", e.what());
+        return 1;
+    } 
 
     DropletSizeModel dsdmodel;
-    if (p.dsdfit)
-    {
-        fmt::print("\n{:->{}}\n", "", 80);
-        fmt::print("Droplet Size Distribution\n");
-        fmt::print("{:->{}}\n\n", "", 80);
+    try {
+        if (p.dsdfit)
+        {
+            fmt::print("\n{:->{}}\n", "", 80);
+            fmt::print("Droplet Size Distribution\n");
+            fmt::print("{:->{}}\n\n", "", 80);
 
-        bool rc = dsdmodel.fit(p.dsd);
-        fmt::print(dsdmodel.report());
-        fmt::print("\n");
-        if (rc == false)
-            return 1;
+            ceres::TerminationType status = dsdmodel.fit(p.dsd);
+            fmt::print("{}\n", dsdmodel.report());
+            if (status == ceres::FAILURE || status == ceres::USER_FAILURE)
+                return 1;
+            
+            const auto dsdparams = dsdmodel.params();
+            fmt::print("\nParameters\n");
+            fmt::print("a1 = {}\n", dsdparams.a1);
+            fmt::print("a2 = {}\n", dsdparams.a2);
+            fmt::print("d1 = {}\n", dsdparams.d1);
+            fmt::print("d2 = {}\n", dsdparams.d2);
+            fmt::print("k1 = {}\n", dsdparams.k1);
 
-        const auto dsdparams = dsdmodel.params();
-        fmt::print("\nParameters\n");
-        fmt::print("a1 = {}\n", dsdparams.a1);
-        fmt::print("a2 = {}\n", dsdparams.a2);
-        fmt::print("d1 = {}\n", dsdparams.d1);
-        fmt::print("d2 = {}\n", dsdparams.d2);
-        fmt::print("k1 = {}\n", dsdparams.k1);
-
-        fmt::print("\n{:<6} {:>6} {:>6}\n", "x", "obs", "pred");
-        for (const auto& xy : p.dsd) {
-            fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, dsdmodel.cdf(xy.first)*100);
+            fmt::print("\n{:<6} {:>6} {:>6}\n", "x", "obs", "pred");
+            for (const auto& xy : p.dsd) {
+                fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, dsdmodel.cdf(xy.first)*100);
+            }
         }
+    } catch (const std::exception& e) {
+        fmt::print("{}\n", e.what());
     }
 
     fmt::print("\n{:->{}}\n", "", 80);

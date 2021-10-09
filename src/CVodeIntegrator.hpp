@@ -31,7 +31,7 @@ using SUNLinearSolverUniquePtr = std::unique_ptr<_generic_SUNLinearSolver, SUNLi
 
 namespace cvode {
 
-template <sunindextype N>
+template<sunindextype N>
 struct Integrator
 {
     Integrator() :

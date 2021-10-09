@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include <ceres/types.h>
+
 namespace cdm {
 
 struct DropletSizeModelParams
@@ -25,7 +27,7 @@ struct DropletSizeModel
     /**
      * Fit a non-linear least squares model to a droplet size vs. cumulative volume fraction distribution.
      */
-    bool fit(const std::vector<std::pair<double, double>>& dsd);
+    ceres::TerminationType fit(const std::vector<std::pair<double, double>>& dsd);
 
     /**
      * Returns the Ceres version string.
@@ -61,12 +63,6 @@ struct DropletSizeModel
      * Cumulative distribution function for the non-linear least squares model.
      */
     double cdf(double x) const;
-
-    /**
-     * Returns the predicted cdf values between dpmin and dpmax calculated at 1 μm increments.
-     * This implementation integrates the PDF using simple trapezoidal quadrature.
-     */
-    std::vector<std::pair<double, double>> calibration() const;
 
 private:
     DropletSizeModelParams params_;
