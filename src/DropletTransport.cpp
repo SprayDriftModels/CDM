@@ -34,11 +34,11 @@ double Ms;
 double ttt;
 
 // Drag coefficient, unitless
-auto CD = [=](double Re)
+auto CD = [](double Re)
     { return 24. / Re * (1. + 0.197 * pow(Re, 0.63) + 0.00026 * pow(Re, 1.38)); };
 
 // Water evaporation function, g/sec
-auto W = [=](double Mw, double Re) {
+auto W = [](double Mw, double Re) {
     using boost::math::double_constants::pi;
     const double lw = 76.4e-8; // Unknown Constant
     return (3. * pow(pi, 2./3.) / 2. / pow(6., 2./3.)) * (lw * dTwb) * rhoW * pow(Ms/rhoS + Mw/rhoW, 1./3.) * (1. + 0.276 * sqrt(Re)) * Mw / (Ms + Mw);

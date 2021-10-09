@@ -2,10 +2,6 @@
 
 #include <optional>
 
-#include <nlohmann/json.hpp>
-
-#include "Serialization.hpp"
-
 namespace nlohmann {
 namespace detail {
 
@@ -28,6 +24,10 @@ void to_json(BasicJsonType& j, const std::optional<T>& opt) {
 
 } // namespace detail
 } // namespace nlohmann
+
+#include <nlohmann/json.hpp>
+
+#include "Serialization.hpp"
 
 namespace cdm {
 
@@ -82,7 +82,9 @@ void from_json(const nlohmann::ordered_json& j, InputParameters& p)
         j0.at("temperatureMeasurements").get_to(p.wvT);
     }
     if (j0.count("horizontalVariation") != 0) {
-        j0.at("horizontalVariation").get_to(p.psipsipsi);
+        //j0.at("horizontalVariation").get_to(p.psipsipsi);
+        p.psipsipsi = j0.at("horizontalVariation").get<std::optional<double>>();
+        //
     }
     if (j0.count("horizontalVariationMethod") != 0) {
         j0.at("horizontalVariationMethod").get_to(p.psipsipsiMethod);
