@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
             fmt::print("d2 = {}\n", dsdparams.d2);
             fmt::print("k1 = {}\n", dsdparams.k1);
 
-            fmt::print("\n{:<6} {:>6} {:>6}\n", "x", "obs", "pred");
+            fmt::print("\n{:<6} {:>6} {:>6}\n", "DD", "Obs.", "Pred.");
             for (const auto& xy : p.dsd) {
                 fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, dsdmodel.cdf(xy.first)*100);
             }
