@@ -5,15 +5,12 @@ stages:          # List of stages for jobs, and their order of execution
 build-job:
   stage: build
   script:
-    - echo "Installing build tools..."
-    - apk update && apk add build-base gcc g++ libc-dev cmake ninja git
-    - echo "Installing vcpkg..."
+    - apk update && apk add --no-cache pkgconfig autoconf build-base binutils cmake curl file gcc g++ git libgcc libtool linux-headers make musl-dev ninja tar zip unzip wget
     - git clone https://github.com/Microsoft/vcpkg.git
     - cd vcpkg
     - ./bootstrap-vcpkg.sh --useSystemBinaries
     - cp ./triplets/x64-linux.cmake ./triplets/x64-linux-static.cmake
     - sed -i -e 's/dynamic/static/g' ./triplets/x64-linux-static.cmake
-    - echo "Installing dependencies..."
     - .\vcpkg install blaze:x64-linux-static
     - .\vcpkg install boost-math:x64-linux-static
     - .\vcpkg install fmt:x64-linux-static
