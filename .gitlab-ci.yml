@@ -11,12 +11,12 @@ build-job:
     - ./bootstrap-vcpkg.sh --useSystemBinaries
     - cp ./triplets/x64-linux.cmake ./triplets/x64-linux-static.cmake
     - sed -i -e 's/dynamic/static/g' ./triplets/x64-linux-static.cmake
-    - .\vcpkg install blaze:x64-linux-static
-    - .\vcpkg install boost-math:x64-linux-static
-    - .\vcpkg install fmt:x64-linux-static
-    - .\vcpkg install nlohmann-json:x64-linux-static
-    - .\vcpkg install ceres:x64-linux-static
-    - .\vcpkg install sundials:x64-linux-static
+    - ./vcpkg install blaze:x64-linux-static
+    - ./vcpkg install boost-math:x64-linux-static
+    - ./vcpkg install fmt:x64-linux-static
+    - ./vcpkg install nlohmann-json:x64-linux-static
+    - ./vcpkg install ceres:x64-linux-static
+    - ./vcpkg install sundials:x64-linux-static
 
 test-job:
   stage: test
