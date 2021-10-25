@@ -7,3 +7,6 @@ build-job:
   stage: build
   script:
     - cmake -B ./build -G Ninja -DCMAKE_BUILD_TYPE=Release . && cd ./build && ninja
+  artifacts:
+    paths:
+      - ./bin/cdm
