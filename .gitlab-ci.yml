@@ -12,12 +12,12 @@ build-job:
     - cp ./triplets/x64-linux.cmake ./triplets/x64-linux-musl.cmake
     - sed -i -e 's/dynamic/static/g' ./triplets/x64-linux-musl.cmake
     - export VCPKG_FORCE_SYSTEM_BINARIES=1
-    - ./vcpkg install --triplet x64-linux-musl blaze
-    - ./vcpkg install --triplet x64-linux-musl boost-math
-    - ./vcpkg install --triplet x64-linux-musl fmt
-    - ./vcpkg install --triplet x64-linux-musl nlohmann-json
-    - ./vcpkg install --triplet x64-linux-musl ceres
-    - ./vcpkg install --triplet x64-linux-musl sundials
+    - ./vcpkg install blaze
+    - ./vcpkg install boost-math
+    - ./vcpkg install fmt
+    - ./vcpkg install nlohmann-json
+    - ./vcpkg install ceres
+    - ./vcpkg install sundials
 
 test-job:
   stage: test
