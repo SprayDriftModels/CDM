@@ -13,8 +13,7 @@ endif()
 project(cdm LANGUAGES CXX)
 
 find_package(blaze CONFIG REQUIRED)
-find_package(Boost REQUIRED)
-find_package(Ceres CONFIG REQUIRED)
+find_package(Ceres CONFIG REQUIRED) # Requires Eigen, glog
 find_package(fmt CONFIG REQUIRED)
 find_package(SUNDIALS CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
@@ -43,8 +42,11 @@ if(MSVC)
   target_compile_definitions(cdm PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()
 
+# Boost.Math Standalone Mode (Beta)
+target_compile_definitions(cdm PRIVATE BOOST_MATH_STANDALONE=1)
+target_include_directories(cdm PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/external/boost-math-1.77/include)
+
 target_link_libraries(cdm PRIVATE
-  Boost::headers
   blaze::blaze
   Ceres::ceres
   fmt::fmt
