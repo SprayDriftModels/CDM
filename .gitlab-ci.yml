@@ -1,25 +1,11 @@
-stages:          # List of stages for jobs, and their order of execution
+stages:
   - build
-  - test
 
 build-job:
   stage: build
   script:
     - apk update && apk add --no-cache pkgconfig autoconf build-base binutils cmake curl file gcc g++ git libgcc libtool linux-headers make musl-dev ninja tar zip unzip wget
-    - git clone https://github.com/Microsoft/vcpkg.git
-    - cd vcpkg
-    - ./bootstrap-vcpkg.sh --useSystemBinaries
-    - cp ./triplets/x64-linux.cmake ./triplets/x64-linux-musl.cmake
-    - sed -i -e 's/dynamic/static/g' ./triplets/x64-linux-musl.cmake
-    - export VCPKG_FORCE_SYSTEM_BINARIES=1
-    - ./vcpkg install blaze
-    - ./vcpkg install boost-math
-    - ./vcpkg install fmt
-    - ./vcpkg install nlohmann-json
-    - ./vcpkg install ceres
-    - ./vcpkg install sundials
-
-test-job:
-  stage: test
-  script:
-    - echo "Running tests..."
+    - cd /tmp
+    - git clone --branch v3.8 https://bitbucket.org/blaze-lib/blaze.git ./blaze
+    - cmake -S "./blaze" -B "./blaze-build" -G Ninja -DCMAKE_BUILD_TYPE=Release -DUSE_LAPACK=Off
+    - cmake --install "./blaze-build"
