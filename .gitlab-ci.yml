@@ -1,16 +1,9 @@
+image: "gitlab.bayer.com:4567/gbbfx/mondep:latest"
+
 stages:
   - build
 
 build-job:
   stage: build
   script:
-    - apk update && apk add --no-cache pkgconfig autoconf build-base binutils cmake curl file gcc g++ git libgcc libtool linux-headers make musl-dev ninja tar zip unzip wget
-    - cd /tmp
-    - git clone --branch v3.8 https://bitbucket.org/blaze-lib/blaze.git ./blaze
-    - cmake -S "./blaze" -B "./blaze-build" -G Ninja -DCMAKE_BUILD_TYPE=Release -DUSE_LAPACK=Off
-    - cmake --install "./blaze-build"
-    - git clone --branch 8.0.1 https://github.com/fmtlib/fmt.git ./fmt
-    - cmake -S "./fmt" -B "./fmt-build" -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=Off
-    - cmake --build "./fmt-build"
-    - cmake --install "./fmt-build"
-    
+    - cmake -B ./build -G Ninja -DCMAKE_BUILD_TYPE=Release . && cd ./build && ninja
