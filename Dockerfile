@@ -17,7 +17,7 @@ RUN git clone --branch 8.0.1 https://github.com/fmtlib/fmt.git /tmp/fmt \
     && cmake --install /tmp/fmt-build
 
 RUN git clone --branch v3.10.4 https://github.com/nlohmann/json.git /tmp/nlohmann-json \
-    && cmake -S /tmp/nlohmann-json -B /tmp/nlohmann-json-build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    && cmake -S /tmp/nlohmann-json -B /tmp/nlohmann-json-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DJSON_MultipleHeaders=On \
     && cmake --install /tmp/nlohmann-json-build
 
 RUN git clone --branch v2.2.2 https://github.com/gflags/gflags.git /tmp/gflags \

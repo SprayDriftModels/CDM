@@ -12,6 +12,7 @@ endif()
 
 project(cdm LANGUAGES CXX)
 
+find_package(Boost) # Boost.Math
 find_package(blaze CONFIG REQUIRED)
 find_package(Ceres CONFIG REQUIRED) # Requires Eigen, glog
 find_package(fmt CONFIG REQUIRED)
@@ -44,7 +45,6 @@ endif()
 
 # Boost.Math Standalone Mode (Beta)
 target_compile_definitions(cdm PRIVATE BOOST_MATH_STANDALONE=1)
-target_include_directories(cdm PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/external/boost-math-1.77/include)
 
 target_link_libraries(cdm PRIVATE
   blaze::blaze
