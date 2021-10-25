@@ -6,7 +6,7 @@ stages:
 build-job:
   stage: build
   script:
-    - cmake -B ./build -G Ninja -DCMAKE_BUILD_TYPE=Release . && cd ./build && ninja
+    - cmake -B ./build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-static" . && cd ./build && ninja
   artifacts:
     paths:
       - ./bin/cdm
