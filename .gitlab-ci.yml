@@ -9,14 +9,14 @@ build-job:
     - git clone https://github.com/Microsoft/vcpkg.git
     - cd vcpkg
     - ./bootstrap-vcpkg.sh --useSystemBinaries
-    - cp ./triplets/x64-linux.cmake ./triplets/x64-linux-static.cmake
-    - sed -i -e 's/dynamic/static/g' ./triplets/x64-linux-static.cmake
-    - ./vcpkg install blaze:x64-linux-static
-    - ./vcpkg install boost-math:x64-linux-static
-    - ./vcpkg install fmt:x64-linux-static
-    - ./vcpkg install nlohmann-json:x64-linux-static
-    - ./vcpkg install ceres:x64-linux-static
-    - ./vcpkg install sundials:x64-linux-static
+    - cp ./triplets/x64-linux.cmake ./triplets/x64-linux-musl.cmake
+    - sed -i -e 's/dynamic/static/g' ./triplets/x64-linux-musl.cmake
+    - VCPKG_FORCE_SYSTEM_BINARIES=1 ./vcpkg install blaze:x64-linux-musl
+    - VCPKG_FORCE_SYSTEM_BINARIES=1 ./vcpkg install boost-math:x64-linux-musl
+    - VCPKG_FORCE_SYSTEM_BINARIES=1 ./vcpkg install fmt:x64-linux-musl
+    - VCPKG_FORCE_SYSTEM_BINARIES=1 ./vcpkg install nlohmann-json:x64-linux-musl
+    - VCPKG_FORCE_SYSTEM_BINARIES=1 ./vcpkg install ceres:x64-linux-musl
+    - VCPKG_FORCE_SYSTEM_BINARIES=1 ./vcpkg install sundials:x64-linux-musl
 
 test-job:
   stage: test
