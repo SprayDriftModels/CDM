@@ -17,7 +17,7 @@
 #include "NozzleVelocity.hpp"
 #include "Serialization.hpp"
 #include "WetBulbTemperature.hpp"
-#include "WVProfile.hpp"
+#include "WindVelocityProfile.hpp"
 #include "CVodeError.hpp"
 
 using namespace cdm;

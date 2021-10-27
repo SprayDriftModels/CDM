@@ -34,7 +34,7 @@ add_library(cdm
   ${CMAKE_CURRENT_SOURCE_DIR}/src/NozzleVelocity.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Serialization.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/WetBulbTemperature.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/WVProfile.cpp)
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/WindVelocityProfile.cpp)
 
 add_library(cdm::cdm ALIAS cdm)
 

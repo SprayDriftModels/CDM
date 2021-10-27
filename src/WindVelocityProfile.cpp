@@ -9,7 +9,7 @@
 
 #include <boost/math/statistics/linear_regression.hpp>
 
-#include "WVProfile.hpp"
+#include "WindVelocityProfile.hpp"
 #include "Constants.hpp"
 #include "Interpolate1D.hpp"
 
