@@ -17,7 +17,7 @@ namespace cdm {
 
 WindVelocityProfile::WindVelocityProfile(const std::vector<std::pair<double, double>>& wvu,
                                          const std::vector<std::pair<double, double>>& wvT,
-                                         InputParameters::PsiPsiPsiMethod pppMethod, double hC)
+                                         Model::Input::PPPMethod pppMethod, double hC)
 {
     // Calculate friction height.
     z0_ = 0.00340738473 + 0.1244537 * hC;
@@ -45,7 +45,7 @@ WindVelocityProfile::WindVelocityProfile(const std::vector<std::pair<double, dou
 
     // Return now if ψψψ calculation is disabled or fewer than two temperature
     // measurements are available.
-    if (pppMethod == InputParameters::PsiPsiPsiMethod::ENTERED || wvT.size() < 2) {
+    if (pppMethod == Model::Input::PPPMethod::ENTERED || wvT.size() < 2) {
         return;
     }
 
@@ -74,11 +74,11 @@ WindVelocityProfile::WindVelocityProfile(const std::vector<std::pair<double, dou
         { 0.339,  2.00}};
 
     // Calculate ψψψ. May throw std::domain_error.
-    if (pppMethod == InputParameters::PsiPsiPsiMethod::INTERPOLATE) {
+    if (pppMethod == Model::Input::PPPMethod::INTERPOLATE) {
         const Interpolate1D pppfunc(pppdata);
         psipsipsi_ = pppfunc(Ri);
     }
-    else if (pppMethod == InputParameters::PsiPsiPsiMethod::SDTF) {
+    else if (pppMethod == Model::Input::PPPMethod::SDTF) {
         if (Ri > 0)
             psipsipsi_ = 0.524 * hC + 69.398 * Ri;
         else

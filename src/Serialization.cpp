@@ -31,7 +31,7 @@ void to_json(BasicJsonType& j, const std::optional<T>& opt) {
 
 namespace cdm {
 
-void to_json(nlohmann::ordered_json& j, const InputParameters& p)
+void to_json(nlohmann::ordered_json& j, const Model::Input& p)
 {
     j = nlohmann::ordered_json{
         {"dropletSizeDistribution", p.dsd},
@@ -41,8 +41,8 @@ void to_json(nlohmann::ordered_json& j, const InputParameters& p)
         {"windVelocityProfile", {
             {"velocityMeasurements", p.wvu},
             {"temperatureMeasurements", p.wvT},
-            {"horizontalVariation", p.psipsipsi},
-            {"horizontalVariationMethod", p.psipsipsiMethod}
+            {"horizontalVariation", p.ppp},
+            {"horizontalVariationMethod", p.pppMethod}
         }},
         {"dropletTransport", {
             {"nozzleHeight", p.hN},
@@ -69,7 +69,7 @@ void to_json(nlohmann::ordered_json& j, const InputParameters& p)
     };
 }
 
-void from_json(const nlohmann::ordered_json& j, InputParameters& p)
+void from_json(const nlohmann::ordered_json& j, Model::Input& p)
 {
     j.at("dropletSizeDistribution").get_to(p.dsd);
     j.at("dryAirTemperature").get_to(p.Tair);
@@ -82,17 +82,17 @@ void from_json(const nlohmann::ordered_json& j, InputParameters& p)
         j0.at("temperatureMeasurements").get_to(p.wvT);
     }
     if (j0.count("horizontalVariation") != 0) {
-        j0.at("horizontalVariation").get_to(p.psipsipsi);
+        j0.at("horizontalVariation").get_to(p.ppp);
     }
     if (j0.count("horizontalVariationMethod") != 0) {
-        j0.at("horizontalVariationMethod").get_to(p.psipsipsiMethod);
-        switch (p.psipsipsiMethod) {
-        case InputParameters::PsiPsiPsiMethod::ENTERED:
-        case InputParameters::PsiPsiPsiMethod::INTERPOLATE:
-        case InputParameters::PsiPsiPsiMethod::SDTF:
+        j0.at("horizontalVariationMethod").get_to(p.pppMethod);
+        switch (p.pppMethod) {
+        case Model::Input::PPPMethod::ENTERED:
+        case Model::Input::PPPMethod::INTERPOLATE:
+        case Model::Input::PPPMethod::SDTF:
             break;
         default: // Invalid
-            p.psipsipsiMethod = InputParameters::PsiPsiPsiMethod::ENTERED;
+            p.pppMethod = Model::Input::PPPMethod::ENTERED;
             break;
         }
     }

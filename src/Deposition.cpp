@@ -20,7 +20,7 @@
 
 namespace cdm {
 
-void Deposition(double IAR, double xactive, double FD, double PL, double dN, double psipsipsi, double rhoL,
+void Deposition(double IAR, double xactive, double FD, double PL, double dN, double ppp, double rhoL,
                 const std::vector<double>& dp,
                 const std::array<std::vector<double>, 3>& xdist,
                 const std::vector<std::pair<double, double>>& dsd,
@@ -120,7 +120,7 @@ void Deposition(double IAR, double xactive, double FD, double PL, double dN, dou
                 auto DVMsa = blaze::submatrix(DVM, i, j, 1UL, Nsa-j); // DVM[i,j:Nsa]
                 auto CMsa = blaze::submatrix(CM, i, j, 1UL, Nsa-j); // CM[i,j:Nsa]
                 DVMsa += SVP[i]/3;
-                CMsa += (SVP[i]/3) / (dwsa*(PL+2*(x[j]-0.5*dwsa)*tan(psipsipsi*pi*zeta/180.)));
+                CMsa += (SVP[i]/3) / (dwsa*(PL+2*(x[j]-0.5*dwsa)*tan(ppp*pi*zeta/180.)));
             }
 
             for (size_t j = Nsa; j < Nsa+Nda; ++j) {
@@ -133,7 +133,7 @@ void Deposition(double IAR, double xactive, double FD, double PL, double dN, dou
                 }
                 for (ptrdiff_t k = dalower; k < daupper; ++k) {
                     DVM(i,j) += SVP[i]/3;
-                    CM(i,j) += (SVP[i]/3) / (dwda*(PL+2*(x[j]-x[Nsa-k])*tan(psipsipsi*pi*zeta/180.)));
+                    CM(i,j) += (SVP[i]/3) / (dwda*(PL+2*(x[j]-x[Nsa-k])*tan(ppp*pi*zeta/180.)));
                 }
             }
         }

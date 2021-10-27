@@ -5,12 +5,12 @@
 
 #include <optional>
 
-#include "InputParameters.hpp"
+#include "Model.hpp"
 
 namespace cdm {
 
 /**
- * Calculates wind velocity profile parameters. Calculation of psipsipsi
+ * Calculates wind velocity profile parameters. Calculation of ppp
  * requires air temperature and velocity measurements at a minimum of 2 elevations.
  * The elevations need not be the same for wind speed and air temperature.
  * \param[in] wvu Elevation [m], Velocity [m/s]
@@ -23,7 +23,7 @@ struct WindVelocityProfile
 {
     WindVelocityProfile(const std::vector<std::pair<double, double>>& wvu,
                         const std::vector<std::pair<double, double>>& wvT,
-                        InputParameters::PsiPsiPsiMethod pppMethod, double hC);
+                        Model::Input::PPPMethod pppMethod, double hC);
 
     double frictionHeight() const
         { return z0_; }
@@ -31,7 +31,7 @@ struct WindVelocityProfile
     double frictionVelocity() const
         { return Uf_; }
     
-    std::optional<double> psipsipsi() const
+    std::optional<double> ppp() const
         { return psipsipsi_; }
 
 private:

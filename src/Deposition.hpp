@@ -15,7 +15,7 @@ namespace cdm {
 //    std::vector<std::pair<double, double>> applume;
 //};
 
-void Deposition(double IAR, double xactive, double FD, double PL, double dN, double psipsipsi, double rhoL,
+void Deposition(double IAR, double xactive, double FD, double PL, double dN, double ppp, double rhoL,
                 const std::vector<double>& dp,
                 const std::array<std::vector<double>, 3>& xdist,
                 const std::vector<std::pair<double, double>>& dsd,

@@ -82,7 +82,7 @@ bool DropletSizeModel::fit(const std::vector<std::pair<double, double>>& dsd)
     options.max_num_iterations = 200;
     options.linear_solver_type = ceres::DENSE_QR;
     options.dense_linear_algebra_library_type = ceres::EIGEN; // LAPACK
-    options.logging_type = ceres::PER_MINIMIZER_ITERATION; // SILENT
+    options.logging_type = ceres::SILENT; // PER_MINIMIZER_ITERATION
     options.minimizer_progress_to_stdout = true;
 
     ceres::Solver::Summary summary;

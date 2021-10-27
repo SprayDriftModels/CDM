@@ -4,12 +4,12 @@
 
 #include <nlohmann/json_fwd.hpp>
 
-#include "InputParameters.hpp"
+#include "Model.hpp"
 
 namespace cdm {
 
-void to_json(nlohmann::ordered_json& j, const InputParameters& p);
+void to_json(nlohmann::ordered_json& j, const Model::Input& p);
 
-void from_json(const nlohmann::ordered_json& j, InputParameters& p);
+void from_json(const nlohmann::ordered_json& j, Model::Input& p);
 
 } // namespace cdm
