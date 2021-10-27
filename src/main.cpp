@@ -20,8 +20,6 @@
 #include "WVProfile.hpp"
 #include "CVodeError.hpp"
 
-#include "CDM.hpp"
-
 using namespace cdm;
 
 static InputParameters ParseJSON(const std::string& filename)
