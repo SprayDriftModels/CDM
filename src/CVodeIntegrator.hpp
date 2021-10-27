@@ -38,8 +38,7 @@ struct Integrator
         ctx_(CVodeCreate(CV_BDF)) 
     {
         // Install custom error handler for exception support.
-        static cvode::error_handler_callback cb;
-        CVodeSetErrHandlerFn(ctx_, cvode::error_handler, &cb);
+        CVodeSetErrHandlerFn(ctx_, cvode::error_handler, &cb_);
     }
 
     ~Integrator()
@@ -60,42 +59,49 @@ struct Integrator
             NV_Ith_S(abstol_,i) = abstol[i];
         }
         CVodeSVtolerances(ctx_, reltol_, abstol_.get());
+        cb_.throw_if_error();
     }
 
     // Maximum order for BDF method
     void setMaxOrd(int maxord)
     {
         CVodeSetMaxOrd(ctx_, maxord);
+        cb_.throw_if_error();
     }
 
     // Maximum no. of internal steps before tout
     void setMaxNumSteps(int mxsteps)
     {
         CVodeSetMaxNumSteps(ctx_, (long)mxsteps);
+        cb_.throw_if_error();
     }
 
     // Flag to activate stability limit detection
     void setStabLimDet(bool stldet)
     {
         CVodeSetStabLimDet(ctx_, (booleantype)stldet);
+        cb_.throw_if_error();
     }
 
     // Maximum no. of error test failures
     void setMaxErrTestFails(int maxnef)
     {
         CVodeSetMaxErrTestFails(ctx_, maxnef);
+        cb_.throw_if_error();
     }
 
     // Maximum no. of nonlinear iterations
     void setMaxNonlinIters(int maxcor)
     {
         CVodeSetMaxNonlinIters(ctx_, maxcor);
+        cb_.throw_if_error();
     }
 
     // Maximum no. of convergence failures
     void setMaxConvFails(int maxncf)
     {
         CVodeSetMaxConvFails(ctx_, maxncf);
+        cb_.throw_if_error();
     }
 
     // Cumulative number of internal steps taken by the solver.
@@ -170,15 +176,21 @@ struct Integrator
         for (size_t i = 0; i < N; ++i) {
             NV_Ith_S(y_.get(),i) = y0[i];
         }
+        
         matrix_.reset(SUNDenseMatrix(N, N));
         linsol_.reset(SUNLinSol_Dense(y_.get(), matrix_.get()));
+
         CVodeInit(ctx_, f, t0, y_.get());
+        cb_.throw_if_error();
+
         CVodeSetLinearSolver(ctx_, linsol_.get(), matrix_.get());
+        cb_.throw_if_error();
     }
 
     void step(double tout)
     {
         CVode(ctx_, tout, y_.get(), &t_, CV_NORMAL);
+        cb_.throw_if_error();
     }
 
     std::array<double, N> solution() const
@@ -198,6 +210,7 @@ private:
     SUNMatrixUniquePtr matrix_;
     SUNLinearSolverUniquePtr linsol_;
     double t_ = 0;
+    cvode::error_handler_callback cb_;
 };
 
 } // namespace cvode

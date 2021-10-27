@@ -5,6 +5,7 @@
 #include <cvode/cvode.h>
 
 #include <exception>
+#include <mutex>
 #include <string>
 #include <system_error>
 
@@ -111,23 +112,36 @@ private:
     const std::string msg_;
 };
 
+// We can't safely throw an exception from a C library callback because we don’t control
+// all the frames the exception is being thrown across. Capture any current exception in
+// an exception_ptr so we can rethrow when control returns from the SUNDIALS library code.
 struct error_handler_callback
 {
-    void operator()(int error_code, const char *module, const char *function, char *msg) const {
+    void set_last_error(int error_code, const char *module, const char *function, char *msg) {
+        std::lock_guard<std::mutex> lock(mutex_);
         if (error_code < 0) { // CV_WARNING ignored.
             std::error_code ec = error::make_error_code(error_code);
-            system_error e(ec, module, function, msg);
-            throw e;
+            eptr_ = std::make_exception_ptr(system_error(ec, module, function, msg));
         }
     }
+
+    void throw_if_error() {
+        if (eptr_)
+            std::rethrow_exception(eptr_);
+    }
+
+private:
+    std::mutex mutex_;
+    std::exception_ptr eptr_;
 };
 
-// Enable using CVodeSetErrHandlerFn(cvode_mem, cvode::error_handler, &cb)
+// Custom error handler for exception support, replacing cvErrHandler (src/cvode/cvode.c).
+// Enable using CVodeSetErrHandlerFn(cvode_mem, cvode::error_handler, &cb);
 extern "C" inline void error_handler(int error_code, const char *module, const char *function, char *msg, void *data)
 {
     if (data) {
         auto cb = static_cast<error_handler_callback *>(data);
-        (*cb)(error_code, module, function, msg);
+        cb->set_last_error(error_code, module, function, msg);
     }
 }
 
