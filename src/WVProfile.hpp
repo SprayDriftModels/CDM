@@ -9,12 +9,6 @@
 
 namespace cdm {
 
-struct WVProfileResult {
-    double z0; // Friction height [m]
-    double Uf; // Friction velocity [m/s]
-    std::optional<double> psipsipsi;
-};
-
 /**
  * Calculates wind velocity profile parameters. Calculation of psipsipsi
  * requires air temperature and velocity measurements at a minimum of 2 elevations.
@@ -25,27 +19,25 @@ struct WVProfileResult {
  * \param[in] hC Canopy height [m]
  * \return Friction height [m] and friction velocity [m/s]
  */
-WVProfileResult WVProfile(const std::vector<std::pair<double, double>>& wvu,
-                          const std::vector<std::pair<double, double>>& wvT,
-                          PsiPsiPsiMethod pppMethod, double hC);
+struct WindVelocityProfile
+{
+    WindVelocityProfile(const std::vector<std::pair<double, double>>& wvu,
+                        const std::vector<std::pair<double, double>>& wvT,
+                        InputParameters::PsiPsiPsiMethod pppMethod, double hC);
 
-/**
- * Calculates wind velocity profile parameters using two measurements.
- * \param[in] z1 Elevation at measurement 1 [m]
- * \param[in] z2 Elevation at measurement 2 [m]
- * \param[in] ux1 Velocity at measurement 1 [m/s]
- * \param[in] ux2 Velocity at measurement 2 [m/s]
- * \return Friction height [m] and friction velocity [m/s]
- */
-//WVProfileResult WVProfile(double z1, double z2, double ux1, double ux2);
+    double frictionHeight() const
+        { return z0_; }
+    
+    double frictionVelocity() const
+        { return Uf_; }
+    
+    std::optional<double> psipsipsi() const
+        { return psipsipsi_; }
 
-/**
- * Calculates wind velocity profile parameters using one measurement.
- * \param[in] z1 Elevation at measurement 1 [m]
- * \param[in] ux1 Velocity at measurement 1 [m/s]
- * \param[in] hC Canopy height [m]
- * \return Friction height [m] and friction velocity [m/s]
- */
-//WVProfileResult WVProfile(double z1, double ux1, double hC);
+private:
+    double z0_; // Friction height [m]
+    double Uf_; // Friction velocity [m/s]
+    std::optional<double> psipsipsi_;
+};
 
 } // namespace cdm

@@ -48,7 +48,7 @@ private:
 DropletSizeModel::DropletSizeModel()
 {}
 
-ceres::TerminationType DropletSizeModel::fit(const std::vector<std::pair<double, double>>& dsd)
+bool DropletSizeModel::fit(const std::vector<std::pair<double, double>>& dsd)
 {
     // Initial estimates.
     params_.a1 = 300; // μ1, DV50
@@ -62,6 +62,8 @@ ceres::TerminationType DropletSizeModel::fit(const std::vector<std::pair<double,
 
     ceres::Problem problem;
     
+    // ceres::Problem takes ownership of the cost function.
+    // Boost.Math functions may throw std::domain_error.
     for (size_t i = 0; i < dsd.size(); ++i) {
         problem.AddResidualBlock(
             new ceres::NumericDiffCostFunction<DSDCostFunctor, ceres::FORWARD, 1, 1, 1, 1, 1, 1>(
@@ -87,7 +89,7 @@ ceres::TerminationType DropletSizeModel::fit(const std::vector<std::pair<double,
     ceres::Solve(options, &problem, &summary);
     report_ = summary.BriefReport(); // FullReport
 
-    return summary.termination_type;
+    return summary.IsSolutionUsable();
 }
 
 const char* DropletSizeModel::ceresVersion() const
@@ -105,7 +107,7 @@ double DropletSizeModel::dpmax() const
     return dpmax_;
 }
 
-DropletSizeModelParams DropletSizeModel::params() const
+DropletSizeModel::Params DropletSizeModel::params() const
 {
     return params_;
 }
@@ -120,6 +122,7 @@ double DropletSizeModel::pdf(double x) const
     // Normal PDF:
     // f(x) = [1/(σ√(2π))] * exp[-0.5 * ((x-μ)/σ)²]
     // f(x) = (1/σ) * φ[(x-μ)/σ]
+    // Boost.Math functions may throw std::domain_error.
 
     namespace bm = boost::math;
     const bm::normal N1(params_.a1, params_.d1);
@@ -134,6 +137,7 @@ double DropletSizeModel::cdf(double x) const
     // Normal CDF:
     // F(x) = 0.5 * [1 + erf((x-μ)/σ√2)]
     // F(x) = Φ[(x-μ)/σ]
+    // Boost.Math functions may throw std::domain_error.
 
     namespace bm = boost::math;
     const bm::normal N1(params_.a1, params_.d1);

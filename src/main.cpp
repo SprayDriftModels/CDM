@@ -9,10 +9,6 @@
 
 #include <fmt/core.h>
 #include <nlohmann/json.hpp>
-#include <cvode/cvode.h>
-#include <nvector/nvector_serial.h>
-#include <sunlinsol/sunlinsol_dense.h>
-#include <sunmatrix/sunmatrix_dense.h>
 
 #include "Deposition.hpp"
 #include "DropletSizeModel.hpp"
@@ -22,17 +18,19 @@
 #include "Serialization.hpp"
 #include "WetBulbTemperature.hpp"
 #include "WVProfile.hpp"
+#include "CVodeError.hpp"
+
+#include "CDM.hpp"
 
 using namespace cdm;
 
-static std::vector<InputParameters> ParseJSON(const std::string& filename)
+static InputParameters ParseJSON(const std::string& filename)
 {
     using json = nlohmann::ordered_json;
-
+    InputParameters p;
     std::ifstream ifs;
     std::stringstream buffer;
-    std::vector<InputParameters> result;
-   
+
     ifs.open(filename);
     buffer << ifs.rdbuf();
     json j = json::parse(buffer.str(),
@@ -40,148 +38,140 @@ static std::vector<InputParameters> ParseJSON(const std::string& filename)
                          /* allow_exceptions */ true,
                          /* ignore_comments */ true);
     
-    for (auto& element : j) {
-        InputParameters p;
-        from_json(element, p);
-        result.push_back(p);
-    }
-
-    return result;
+    from_json(j.front(), p);
+    return p;
 }
 
 int main(int argc, char *argv[])
 {
-    auto start = std::chrono::steady_clock::now();
-    
-    const std::vector<InputParameters> cases;
-    const std::string filename = argc > 1 ? argv[1] : "config.json";
-    
     InputParameters p;
+
+    auto start = std::chrono::steady_clock::now();
+
+    const std::string filename = argc > 1 ? argv[1] : "config.json";
     try {
-        p = ParseJSON(filename).front();
-    } catch (nlohmann::json::exception& e) {
-        fmt::print("{}\n", e.what());
-        return 1;
+        p = ParseJSON(filename);
     } catch (std::exception& e) {
         fmt::print("{}\n", e.what());
         return 1;
-    } 
+    }
 
     DropletSizeModel dsdmodel;
-    try {
-        if (p.dsdfit)
-        {
-            fmt::print("\n{:->{}}\n", "", 80);
-            fmt::print("Droplet Size Distribution\n");
-            fmt::print("{:->{}}\n\n", "", 80);
+    if (p.dsdfit) {
+        fmt::print("\n{:->{}}\n", "", 80);
+        fmt::print("Droplet Size Distribution\n");
+        fmt::print("{:->{}}\n\n", "", 80);
 
-            ceres::TerminationType status = dsdmodel.fit(p.dsd);
-            fmt::print("{}\n", dsdmodel.report());
-            if (status == ceres::FAILURE || status == ceres::USER_FAILURE)
-                return 1;
-            
-            const auto dsdparams = dsdmodel.params();
-            fmt::print("\nParameters\n");
-            fmt::print("a1 = {}\n", dsdparams.a1);
-            fmt::print("a2 = {}\n", dsdparams.a2);
-            fmt::print("d1 = {}\n", dsdparams.d1);
-            fmt::print("d2 = {}\n", dsdparams.d2);
-            fmt::print("k1 = {}\n", dsdparams.k1);
-
-            fmt::print("\n{:<6} {:>6} {:>6}\n", "DD", "Obs.", "Pred.");
-            for (const auto& xy : p.dsd) {
-                fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, dsdmodel.cdf(xy.first)*100);
-            }
+        bool rc = false;
+        try {
+            rc = dsdmodel.fit(p.dsd);
+        } catch (const std::exception& e) {
+            fmt::print("{}\n", e.what());
+            return 1;
         }
-    } catch (const std::exception& e) {
-        fmt::print("{}\n", e.what());
+
+        fmt::print("{}\n", dsdmodel.report());
+        if (rc == false)
+            return 1;
+        
+        const auto dsdparams = dsdmodel.params();
+        fmt::print("\nParameters\n");
+        fmt::print("a1 = {}\n", dsdparams.a1);
+        fmt::print("a2 = {}\n", dsdparams.a2);
+        fmt::print("d1 = {}\n", dsdparams.d1);
+        fmt::print("d2 = {}\n", dsdparams.d2);
+        fmt::print("k1 = {}\n", dsdparams.k1);
+
+        fmt::print("\n{:<6} {:>6} {:>6}\n", "DD", "Obs.", "Pred.");
+        for (const auto& xy : p.dsd) {
+            fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, dsdmodel.cdf(xy.first)*100);
+        }
     }
 
     fmt::print("\n{:->{}}\n", "", 80);
     fmt::print("Wind Velocity Profile\n");
     fmt::print("{:->{}}\n\n", "", 80);
 
-    WVProfileResult wvp;
+    double z0 = 0;
+    double Uf = 0;
+    double psipsipsi = 0;
     try {
-        wvp = WVProfile(p.wvu, p.wvT, p.psipsipsiMethod, p.hC);
+        WindVelocityProfile wvp(p.wvu, p.wvT, p.psipsipsiMethod, p.hC);
+        z0 = wvp.frictionHeight();
+        Uf = wvp.frictionVelocity();
+        psipsipsi = p.psipsipsi.value_or(0);
+        if (wvp.psipsipsi().has_value())
+            psipsipsi = wvp.psipsipsi().value();
     } catch (const std::exception& e) {
         fmt::print("Error: {}\n", e.what());
         return 1;
     }
-    
-    double psipsipsi = p.psipsipsi.value_or(0);
-    if (wvp.psipsipsi.has_value())
-        psipsipsi = wvp.psipsipsi.value();
-    
-    fmt::print("Uf  = {}\n", wvp.Uf); 
-    fmt::print("z0  = {}\n", wvp.z0);
+
+    fmt::print("Uf  = {}\n", Uf); 
+    fmt::print("z0  = {}\n", z0);
     fmt::print("ψψψ = {}\n", psipsipsi);
 
     fmt::print("\n{:->{}}\n", "", 80);
     fmt::print("Wet Bulb Temperature\n");
     fmt::print("{:->{}}\n\n", "", 80);
-
+    
     double Twb = 0;
     double dTwb = 0;
     try {
         Twb = WetBulbTemperature(p.Tair, p.Patm, p.RH);
         dTwb = p.Tair - Twb; // Wet bulb T depression
-        fmt::print("Twb  = {}\n", Twb);
-        fmt::print("ΔTwb = {}\n", dTwb);
     } catch (const std::exception& e) {
         fmt::print("Error: {}\n", e.what());
         return 1;
     }
+    
+    fmt::print("Twb  = {}\n", Twb);
+    fmt::print("ΔTwb = {}\n", dTwb);
 
     fmt::print("\n{:->{}}\n", "", 80);
     fmt::print("Nozzle Velocity\n");
     fmt::print("{:->{}}\n\n", "", 80);
 
     double rhoL = 1. / ((p.xs0 / p.rhoS) + ((1. - p.xs0) / p.rhoW));
-    auto nv = NozzleVelocity(p.PN, p.thetaN, rhoL);
-    fmt::print("vz1 = {}\n", nv.vz1);
-    fmt::print("vx1 = {}\n", nv.vx1);
-    fmt::print("vz2 = {}\n", nv.vz2);
-    fmt::print("vx2 = {}\n", nv.vx2);
-    fmt::print("vz3 = {}\n", nv.vz3);
-    fmt::print("vx3 = {}\n", nv.vx3);
+    NozzleVelocity nv(p.PN, p.thetaN, rhoL);
 
-    std::array<double, 23> dp;
-    for (size_t i = 0; i < dp.size(); ++i) {
-        dp[i] = p.dpmin * pow(p.dpmax/p.dpmin, i/22.);
-    }
+    fmt::print("vz1 = {}\n", nv.z[0]);
+    fmt::print("vx1 = {}\n", nv.x[0]);
+    fmt::print("vz2 = {}\n", nv.z[1]);
+    fmt::print("vx2 = {}\n", nv.x[1]);
+    fmt::print("vz3 = {}\n", nv.z[2]);
+    fmt::print("vx3 = {}\n", nv.x[2]);
 
     fmt::print("\n{:->{}}\n", "", 80);
     fmt::print("Droplet Transport\n");
     fmt::print("{:->{}}\n\n", "", 80);
 
-    std::array<std::vector<std::pair<double, double>>, 3> xdist;
     fmt::print("{:<8} {:>10} {:>10} {:>10}\n", "DD", "Centerline", "Downwind", "Upwind");
-    for (size_t i = 0; i < dp.size(); ++i) {
-        try {
-            double xdist1 = DropletTransport(p.Tair, p.RH, dTwb, wvp.z0, wvp.Uf, p.rhoW, p.rhoS, p.xs0, p.hN, p.hC, nv.vz1, nv.vx1, dp.at(i), p.ddd); // Centerline
-            double xdist2 = DropletTransport(p.Tair, p.RH, dTwb, wvp.z0, wvp.Uf, p.rhoW, p.rhoS, p.xs0, p.hN, p.hC, nv.vz2, nv.vx2, dp.at(i), p.ddd); // Downwind
-            double xdist3 = DropletTransport(p.Tair, p.RH, dTwb, wvp.z0, wvp.Uf, p.rhoW, p.rhoS, p.xs0, p.hN, p.hC, nv.vz3, nv.vx3, dp.at(i), p.ddd); // Upwind
-            xdist.at(0).emplace_back(std::make_pair(dp.at(i), xdist1));
-            xdist.at(1).emplace_back(std::make_pair(dp.at(i), xdist2));
-            xdist.at(2).emplace_back(std::make_pair(dp.at(i), xdist3));
-            fmt::print("{:<8.3f} {:>10.2f} {:>10.2f} {:>10.2f}\n", dp.at(i), xdist1, xdist2, xdist3);
-        } catch (const std::exception& e) {
-            fmt::print("CVODE Error: {}\n", e.what());
-        }
-    }
 
+    std::vector<double> dp(23, 0);
+    std::array<std::vector<double>, 3> xdist;
+    for (size_t i = 0; i < dp.size(); ++i) {
+        dp[i] = p.dpmin * pow(p.dpmax/p.dpmin, i/22.);
+        for (size_t j = 0; j < xdist.size(); ++j) { // Centerline, Downwind, Upwind
+            try {
+                xdist[j].emplace_back(DropletTransport(p.Tair, p.RH, dTwb, z0, Uf, p.rhoW, p.rhoS, p.xs0, p.hN, p.hC, nv.z[j], nv.x[j], dp.at(i), p.ddd));
+            } catch (const std::exception& e) {
+                fmt::print("Error: {}\n", e.what());
+                return 1;
+            }
+        }
+        fmt::print("{:<8.3f} {:>10.2f} {:>10.2f} {:>10.2f}\n", dp.at(i), xdist[0].back(), xdist[1].back(), xdist[2].back());
+    }
+    
     fmt::print("\n{:->{}}\n", "", 80);
     fmt::print("Deposition\n");
     fmt::print("{:->{}}\n\n", "", 80);
 
     try {
-        if (p.dsdfit) {
-            Deposition(p.iar, p.xactive, p.fd, p.pl, p.dN, psipsipsi, rhoL, xdist, p.dsd, &dsdmodel, p.dpmin, p.dpmax, p.lmax, p.lambda);
-        }
-        else {
-            Deposition(p.iar, p.xactive, p.fd, p.pl, p.dN, psipsipsi, rhoL, xdist, p.dsd, nullptr, p.dpmin, p.dpmax, p.lmax, p.lambda);
-        }
+        if (p.dsdfit)
+            Deposition(p.iar, p.xactive, p.FD, p.PL, p.dN, psipsipsi, rhoL, dp, xdist, p.dsd, &dsdmodel, p.dpmin, p.dpmax, p.Lmax, p.lambda);
+        else
+            Deposition(p.iar, p.xactive, p.FD, p.PL, p.dN, psipsipsi, rhoL, dp, xdist, p.dsd, nullptr, p.dpmin, p.dpmax, p.Lmax, p.lambda);
     } catch (const std::exception& e) {
         fmt::print("Error: {}\n", e.what());
         return 1;

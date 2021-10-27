@@ -67,6 +67,7 @@ double WetBulbTemperature(double Tair, double Patm, double RH)
     // Maximum value is std::numeric_limits<double>::digits - 1.
     eps_tolerance<double> tol(std::numeric_limits<double>::digits - 6);
 
+    // May throw boost::math::evaluation_error.
     std::pair<double, double> r = toms748_solve(EqnTwb, lower, upper, tol, max_iter);
     return r.first + (r.second - r.first) / 2.;
 }

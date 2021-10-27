@@ -21,7 +21,8 @@
 namespace cdm {
 
 void Deposition(double IAR, double xactive, double FD, double PL, double dN, double psipsipsi, double rhoL,
-                const std::array<std::vector<std::pair<double, double>>, 3>& xdist,
+                const std::vector<double>& dp,
+                const std::array<std::vector<double>, 3>& xdist,
                 const std::vector<std::pair<double, double>>& dsd,
                 const DropletSizeModel *dsdmodel,
                 double dpmin, double dpmax, std::optional<double> Lmax, double lambda)
@@ -34,21 +35,17 @@ void Deposition(double IAR, double xactive, double FD, double PL, double dN, dou
 
     // Droplet sizes to evaluate.
     const double ddp = 0.5;
-    size_t mm = static_cast<size_t>((dpmax-dpmin)/ddp);
+    size_t mm = static_cast<size_t>((dpmax - dpmin) / ddp);
     blaze::DynamicVector<double> dpavg = blaze::generate(mm, [=](size_t i)
         { return dpmin + i * ddp; });
     
-    // Generate drift distance vectors from xdist.
-    // xdist[0]: Centerline
-    // xdist[1]: Downwind
-    // xdist[2]: Upwind
+    // Generate drift distance vectors from xdist. May throw std::domain_error.
     std::array<std::vector<double>, 3> driftdist;
     for (size_t n = 0; n < driftdist.size(); ++n) {
-        auto ff = Interpolate1D(xdist.at(n));
+        auto ff = Interpolate1D(dp, xdist.at(n));
         driftdist[n].resize(mm, 0.);
         for (size_t i = 1; i < driftdist[n].size(); ++i) {
-            double dpavg = dpmin+i*ddp;
-            driftdist[n].at(i) = ff(dpavg);
+            driftdist[n].at(i) = ff(dpavg[i]);
         }
     }
 
@@ -86,6 +83,7 @@ void Deposition(double IAR, double xactive, double FD, double PL, double dN, dou
     }
     else {
         // Approximation using finite differences. Use extrapolation, and clamp estimates to [0, 1].
+        // May throw std::domain_error.
         const auto dsdfunc = Interpolate1D<true>(dsd, 0, 1);
         for (size_t i = 1; i < SVP.size(); ++i) {
             double y = finite_difference_derivative<decltype(dsdfunc), double, 1>(dsdfunc, dpavg[i]);
@@ -165,6 +163,7 @@ void Deposition(double IAR, double xactive, double FD, double PL, double dN, dou
         propAppliedPlumeXY.emplace_back(std::make_pair(x.at(i) - FD, propAppliedPlume.at(i)));
     }
 
+    // May throw std::domain_error.
     const auto apfunc = Interpolate1D(propAppliedPlumeXY);
     std::vector<std::pair<double, double>> applume(100);
     for (size_t i = 0; i < applume.size(); ++i) {

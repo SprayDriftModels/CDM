@@ -7,27 +7,25 @@
 #include <utility>
 #include <vector>
 
-#include <ceres/types.h>
-
 namespace cdm {
-
-struct DropletSizeModelParams
-{
-    double a1 = 0;
-    double a2 = 0;
-    double d1 = 0;
-    double d2 = 0;
-    double k1 = 0;
-};
 
 struct DropletSizeModel
 {
+    struct Params
+    {
+        double a1;
+        double a2;
+        double d1;
+        double d2;
+        double k1;
+    };
+
     DropletSizeModel();
 
     /**
      * Fit a non-linear least squares model to a droplet size vs. cumulative volume fraction distribution.
      */
-    ceres::TerminationType fit(const std::vector<std::pair<double, double>>& dsd);
+    bool fit(const std::vector<std::pair<double, double>>& dsd);
 
     /**
      * Returns the Ceres version string.
@@ -47,7 +45,7 @@ struct DropletSizeModel
     /**
      * Returns the parameter estimates for the non-linear least squares model.
      */
-    DropletSizeModelParams params() const;
+    Params params() const;
 
     /**
      * Returns the Ceres solver report.
@@ -65,7 +63,7 @@ struct DropletSizeModel
     double cdf(double x) const;
 
 private:
-    DropletSizeModelParams params_;
+    Params params_ ={};
     double dpmin_ = 0;
     double dpmax_ = 0;
     std::string report_;

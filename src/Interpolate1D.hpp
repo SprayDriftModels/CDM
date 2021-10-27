@@ -39,6 +39,14 @@ struct Interpolate1D
         lo_ = lo;
         hi_ = hi;
     }
+    
+    Interpolate1D(const std::vector<double>& x, const std::vector<double>& y)
+        : Interpolate1D(hstack(x, y))
+    {}
+
+    Interpolate1D(const std::vector<double>& x, const std::vector<double>& y, double lo, double hi)
+        : Interpolate1D(hstack(x, y), lo, hi)
+    {}
 
     void setLowerBound(double lo) { lo_ = lo; }
     
@@ -75,6 +83,19 @@ struct Interpolate1D
     }
 
 private:
+    inline std::vector<std::pair<double, double>> hstack(const std::vector<double>& x, const std::vector<double>& y) const
+    {
+        if (x.size() != y.size())
+            throw std::domain_error("The same number of samples must be in the independent and dependent variable.");
+        
+        std::vector<std::pair<double, double>> result;
+        result.reserve(x.size());
+        std::transform(x.begin(), x.end(), y.begin(), std::back_inserter(result),
+            [](double a, double b) { return std::make_pair(a, b); });
+
+        return result;
+    }
+
     template<class Iterator>
     inline double fillvalue(Iterator it, double x, std::true_type) const
     {

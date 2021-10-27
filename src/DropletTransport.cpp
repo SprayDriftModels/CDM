@@ -209,7 +209,7 @@ double DropletTransport(double Tair, double RH, double dTwb, double z0, double U
     cvi.setMaxNonlinIters(3);   // Default 3
     cvi.setMaxConvFails(10);    // Default 10
 
-    // Solve ODE.
+    // Solve ODE. May throw cvode::system_error.
     double t = 0;
     double tmax = ddd * hN/Vt; // Time for deposition, sec
     size_t nout = 10000; // Number of output steps
@@ -221,6 +221,15 @@ double DropletTransport(double Tair, double RH, double dTwb, double z0, double U
         tout += step;
     }
     
+    //int nsteps = cvi.getNumSteps();
+    //int nfevals = cvi.getNumRhsEvals();
+    //int nlinsetups = cvi.getNumLinSolvSetups();
+    //int netfails = cvi.getNumErrTestFails();
+    //int nniters = cvi.getNumNonlinSolvIters();
+    //int nncfails = cvi.getNumNonlinSolvConvFails();
+    //int njevals = cvi.getNumJacEvals();
+    //int nfevalsLS = cvi.getNumLinRhsEvals();
+
     auto y = cvi.solution();
     double xdist = y[1] / 100.; // cm to m
     return xdist;

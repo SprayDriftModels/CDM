@@ -58,12 +58,12 @@ void to_json(nlohmann::ordered_json& j, const InputParameters& p)
             {"dsdCurveFitting", p.dsdfit},
             {"applicationRate", p.iar},
             {"concentrationAI", p.xactive},
-            {"downwindFieldDepth", p.fd},
-            {"crosswindFieldDepth", p.pl},
+            {"downwindFieldDepth", p.FD},
+            {"crosswindFieldDepth", p.PL},
             {"nozzleSpacing", p.dN},
             {"minDropletSize", p.dpmin},
             {"maxDropletSize", p.dpmax},
-            {"maxDriftDistance", p.lmax},
+            {"maxDriftDistance", p.Lmax},
             {"lambda", p.lambda}
         }}
     };
@@ -82,19 +82,17 @@ void from_json(const nlohmann::ordered_json& j, InputParameters& p)
         j0.at("temperatureMeasurements").get_to(p.wvT);
     }
     if (j0.count("horizontalVariation") != 0) {
-        //j0.at("horizontalVariation").get_to(p.psipsipsi);
-        p.psipsipsi = j0.at("horizontalVariation").get<std::optional<double>>();
-        //
+        j0.at("horizontalVariation").get_to(p.psipsipsi);
     }
     if (j0.count("horizontalVariationMethod") != 0) {
         j0.at("horizontalVariationMethod").get_to(p.psipsipsiMethod);
         switch (p.psipsipsiMethod) {
-        case PsiPsiPsiMethod::ENTERED:
-        case PsiPsiPsiMethod::INTERPOLATE:
-        case PsiPsiPsiMethod::SDTF:
+        case InputParameters::PsiPsiPsiMethod::ENTERED:
+        case InputParameters::PsiPsiPsiMethod::INTERPOLATE:
+        case InputParameters::PsiPsiPsiMethod::SDTF:
             break;
         default: // Invalid
-            p.psipsipsiMethod = PsiPsiPsiMethod::ENTERED;
+            p.psipsipsiMethod = InputParameters::PsiPsiPsiMethod::ENTERED;
             break;
         }
     }
@@ -113,13 +111,13 @@ void from_json(const nlohmann::ordered_json& j, InputParameters& p)
     j2.at("dsdCurveFitting").get_to(p.dsdfit);
     j2.at("applicationRate").get_to(p.iar);
     j2.at("concentrationAI").get_to(p.xactive);
-    j2.at("downwindFieldDepth").get_to(p.fd);
-    j2.at("crosswindFieldDepth").get_to(p.pl);
+    j2.at("downwindFieldDepth").get_to(p.FD);
+    j2.at("crosswindFieldDepth").get_to(p.PL);
     j2.at("nozzleSpacing").get_to(p.dN);
     j2.at("minDropletSize").get_to(p.dpmin);
     j2.at("maxDropletSize").get_to(p.dpmax);
     if (j2.count("maxDriftDistance") != 0) {
-        j2.at("maxDriftDistance").get_to(p.lmax);
+        j2.at("maxDriftDistance").get_to(p.Lmax);
     }
     if (j2.count("lambda") != 0) {
         j2.at("lambda").get_to(p.lambda);

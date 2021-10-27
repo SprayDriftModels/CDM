@@ -9,6 +9,7 @@
 namespace cdm {
 
 void to_json(nlohmann::ordered_json& j, const InputParameters& p);
+
 void from_json(const nlohmann::ordered_json& j, InputParameters& p);
 
 } // namespace cdm
