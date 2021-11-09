@@ -124,4 +124,39 @@ void from_json(const nlohmann::ordered_json& j, Model::Input& p)
     }
 }
 
+void to_json(nlohmann::ordered_json& j, const std::unique_ptr<DropletSizeModel>& p)
+{
+    if (p) {
+        auto params = p->params();
+        j = nlohmann::ordered_json{
+            {"a1", params.a1},
+            {"a2", params.a2},
+            {"d1", params.d1},
+            {"d2", params.d2},
+            {"k1", params.k1}
+        };
+    }
+    else {
+        j = nullptr;
+    }
+}
+
+void to_json(nlohmann::ordered_json& j, const Model::Output& p)
+{
+    j = nlohmann::ordered_json{
+        {"dropletSize", p.dp},
+        {"dropletSizeDistributionModel", p.dsdmodel},
+        {"wetBulbTemperature", p.Twb},
+        {"wetBulbTemperatureDepression", p.dTwb},
+        {"horizontalVariation", p.ppp},
+        {"frictionHeight", p.z0},
+        {"frictionVelocity", p.Uf},
+        {"mixtureDensity", p.rhoL},
+        {"nozzleVelocityZ", p.nvz},
+        {"nozzleVelocityX", p.nvx},
+        {"dropletTransportDistance", p.xdist},
+        {"deposition", p.applume}
+    };
+}
+
 } // namespace cdm

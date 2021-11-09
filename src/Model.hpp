@@ -81,11 +81,11 @@ struct Model
         double rhoL;                                    // [DERIVED] Mixture density [g/cm³]
 
         // Droplet Transport
-        std::unique_ptr<NozzleVelocity> nv;             // [DERIVED] Nozzle velocity
+        std::array<double, 3> nvz;                      // [DERIVED] Nozzle velocity, vertical components [m/s]
+        std::array<double, 3> nvx;                      // [DERIVED] Nozzle velocity, horizontal components [m/s]
         std::array<std::vector<double>, 3> xdist;       // [DERIVED] Transport distance [m]
 
         // Deposition
-        double Lmax;                                    // [DERIVED] Maximum drift distance for deposition [m]
         std::vector<std::pair<double, double>> applume; // [DERIVED] Deposition output
     };
 

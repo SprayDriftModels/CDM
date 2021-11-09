@@ -5,6 +5,7 @@
 #include <array>
 #include <cmath>
 #include <iterator>
+#include <memory>
 #include <numeric>
 #include <vector>
 
@@ -13,19 +14,17 @@
 
 #include <blaze/Math.h>
 
-#include <fmt/core.h> // DEBUG
-
 #include "Deposition.hpp"
 #include "Interpolate1D.hpp"
 
 namespace cdm {
 
-void Deposition(double IAR, double xactive, double FD, double PL, double dN, double ppp, double rhoL,
-                const std::vector<double>& dp,
-                const std::array<std::vector<double>, 3>& xdist,
-                const std::vector<std::pair<double, double>>& dsd,
-                const DropletSizeModel *dsdmodel,
-                double dpmin, double dpmax, std::optional<double> Lmax, double lambda)
+std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, double FD, double PL, double dN, double ppp, double rhoL,
+                                                  const std::vector<double>& dp,
+                                                  const std::array<std::vector<double>, 3>& xdist,
+                                                  const std::vector<std::pair<double, double>>& dsd,
+                                                  const std::unique_ptr<DropletSizeModel>& dsdmodel,
+                                                  double dpmin, double dpmax, std::optional<double> Lmax, double lambda)
 {
     using namespace boost::math::differentiation;
     using boost::math::double_constants::pi;
@@ -74,7 +73,7 @@ void Deposition(double IAR, double xactive, double FD, double PL, double dN, dou
 
     // Calculate partial volume for each droplet size.
     blaze::DynamicVector<double> SVP(dpavg.size(), 0);
-    if (dsdmodel != nullptr) {
+    if (dsdmodel) {
         // Use non-linear least squares curve fit.
         for (size_t i = 1; i < SVP.size(); ++i) {
             double y = dsdmodel->pdf(dpavg[i]);
@@ -145,17 +144,17 @@ void Deposition(double IAR, double xactive, double FD, double PL, double dN, dou
     auto propAppliedPlume = CS / (volumeAppRate / 10000.);
     auto propAppliedNoPlume = NPDR / (volumeAppRate / 10000.);
 
-    fmt::print("Spray Segment Count (Nsa)  = {}\n", Nsa);
-    fmt::print("Drift Segment Count (Nda)  = {}\n", Nda);
-    fmt::print("Spray Segment Width (ΔWsa) = {}\n", dwsa);
-    fmt::print("Drift Segment Width (ΔWda) = {}\n", dwda);
-    fmt::print("Max. Drift Distance (Lmax) = {}\n", *Lmax);
-    fmt::print("Sprayed Area               = {}\n", sprayedArea);
-    fmt::print("Volume Sprayed             = {}\n", volumeSprayed);
-    fmt::print("Σ(SVP) × Nsa               = {}\n", blaze::sum(SVP) * Nsa);
-    fmt::print("Σ(VPS[0…Nsa+Nda])          = {}\n", blaze::sum(VPS));
-    fmt::print("Σ(VPS[0…Nsa])              = {}\n", blaze::sum(blaze::subvector(VPS, 0UL, Nsa)));
-    fmt::print("Σ(CS)                      = {}\n", blaze::sum(CS));
+    //fmt::print("Spray Segment Count (Nsa)  = {}\n", Nsa);
+    //fmt::print("Drift Segment Count (Nda)  = {}\n", Nda);
+    //fmt::print("Spray Segment Width (ΔWsa) = {}\n", dwsa);
+    //fmt::print("Drift Segment Width (ΔWda) = {}\n", dwda);
+    //fmt::print("Max. Drift Distance (Lmax) = {}\n", *Lmax);
+    //fmt::print("Sprayed Area               = {}\n", sprayedArea);
+    //fmt::print("Volume Sprayed             = {}\n", volumeSprayed);
+    //fmt::print("Σ(SVP) × Nsa               = {}\n", blaze::sum(SVP) * Nsa);
+    //fmt::print("Σ(VPS[0…Nsa+Nda])          = {}\n", blaze::sum(VPS));
+    //fmt::print("Σ(VPS[0…Nsa])              = {}\n", blaze::sum(blaze::subvector(VPS, 0UL, Nsa)));
+    //fmt::print("Σ(CS)                      = {}\n", blaze::sum(CS));
 
     std::vector<std::pair<double, double>> propAppliedPlumeXY;
     propAppliedPlumeXY.reserve(Nsa+Nda);
@@ -172,10 +171,7 @@ void Deposition(double IAR, double xactive, double FD, double PL, double dN, dou
         applume.at(i) = std::make_pair(x, y);
     }
 
-    fmt::print("\n{:<8} {:>9}\n", "Distance", "APPlume");
-    for (size_t i = 0; i < applume.size(); ++i) {
-        fmt::print("{:<8.3f} {:>8.4f}%\n", applume.at(i).first, applume.at(i).second);
-    }
+    return applume;
 }
 
 } // namespace cdm

@@ -16,12 +16,12 @@ struct NozzleVelocity
     NozzleVelocity(double PN, double thetaN, double rhoL);
 
     /**
-     * Vertical components of nozzle velocity (centerline, downwind, upwind) [m]
+     * Vertical components of nozzle velocity (centerline, downwind, upwind) [m/s]
      */
     const std::array<double, 3> z;
 
     /**
-     * Horizontal components of nozzle velocity (centerline, downwind, upwind) [m]
+     * Horizontal components of nozzle velocity (centerline, downwind, upwind) [m/s]
      */
     const std::array<double, 3> x;
 

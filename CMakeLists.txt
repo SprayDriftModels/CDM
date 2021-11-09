@@ -13,8 +13,20 @@ endif()
 if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 endif()
+if(NOT DEFINED CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+endif()
+if(NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+endif()
 
 project(cdm LANGUAGES CXX)
+
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+
+#-------------------------------------------------------------------------------
+# Dependencies
+#-------------------------------------------------------------------------------
 
 find_package(Boost) # Boost.Math
 find_package(blaze CONFIG REQUIRED)
@@ -27,7 +39,8 @@ find_package(nlohmann_json CONFIG REQUIRED)
 # CDM Library
 #-------------------------------------------------------------------------------
 
-add_library(cdm
+add_library(libcdm
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/CDM.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Deposition.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/DropletSizeModel.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/DropletTransport.cpp
@@ -36,21 +49,28 @@ add_library(cdm
   ${CMAKE_CURRENT_SOURCE_DIR}/src/WetBulbTemperature.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/WindVelocityProfile.cpp)
 
-add_library(cdm::cdm ALIAS cdm)
+add_library(libcdm::libcdm ALIAS libcdm)
 
-set_property(TARGET cdm PROPERTY CXX_STANDARD 17)
-set_property(TARGET cdm PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET libcdm PROPERTY CXX_STANDARD 17)
+set_property(TARGET libcdm PROPERTY CXX_STANDARD_REQUIRED ON)
 
-target_compile_definitions(cdm PUBLIC BOOST_MATH_STANDALONE=1)
+target_compile_definitions(libcdm PRIVATE BOOST_MATH_STANDALONE=1)
 
-if(MSVC)
-  target_compile_options(cdm PUBLIC "/utf-8")
-  target_compile_definitions(cdm PUBLIC _CRT_SECURE_NO_WARNINGS)
+if(BUILD_SHARED_LIBS)
+  target_compile_definitions(libcdm PRIVATE CDM_EXPORTS)
+else()
+  target_compile_definitions(libcdm PUBLIC CDM_STATIC_DEFINE)
 endif()
 
-target_include_directories(cdm PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+if(MSVC)
+  target_compile_options(libcdm PUBLIC "/utf-8")
+  target_compile_definitions(libcdm PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
 
-target_link_libraries(cdm PRIVATE
+target_include_directories(libcdm PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(libcdm PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(libcdm PRIVATE
   blaze::blaze
   Ceres::ceres
   fmt::fmt
@@ -63,23 +83,15 @@ target_link_libraries(cdm PRIVATE
 # CLI
 #-------------------------------------------------------------------------------
 
-add_executable(cdmcli ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
-set_property(TARGET cdmcli PROPERTY CXX_STANDARD 17)
-set_property(TARGET cdmcli PROPERTY CXX_STANDARD_REQUIRED ON)
-target_link_libraries(cdmcli PRIVATE
-  cdm::cdm
-  fmt::fmt
-  nlohmann_json::nlohmann_json
-)
+add_executable(cdmcli ${CMAKE_CURRENT_SOURCE_DIR}/src/CDMCLI.cpp)
+target_link_libraries(cdmcli PRIVATE libcdm::libcdm fmt::fmt)
 
 #-------------------------------------------------------------------------------
 # Testing
 #-------------------------------------------------------------------------------
 
-#add_executable(cdm_case1_test ${CMAKE_CURRENT_SOURCE_DIR}/test/cdm_case1_test.cpp)
-#set_property(TARGET cdm_case1_test PROPERTY CXX_STANDARD 17)
-#set_property(TARGET cdm_case1_test PROPERTY CXX_STANDARD_REQUIRED ON)
-#target_link_libraries(cdm_case1_test PRIVATE cdm::cdm)
+#add_executable(crtdbg ${CMAKE_CURRENT_SOURCE_DIR}/test/crtdbg.cpp)
+#target_link_libraries(crtdbg PRIVATE cdm::cdm fmt::fmt)
 
 #include(CTest)
 #add_subdirectory(test)

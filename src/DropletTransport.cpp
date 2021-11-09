@@ -8,8 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include <fmt/core.h>
-
 #include <boost/math/constants/constants.hpp>
 #include <boost/math/tools/roots.hpp>
 
