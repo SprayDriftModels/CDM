@@ -103,6 +103,8 @@ int cdm_run_model(cdm_model_t *model)
     
     m->out.rhoL = 1. / ((m->in.xs0 / m->in.rhoS) + ((1. - m->in.xs0) / m->in.rhoW));
     cdm::NozzleVelocity nv(m->in.PN, m->in.thetaN, m->out.rhoL);
+    m->out.nvz = nv.z;
+    m->out.nvx = nv.x;
 
     m->out.dp.resize(23, 0);
     for (size_t i = 0; i < m->out.dp.size(); ++i) {
@@ -111,7 +113,7 @@ int cdm_run_model(cdm_model_t *model)
             try {
                 m->out.xdist[j].emplace_back(cdm::DropletTransport(m->in.Tair, m->in.RH, m->out.dTwb,
                     m->out.z0, m->out.Uf, m->in.rhoW, m->in.rhoS, m->in.xs0, m->in.hN, m->in.hC,
-                    nv.z[j], nv.x[j], m->out.dp.at(i), m->in.ddd));
+                    m->out.nvz[j], m->out.nvx[j], m->out.dp.at(i), m->in.ddd));
             } catch (const std::exception& e) {
                 cdm_error_handler("[DropletTransport] %s\n", e.what());
                 return 1;
