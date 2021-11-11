@@ -54,6 +54,7 @@ add_library(libcdm::libcdm ALIAS libcdm)
 set_property(TARGET libcdm PROPERTY CXX_STANDARD 17)
 set_property(TARGET libcdm PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET libcdm PROPERTY LIBRARY_OUTPUT_NAME libcdm)
+set_property(TARGET libcdm PROPERTY PREFIX "")
 
 target_compile_definitions(libcdm PRIVATE BOOST_MATH_STANDALONE=1)
 
