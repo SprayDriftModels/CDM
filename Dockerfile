@@ -16,7 +16,7 @@ RUN git clone --branch v1.77-standalone https://github.com/boostorg/math.git /tm
 	&& rm -rf /tmp/boost-math
 
 RUN git clone --branch 8.0.1 https://github.com/fmtlib/fmt.git /tmp/fmt \
-	&& cmake -S /tmp/fmt -B /tmp/fmt-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=Off \
+	&& cmake -S /tmp/fmt -B /tmp/fmt-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=Off -DCMAKE_POSITION_INDEPENDENT_CODE=On \
 	&& cmake --build /tmp/fmt-build \
 	&& cmake --install /tmp/fmt-build \
 	&& rm -rf /tmp/fmt && rm -rf /tmp/fmt-build
@@ -27,13 +27,13 @@ RUN git clone --branch v3.10.4 https://github.com/nlohmann/json.git /tmp/nlohman
 	&& rm -rf /tmp/nlohmann-json && rm -rf /tmp/nlohmann-json-build
 
 RUN git clone --branch v2.2.2 https://github.com/gflags/gflags.git /tmp/gflags \
-	&& cmake -S /tmp/gflags -B /tmp/gflags-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=Off \
+	&& cmake -S /tmp/gflags -B /tmp/gflags-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=Off -DCMAKE_POSITION_INDEPENDENT_CODE=On \
 	&& cmake --build /tmp/gflags-build \
 	&& cmake --install /tmp/gflags-build \
 	&& rm -rf /tmp/gflags && rm -rf /tmp/gflags-build
 
 RUN git clone --branch v0.5.0 https://github.com/google/glog.git /tmp/glog \
-	&& cmake -S /tmp/glog -B /tmp/glog-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=Off \
+	&& cmake -S /tmp/glog -B /tmp/glog-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=Off -DCMAKE_POSITION_INDEPENDENT_CODE=On \
 	&& cmake --build /tmp/glog-build \
 	&& cmake --install /tmp/glog-build \
 	&& rm -rf /tmp/glog && rm -rf /tmp/glog-build
@@ -44,14 +44,14 @@ RUN git clone --branch 3.4.0 https://gitlab.com/libeigen/eigen.git /tmp/eigen \
 	&& rm -rf /tmp/eigen && rm -rf /tmp/eigen-build
 
 RUN git clone --branch 2.0.0 https://github.com/ceres-solver/ceres-solver.git /tmp/ceres \
-	&& cmake -S /tmp/ceres -B /tmp/ceres-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=Off \
+	&& cmake -S /tmp/ceres -B /tmp/ceres-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=Off -DCMAKE_POSITION_INDEPENDENT_CODE=On \
 	   -DBUILD_BENCHMARKS=Off -DBUILD_DOCUMENTATION=Off -DBUILD_EXAMPLES=Off -DBUILD_TESTING=Off \
 	&& cmake --build /tmp/ceres-build \
 	&& cmake --install /tmp/ceres-build \
 	&& rm -rf /tmp/ceres && rm -rf /tmp/ceres-build
 
 RUN git clone --branch v5.8.0 https://github.com/LLNL/sundials.git /tmp/sundials \
-	&& cmake -S /tmp/sundials -B /tmp/sundials-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=Off \
+	&& cmake -S /tmp/sundials -B /tmp/sundials-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=Off -DCMAKE_POSITION_INDEPENDENT_CODE=On \
 	   -DEXAMPLES_ENABLE_C=Off -DEXAMPLES_ENABLE_CXX=Off -DEXAMPLES_INSTALL=Off \
 	   -DBUILD_ARKODE=Off -DBUILD_CVODE=On -DBUILD_CVODES=Off -DBUILD_IDA=Off -DBUILD_IDAS=Off -DBUILD_KINSOL=Off \
 	&& cmake --build /tmp/sundials-build \
