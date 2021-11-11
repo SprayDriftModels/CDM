@@ -1,0 +1,7 @@
+To compile and install the package:
+
+install.packages(".", repos=NULL, type="source", INSTALL_opts="--no-multiarch")
+
+To run the demo:
+
+demo("case1", package="cdm")

@@ -1,0 +1,2 @@
+PKG_LIBS= -L../inst/libs -l:libcdm.so
+PKG_CPPFLAGS= -I../inst/include -DR_NO_REMAP -DSTRICT_R_HEADERS
