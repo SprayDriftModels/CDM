@@ -16,6 +16,8 @@ struct NozzleVelocity;
 
 struct Model
 {
+    std::string name;
+    
     struct Input
     {
         // Droplet Size Distribution

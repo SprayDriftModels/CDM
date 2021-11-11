@@ -11,12 +11,10 @@
 
 namespace cdm {
 
-void to_json(nlohmann::ordered_json& j, const Model::Input& p);
+void to_json(nlohmann::ordered_json& json, const std::unique_ptr<DropletSizeModel>& p);
 
-void from_json(const nlohmann::ordered_json& j, Model::Input& p);
+void to_json(nlohmann::ordered_json& json, const Model& m);
 
-void to_json(nlohmann::ordered_json& j, const std::unique_ptr<DropletSizeModel>& p);
-
-void to_json(nlohmann::ordered_json& j, const Model::Output& p);
+void from_json(const nlohmann::ordered_json& json, Model& m);
 
 } // namespace cdm

@@ -31,104 +31,11 @@ void to_json(BasicJsonType& j, const std::optional<T>& opt) {
 
 namespace cdm {
 
-void to_json(nlohmann::ordered_json& j, const Model::Input& p)
-{
-    j = nlohmann::ordered_json{
-        {"dropletSizeDistribution", p.dsd},
-        {"dryAirTemperature", p.Tair},
-        {"barometricPressure", p.Patm},
-        {"relativeHumidity", p.RH},
-        {"windVelocityProfile", {
-            {"velocityMeasurements", p.wvu},
-            {"temperatureMeasurements", p.wvT},
-            {"horizontalVariation", p.ppp},
-            {"horizontalVariationMethod", p.pppMethod}
-        }},
-        {"dropletTransport", {
-            {"nozzleHeight", p.hN},
-            {"canopyHeight", p.hC},
-            {"nozzlePressure", p.PN},
-            {"nozzleAngle", p.thetaN},
-            {"waterDensity", p.rhoW},
-            {"solidsDensity", p.rhoS},
-            {"solidsFraction", p.xs0},
-            {"ddd", p.ddd}
-        }},
-        {"deposition", {
-            {"dsdCurveFitting", p.dsdfit},
-            {"applicationRate", p.iar},
-            {"concentrationAI", p.xactive},
-            {"downwindFieldDepth", p.FD},
-            {"crosswindFieldDepth", p.PL},
-            {"nozzleSpacing", p.dN},
-            {"minDropletSize", p.dpmin},
-            {"maxDropletSize", p.dpmax},
-            {"maxDriftDistance", p.Lmax},
-            {"lambda", p.lambda}
-        }}
-    };
-}
-
-void from_json(const nlohmann::ordered_json& j, Model::Input& p)
-{
-    j.at("dropletSizeDistribution").get_to(p.dsd);
-    j.at("dryAirTemperature").get_to(p.Tair);
-    j.at("barometricPressure").get_to(p.Patm);
-    j.at("relativeHumidity").get_to(p.RH);
-
-    auto j0 = j.at("windVelocityProfile");
-    j0.at("velocityMeasurements").get_to(p.wvu);
-    if (j0.count("temperatureMeasurements") != 0) {
-        j0.at("temperatureMeasurements").get_to(p.wvT);
-    }
-    if (j0.count("horizontalVariation") != 0) {
-        j0.at("horizontalVariation").get_to(p.ppp);
-    }
-    if (j0.count("horizontalVariationMethod") != 0) {
-        j0.at("horizontalVariationMethod").get_to(p.pppMethod);
-        switch (p.pppMethod) {
-        case Model::Input::PPPMethod::ENTERED:
-        case Model::Input::PPPMethod::INTERPOLATE:
-        case Model::Input::PPPMethod::SDTF:
-            break;
-        default: // Invalid
-            p.pppMethod = Model::Input::PPPMethod::ENTERED;
-            break;
-        }
-    }
-    
-    auto j1 = j.at("dropletTransport");
-    j1.at("nozzleHeight").get_to(p.hN);
-    j1.at("canopyHeight").get_to(p.hC);
-    j1.at("nozzlePressure").get_to(p.PN);
-    j1.at("nozzleAngle").get_to(p.thetaN);
-    j1.at("waterDensity").get_to(p.rhoW);
-    j1.at("solidsDensity").get_to(p.rhoS);
-    j1.at("solidsFraction").get_to(p.xs0);
-    j1.at("ddd").get_to(p.ddd);
-
-    auto j2 = j.at("deposition");
-    j2.at("dsdCurveFitting").get_to(p.dsdfit);
-    j2.at("applicationRate").get_to(p.iar);
-    j2.at("concentrationAI").get_to(p.xactive);
-    j2.at("downwindFieldDepth").get_to(p.FD);
-    j2.at("crosswindFieldDepth").get_to(p.PL);
-    j2.at("nozzleSpacing").get_to(p.dN);
-    j2.at("minDropletSize").get_to(p.dpmin);
-    j2.at("maxDropletSize").get_to(p.dpmax);
-    if (j2.count("maxDriftDistance") != 0) {
-        j2.at("maxDriftDistance").get_to(p.Lmax);
-    }
-    if (j2.count("lambda") != 0) {
-        j2.at("lambda").get_to(p.lambda);
-    }
-}
-
-void to_json(nlohmann::ordered_json& j, const std::unique_ptr<DropletSizeModel>& p)
+void to_json(nlohmann::ordered_json& json, const std::unique_ptr<DropletSizeModel>& p)
 {
     if (p) {
         auto params = p->params();
-        j = nlohmann::ordered_json{
+        json = nlohmann::ordered_json{
             {"a1", params.a1},
             {"a2", params.a2},
             {"d1", params.d1},
@@ -137,26 +44,120 @@ void to_json(nlohmann::ordered_json& j, const std::unique_ptr<DropletSizeModel>&
         };
     }
     else {
-        j = nullptr;
+        json = nullptr;
     }
 }
 
-void to_json(nlohmann::ordered_json& j, const Model::Output& p)
+void to_json(nlohmann::ordered_json& json, const Model& m)
 {
-    j = nlohmann::ordered_json{
-        {"dropletSize", p.dp},
-        {"dropletSizeDistributionModel", p.dsdmodel},
-        {"wetBulbTemperature", p.Twb},
-        {"wetBulbTemperatureDepression", p.dTwb},
-        {"horizontalVariation", p.ppp},
-        {"frictionHeight", p.z0},
-        {"frictionVelocity", p.Uf},
-        {"mixtureDensity", p.rhoL},
-        {"nozzleVelocityZ", p.nvz},
-        {"nozzleVelocityX", p.nvx},
-        {"dropletTransportDistance", p.xdist},
-        {"deposition", p.applume}
+    json = nlohmann::ordered_json{
+        m.name, {
+            {"dropletSizeDistribution", m.in.dsd},
+            {"dryAirTemperature", m.in.Tair},
+            {"barometricPressure", m.in.Patm},
+            {"relativeHumidity", m.in.RH},
+            {"windVelocityProfile", {
+                {"velocityMeasurements", m.in.wvu},
+                {"temperatureMeasurements", m.in.wvT},
+                {"horizontalVariation", m.in.ppp},
+                {"horizontalVariationMethod", m.in.pppMethod}
+            }},
+            {"dropletTransport", {
+                {"nozzleHeight", m.in.hN},
+                {"canopyHeight", m.in.hC},
+                {"nozzlePressure", m.in.PN},
+                {"nozzleAngle", m.in.thetaN},
+                {"waterDensity", m.in.rhoW},
+                {"solidsDensity", m.in.rhoS},
+                {"solidsFraction", m.in.xs0},
+                {"ddd", m.in.ddd}
+            }},
+            {"deposition", {
+                {"dsdCurveFitting", m.in.dsdfit},
+                {"applicationRate", m.in.iar},
+                {"concentrationAI", m.in.xactive},
+                {"downwindFieldDepth", m.in.FD},
+                {"crosswindFieldDepth", m.in.PL},
+                {"nozzleSpacing", m.in.dN},
+                {"minDropletSize", m.in.dpmin},
+                {"maxDropletSize", m.in.dpmax},
+                {"maxDriftDistance", m.in.Lmax},
+                {"lambda", m.in.lambda}
+            }},
+            {"output", {
+                {"dropletSize", m.out.dp},
+                {"dropletSizeDistributionModel", m.out.dsdmodel},
+                {"wetBulbTemperature", m.out.Twb},
+                {"wetBulbTemperatureDepression", m.out.dTwb},
+                {"horizontalVariation", m.out.ppp},
+                {"frictionHeight", m.out.z0},
+                {"frictionVelocity", m.out.Uf},
+                {"mixtureDensity", m.out.rhoL},
+                {"nozzleVelocityZ", m.out.nvz},
+                {"nozzleVelocityX", m.out.nvx},
+                {"dropletTransportDistance", m.out.xdist},
+                {"deposition", m.out.applume}
+            }}
+        }
     };
+}
+
+void from_json(const nlohmann::ordered_json& json, Model& m)
+{
+    m.name = json.begin().key();
+    auto j = json.front();
+
+    j.at("dropletSizeDistribution").get_to(m.in.dsd);
+    j.at("dryAirTemperature").get_to(m.in.Tair);
+    j.at("barometricPressure").get_to(m.in.Patm);
+    j.at("relativeHumidity").get_to(m.in.RH);
+
+    auto j0 = j.at("windVelocityProfile");
+    j0.at("velocityMeasurements").get_to(m.in.wvu);
+    if (j0.count("temperatureMeasurements") != 0) {
+        j0.at("temperatureMeasurements").get_to(m.in.wvT);
+    }
+    if (j0.count("horizontalVariation") != 0) {
+        j0.at("horizontalVariation").get_to(m.in.ppp);
+    }
+    if (j0.count("horizontalVariationMethod") != 0) {
+        j0.at("horizontalVariationMethod").get_to(m.in.pppMethod);
+        switch (m.in.pppMethod) {
+        case Model::Input::PPPMethod::ENTERED:
+        case Model::Input::PPPMethod::INTERPOLATE:
+        case Model::Input::PPPMethod::SDTF:
+            break;
+        default: // Invalid
+            m.in.pppMethod = Model::Input::PPPMethod::ENTERED;
+            break;
+        }
+    }
+    
+    auto j1 = j.at("dropletTransport");
+    j1.at("nozzleHeight").get_to(m.in.hN);
+    j1.at("canopyHeight").get_to(m.in.hC);
+    j1.at("nozzlePressure").get_to(m.in.PN);
+    j1.at("nozzleAngle").get_to(m.in.thetaN);
+    j1.at("waterDensity").get_to(m.in.rhoW);
+    j1.at("solidsDensity").get_to(m.in.rhoS);
+    j1.at("solidsFraction").get_to(m.in.xs0);
+    j1.at("ddd").get_to(m.in.ddd);
+
+    auto j2 = j.at("deposition");
+    j2.at("dsdCurveFitting").get_to(m.in.dsdfit);
+    j2.at("applicationRate").get_to(m.in.iar);
+    j2.at("concentrationAI").get_to(m.in.xactive);
+    j2.at("downwindFieldDepth").get_to(m.in.FD);
+    j2.at("crosswindFieldDepth").get_to(m.in.PL);
+    j2.at("nozzleSpacing").get_to(m.in.dN);
+    j2.at("minDropletSize").get_to(m.in.dpmin);
+    j2.at("maxDropletSize").get_to(m.in.dpmax);
+    if (j2.count("maxDriftDistance") != 0) {
+        j2.at("maxDriftDistance").get_to(m.in.Lmax);
+    }
+    if (j2.count("lambda") != 0) {
+        j2.at("lambda").get_to(m.in.lambda);
+    }
 }
 
 } // namespace cdm

@@ -47,7 +47,7 @@ cdm_model_t * cdm_create_model(const char *config)
                                                /* allow_exceptions */ true,
                                                /* ignore_comments */ true);
         
-        cdm::from_json(j.front(), m->in);
+        cdm::from_json(j, *m);
     }
     catch (std::exception& e) {
         cdm_error_handler("%s\n", e.what());
@@ -142,7 +142,7 @@ void cdm_print_report(cdm_model_t *model)
         fmt::print("{}\n", header);
         fmt::print("{:->{}}\n\n", "", 80);
     };
-    
+
     if (m->out.dsdmodel) {
         print_header("Droplet Size Distribution");
         fmt::print("{}\n", m->out.dsdmodel->report());
@@ -189,8 +189,11 @@ char * cdm_get_output_string(cdm_model_t *model)
     cdm::Model *m = reinterpret_cast<cdm::Model *>(model);
     std::string s;
 
+    if (!m)
+        return nullptr;
+
     try {
-        nlohmann::ordered_json j(m->out);
+        nlohmann::ordered_json j(*m);
         s = j.dump();
     } catch (const std::exception& e) {
         cdm_error_handler("%s\n", e.what());
