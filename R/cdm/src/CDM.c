@@ -24,13 +24,13 @@ extern SEXP _cdm(SEXP sconfig)
 
     char *output = cdm_get_output_string(model);
 
-    SEXP result = PROTECT(Rf_allocVector(STRSXP, 1));
+    SEXP result = Rf_protect(Rf_allocVector(STRSXP, 1));
     SET_STRING_ELT(result, 0, Rf_mkCharCE(output, CE_UTF8));
 
     cdm_free_string(output);
     cdm_free_model(model);
 
-    UNPROTECT(1);
+    Rf_unprotect(1);
     return result;
 }
 
