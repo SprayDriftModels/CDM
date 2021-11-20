@@ -87,7 +87,8 @@ void to_json(nlohmann::ordered_json& json, const Model& m)
                 {"minDropletSize", m.in.dpmin},
                 {"maxDropletSize", m.in.dpmax},
                 {"maxDriftDistance", m.in.Lmax},
-                {"lambda", m.in.lambda}
+                {"lambda", m.in.lambda},
+                {"outputInterval", m.in.dx}
             }},
             {"output", {
                 {"dropletSizeModel", m.out.dsmodel},
@@ -162,6 +163,9 @@ void from_json(const nlohmann::ordered_json& json, Model& m)
     }
     if (j2.count("lambda") != 0) {
         j2.at("lambda").get_to(m.in.lambda);
+    }
+    if (j2.count("outputInterval") != 0) {
+        j2.at("outputInterval").get_to(m.in.dx);
     }
 }
 

@@ -14,6 +14,8 @@
 
 #include <blaze/Math.h>
 
+#include <fmt/core.h>
+
 #include "Deposition.hpp"
 #include "Interpolate1D.hpp"
 
@@ -24,7 +26,7 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
                                                   const std::array<std::vector<double>, 3>& xdist,
                                                   const std::vector<std::pair<double, double>>& dsd,
                                                   const std::unique_ptr<DropletSizeModel>& dsdmodel,
-                                                  double dpmin, double dpmax, std::optional<double> Lmax, double lambda)
+                                                  double dpmin, double dpmax, std::optional<double> Lmax, double lambda, double dx)
 {
     using namespace boost::math::differentiation;
     using boost::math::double_constants::pi;
@@ -63,7 +65,7 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
     // dwsa = width of spray segments, meters.
     // dwda = width of drift segments, meters.
     const double dwsa = FD / Nsa;
-    const double dwda = Lmax.value() / Nda;
+    const double dwda = dwsa; // previously Lmax / Nda
 
     // 1 ha = 10000 m²
     // 1 g/cm³ = 1000 kg/m³
@@ -144,17 +146,17 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
     auto propAppliedPlume = CS / (volumeAppRate / 10000.);
     auto propAppliedNoPlume = NPDR / (volumeAppRate / 10000.);
 
-    //fmt::print("Spray Segment Count (Nsa)  = {}\n", Nsa);
-    //fmt::print("Drift Segment Count (Nda)  = {}\n", Nda);
-    //fmt::print("Spray Segment Width (ΔWsa) = {}\n", dwsa);
-    //fmt::print("Drift Segment Width (ΔWda) = {}\n", dwda);
-    //fmt::print("Max. Drift Distance (Lmax) = {}\n", *Lmax);
-    //fmt::print("Sprayed Area               = {}\n", sprayedArea);
-    //fmt::print("Volume Sprayed             = {}\n", volumeSprayed);
-    //fmt::print("Σ(SVP) × Nsa               = {}\n", blaze::sum(SVP) * Nsa);
-    //fmt::print("Σ(VPS[0…Nsa+Nda])          = {}\n", blaze::sum(VPS));
-    //fmt::print("Σ(VPS[0…Nsa])              = {}\n", blaze::sum(blaze::subvector(VPS, 0UL, Nsa)));
-    //fmt::print("Σ(CS)                      = {}\n", blaze::sum(CS));
+    fmt::print("Spray Segment Count (Nsa)  = {}\n", Nsa);
+    fmt::print("Drift Segment Count (Nda)  = {}\n", Nda);
+    fmt::print("Spray Segment Width (ΔWsa) = {}\n", dwsa);
+    fmt::print("Drift Segment Width (ΔWda) = {}\n", dwda);
+    fmt::print("Max. Drift Distance (Lmax) = {}\n", *Lmax);
+    fmt::print("Sprayed Area               = {}\n", sprayedArea);
+    fmt::print("Volume Sprayed             = {}\n", volumeSprayed);
+    fmt::print("Σ(SVP) × Nsa               = {}\n", blaze::sum(SVP) * Nsa);
+    fmt::print("Σ(VPS[0…Nsa+Nda])          = {}\n", blaze::sum(VPS));
+    fmt::print("Σ(VPS[0…Nsa])              = {}\n", blaze::sum(blaze::subvector(VPS, 0UL, Nsa)));
+    fmt::print("Σ(CS)                      = {}\n", blaze::sum(CS));
 
     std::vector<std::pair<double, double>> propAppliedPlumeXY;
     propAppliedPlumeXY.reserve(Nsa+Nda);
@@ -162,13 +164,17 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
         propAppliedPlumeXY.emplace_back(std::make_pair(x.at(i) - FD, propAppliedPlume.at(i)));
     }
 
-    // May throw std::domain_error.
+    // Interpolate1D may throw std::domain_error.
     const auto apfunc = Interpolate1D(propAppliedPlumeXY);
-    std::vector<std::pair<double, double>> applume(100);
-    for (size_t i = 0; i < applume.size(); ++i) {
-        double x = static_cast<double>(i) * Lmax.value() / applume.size();
+
+    // Generate output at specified interval.
+    size_t Nx = static_cast<size_t>(Lmax.value() / dx) + 1;
+    std::vector<std::pair<double, double>> applume;
+    applume.reserve(Nx);
+    for (size_t i = 0; i < Nx; ++i) {
+        double x = static_cast<double>(i) * dx;
         double y = apfunc(x) * 100.;
-        applume.at(i) = std::make_pair(x, y);
+        applume.emplace_back(std::make_pair(x, y));
     }
 
     return applume;

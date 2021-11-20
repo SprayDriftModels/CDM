@@ -17,6 +17,6 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
                                                   const std::array<std::vector<double>, 3>& xdist,
                                                   const std::vector<std::pair<double, double>>& dsd,
                                                   const std::unique_ptr<DropletSizeModel>& dsmodel,
-                                                  double dpmin, double dpmax, std::optional<double> Lmax, double lambda);
+                                                  double dpmin, double dpmax, std::optional<double> Lmax, double lambda, double dx);
 
 } // namespace cdm

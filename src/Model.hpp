@@ -62,6 +62,7 @@ struct Model
         double dN;                                      // [INPUT] Space between nozzles on boom [m]
         std::optional<double> Lmax;                     // [INPUT/DERIVED] Maximum drift distance for deposition [m]
         double lambda = 1;                              // [INPUT] scale factor for number of drift segments (λ), ≥1
+        double dx = 0.5;                                // [INPUT] distance interval for deposition output [m]
     };
 
     struct Output

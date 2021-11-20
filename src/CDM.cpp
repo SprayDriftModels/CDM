@@ -120,7 +120,7 @@ int cdm_run_model(cdm_model_t *model)
     try {
         m->out.applume = cdm::Deposition(m->in.iar, m->in.xactive, m->in.FD, m->in.PL, m->in.dN,
             m->out.ppp, m->out.rhoL, m->out.dp, m->out.xdist, m->in.dsd, m->out.dsmodel,
-            m->in.dpmin, m->in.dpmax, m->in.Lmax, m->in.lambda);
+            m->in.dpmin, m->in.dpmax, m->in.Lmax, m->in.lambda, m->in.dx);
     } catch (const std::exception& e) {
         cdm_error_handler("[Deposition] %s\n", e.what());
         return 1;
