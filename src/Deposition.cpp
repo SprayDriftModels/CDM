@@ -23,7 +23,7 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
                                                   const std::vector<double>& dp,
                                                   const std::array<std::vector<double>, 3>& xdist,
                                                   const std::vector<std::pair<double, double>>& dsd,
-                                                  const std::unique_ptr<DropletSizeModel>& dsmodel,
+                                                  const std::unique_ptr<DropletSizeModel>& dsdmodel,
                                                   double dpmin, double dpmax, std::optional<double> Lmax, double lambda)
 {
     using namespace boost::math::differentiation;
@@ -73,10 +73,10 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
 
     // Calculate partial volume for each droplet size.
     blaze::DynamicVector<double> SVP(dpavg.size(), 0);
-    if (dsmodel) {
+    if (dsdmodel) {
         // Use non-linear least squares curve fit.
         for (size_t i = 1; i < SVP.size(); ++i) {
-            double y = dsmodel->pdf(dpavg[i]);
+            double y = dsdmodel->pdf(dpavg[i]);
             SVP[i] = y * ddp * volumeSprayed / Nsa;
         }
     }
