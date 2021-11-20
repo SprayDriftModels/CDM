@@ -6,6 +6,7 @@
 #include <memory>
 #include <utility>
 
+#include <sundials/sundials_config.h>
 #include <cvode/cvode.h>
 #include <nvector/nvector_serial.h>
 #include <sunlinsol/sunlinsol_dense.h>
@@ -46,6 +47,11 @@ struct Integrator
         if (ctx_) CVodeFree(&ctx_);
     }
     
+    static const char * version()
+    {
+        return SUNDIALS_VERSION;
+    }
+
     void * context() const
     {
         return ctx_;
