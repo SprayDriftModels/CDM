@@ -16,7 +16,6 @@
 #include "Model.hpp"
 #include "NozzleVelocity.hpp"
 #include "Serialization.hpp"
-#include "Serialization.hpp"
 #include "WetBulbTemperature.hpp"
 #include "WindVelocityProfile.hpp"
 
@@ -85,9 +84,7 @@ int cdm_run_model(cdm_model_t *model)
         cdm::WindVelocityProfile wvp(m->in.wvu, m->in.wvT, m->in.pppMethod, m->in.hC);
         m->out.z0 = wvp.frictionHeight();
         m->out.Uf = wvp.frictionVelocity();
-        m->out.ppp = m->in.ppp.value_or(0);
-        if (wvp.ppp().has_value())
-            m->out.ppp = wvp.ppp().value();
+        m->out.ppp = wvp.psipsipsi();
     } catch (const std::exception& e) {
         cdm_error_handler("[WindVelocityProfile] %s\n", e.what());
         return 1;

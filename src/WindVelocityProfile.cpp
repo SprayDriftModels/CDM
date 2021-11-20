@@ -46,6 +46,7 @@ WindVelocityProfile::WindVelocityProfile(const std::vector<std::pair<double, dou
     // Return now if ψψψ calculation is disabled or fewer than two temperature
     // measurements are available.
     if (pppMethod == Model::Input::PPPMethod::ENTERED || wvT.size() < 2) {
+        psipsipsi_ = constants::default_psipsipsi;
         return;
     }
 

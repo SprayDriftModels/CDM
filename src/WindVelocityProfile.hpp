@@ -31,13 +31,13 @@ struct WindVelocityProfile
     double frictionVelocity() const
         { return Uf_; }
     
-    std::optional<double> ppp() const
+    double psipsipsi() const
         { return psipsipsi_; }
 
 private:
     double z0_; // Friction height [m]
     double Uf_; // Friction velocity [m/s]
-    std::optional<double> psipsipsi_;
+    double psipsipsi_;
 };
 
 } // namespace cdm
