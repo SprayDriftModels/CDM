@@ -33,14 +33,19 @@ namespace cdm {
 
 void to_json(nlohmann::ordered_json& json, const std::unique_ptr<DropletSizeModel>& p)
 {
-    if (p) {
-        auto params = p->params();
+    if (p && p->valid()) {
+        const auto& params = p->params();
         json = nlohmann::ordered_json{
-            {"a1", params.a1},
-            {"a2", params.a2},
-            {"d1", params.d1},
-            {"d2", params.d2},
-            {"k1", params.k1}
+            {"report", p->report()},
+            {"coefficients", {
+                {"a1", params.a1},
+                {"a2", params.a2},
+                {"d1", params.d1},
+                {"d2", params.d2},
+                {"k1", params.k1}
+            }},
+            {"predicted", p->predicted()},
+            {"residuals", p->residuals()}
         };
     }
     else {
@@ -85,8 +90,7 @@ void to_json(nlohmann::ordered_json& json, const Model& m)
                 {"lambda", m.in.lambda}
             }},
             {"output", {
-                {"dropletSize", m.out.dp},
-                {"dropletSizeDistributionModel", m.out.dsdmodel},
+                {"dropletSizeModel", m.out.dsmodel},
                 {"wetBulbTemperature", m.out.Twb},
                 {"wetBulbTemperatureDepression", m.out.dTwb},
                 {"horizontalVariation", m.out.ppp},
@@ -95,6 +99,7 @@ void to_json(nlohmann::ordered_json& json, const Model& m)
                 {"mixtureDensity", m.out.rhoL},
                 {"nozzleVelocityZ", m.out.nvz},
                 {"nozzleVelocityX", m.out.nvx},
+                {"dropletSize", m.out.dp},
                 {"dropletTransportDistance", m.out.xdist},
                 {"deposition", m.out.applume}
             }}

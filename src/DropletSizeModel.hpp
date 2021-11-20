@@ -7,12 +7,13 @@
 #include <utility>
 #include <vector>
 
+#include <ceres/types.h>
+
 namespace cdm {
 
 struct DropletSizeModel
 {
-    struct Params
-    {
+    struct Params {
         double a1;
         double a2;
         double d1;
@@ -20,25 +21,26 @@ struct DropletSizeModel
         double k1;
     };
 
-    DropletSizeModel();
-
-    /**
-     * Fit a non-linear least squares model to a droplet size vs. cumulative volume fraction distribution.
-     */
-    bool fit(const std::vector<std::pair<double, double>>& dsd);
+    DropletSizeModel(const std::vector<std::pair<double, double>>& dsd);
 
     /**
      * Returns the Ceres version string.
      */
-    const char* ceresVersion() const;
+    static const char* ceresVersion();
 
     /**
-     * Returns the minimum droplet size from the input distribution.
+     * Fit a non-linear least squares model to a droplet size vs. cumulative volume fraction distribution.
+     * Returns true if the solution is usable and parameter blocks were updated.
+     */
+    bool fit();
+
+    /**
+     * Returns the minimum droplet size from the input distribution, or zero if empty.
      */
     double dpmin() const;
 
     /**
-     * Returns the maximum droplet size from the input distribution.
+     * Returns the maximum droplet size from the input distribution, or zero if empty.
      */
     double dpmax() const;
 
@@ -53,6 +55,26 @@ struct DropletSizeModel
     std::string report() const;
 
     /**
+     * Returns the termination status of the minimizer.
+     */
+    ceres::TerminationType status() const;
+
+    /**
+     * Returns true if the solution is usable and parameter blocks were updated.
+     */
+    bool valid() const;
+
+    /**
+     * Returns the fitted values for each droplet size.
+     */
+    std::vector<double> predicted() const;
+
+    /**
+     * Returns the residuals for fitted values (observed minus predicted).
+     */
+    std::vector<double> residuals() const;
+
+    /**
      * Density function for the non-linear least squares model.
      */
     double pdf(double x) const;
@@ -63,10 +85,13 @@ struct DropletSizeModel
     double cdf(double x) const;
 
 private:
-    Params params_ ={};
-    double dpmin_ = 0;
-    double dpmax_ = 0;
+    std::vector<std::pair<double, double>> dsd_;
+    std::pair<std::vector<std::pair<double, double>>::const_iterator,
+              std::vector<std::pair<double, double>>::const_iterator> minmax_;
+    Params params_ = {};
     std::string report_;
+    ceres::TerminationType status_ = ceres::TerminationType::FAILURE;
+    bool valid_ = false;
 };
 
 } // namespace cdm

@@ -43,29 +43,38 @@ private:
     const double dpmin_;
 };
 
-DropletSizeModel::DropletSizeModel()
+DropletSizeModel::DropletSizeModel(const std::vector<std::pair<double, double>>& dsd)
+    : dsd_(dsd),
+      minmax_(std::minmax_element(dsd.begin(), dsd.end())),
+      params_{300, 800, 100, 200, 0.5}
 {}
 
-bool DropletSizeModel::fit(const std::vector<std::pair<double, double>>& dsd)
+const char* DropletSizeModel::ceresVersion()
 {
+    return CERES_VERSION_STRING;
+}
+
+bool DropletSizeModel::fit()
+{
+    report_.clear();
+    status_ = ceres::TerminationType::FAILURE;
+    valid_ = false;
+
     // Initial estimates.
-    params_.a1 = 300; // μ1, DV50
-    params_.a2 = 800; // μ2, DV90
+    params_.a1 = 300; // μ1 (DV50)
+    params_.a2 = 800; // μ2 (DV90)
     params_.d1 = 100; // σ1
     params_.d2 = 200; // σ2
     params_.k1 = 0.5; // w1
-
-    dpmin_ = std::min_element(dsd.begin(), dsd.end())->first;
-    dpmax_ = std::max_element(dsd.begin(), dsd.end())->first;
 
     ceres::Problem problem;
     
     // ceres::Problem takes ownership of the cost function.
     // Boost.Math functions may throw std::domain_error.
-    for (size_t i = 0; i < dsd.size(); ++i) {
+    for (size_t i = 0; i < dsd_.size(); ++i) {
         problem.AddResidualBlock(
             new ceres::NumericDiffCostFunction<DSDCostFunctor, ceres::FORWARD, 1, 1, 1, 1, 1, 1>(
-                new DSDCostFunctor(dsd[i].first, dsd[i].second, dpmin_)),
+                new DSDCostFunctor(dsd_[i].first, dsd_[i].second, dpmin())),
             nullptr, &params_.a1, &params_.a2, &params_.d1, &params_.d2, &params_.k1);
     }
 
@@ -85,24 +94,30 @@ bool DropletSizeModel::fit(const std::vector<std::pair<double, double>>& dsd)
 
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
+
     report_ = summary.BriefReport(); // FullReport
-
-    return summary.IsSolutionUsable();
-}
-
-const char* DropletSizeModel::ceresVersion() const
-{
-    return CERES_VERSION_STRING;
+    status_ = summary.termination_type;
+    valid_ = summary.IsSolutionUsable();
+    
+    return valid_;
 }
 
 double DropletSizeModel::dpmin() const
 {
-    return dpmin_;
+    const auto itmin = minmax_.first;
+    if (itmin != dsd_.end())
+        return itmin->first;
+    else
+        return 0; // Empty
 }
 
 double DropletSizeModel::dpmax() const
 {
-    return dpmax_;
+    const auto itmax = minmax_.second;
+    if (itmax != dsd_.end())
+        return itmax->first;
+    else
+        return 0; // Empty
 }
 
 DropletSizeModel::Params DropletSizeModel::params() const
@@ -113,6 +128,42 @@ DropletSizeModel::Params DropletSizeModel::params() const
 std::string DropletSizeModel::report() const
 {
     return report_;
+}
+
+ceres::TerminationType DropletSizeModel::status() const
+{
+    return status_;
+}
+
+bool DropletSizeModel::valid() const
+{
+    return valid_;
+}
+
+std::vector<double> DropletSizeModel::predicted() const
+{
+    std::vector<double> yhat;
+    if (!valid_)
+        return yhat;
+    
+    yhat.reserve(dsd_.size());
+    for (const auto& xy : dsd_)
+        yhat.emplace_back(cdf(xy.first));
+    
+    return yhat;
+}
+
+std::vector<double> DropletSizeModel::residuals() const
+{
+    std::vector<double> res;
+    if (!valid_)
+        return res;
+
+    res.reserve(dsd_.size());
+    for (const auto& xy : dsd_)
+        res.emplace_back(xy.second - cdf(xy.first));
+
+    return res;
 }
 
 double DropletSizeModel::pdf(double x) const
@@ -140,8 +191,9 @@ double DropletSizeModel::cdf(double x) const
     namespace bm = boost::math;
     const bm::normal N1(params_.a1, params_.d1);
     const bm::normal N2(params_.a2, params_.d2);
-    const double Fx1 = (bm::cdf(N1, x) - bm::cdf(N1, dpmin_)) * params_.k1;
-    const double Fx2 = (bm::cdf(N2, x) - bm::cdf(N2, dpmin_)) * (1 - params_.k1);
+    const double x0 = dpmin();
+    const double Fx1 = (bm::cdf(N1, x) - bm::cdf(N1, x0)) * params_.k1;
+    const double Fx2 = (bm::cdf(N2, x) - bm::cdf(N2, x0)) * (1 - params_.k1);
     return Fx1 + Fx2;
 }
 

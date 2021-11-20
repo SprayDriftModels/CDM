@@ -68,7 +68,7 @@ struct Model
     {
         // Droplet Size Distribution
         std::vector<double> dp;                         // [DERIVED] Calculated droplet sizes [μm]
-        std::unique_ptr<DropletSizeModel> dsdmodel;     // [DERIVED] Non-linear least squares model
+        std::unique_ptr<DropletSizeModel> dsmodel;      // [DERIVED] Non-linear least squares model
         
         // Ambient Conditions
         double Twb;                                     // [DERIVED] Wet bulb temperature [°C]

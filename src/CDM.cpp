@@ -69,11 +69,10 @@ int cdm_run_model(cdm_model_t *model)
         return 1;
     
     cdm::Model *m = reinterpret_cast<cdm::Model *>(model);
-    
     if (m->in.dsdfit) {
-        m->out.dsdmodel = std::make_unique<cdm::DropletSizeModel>();
+        m->out.dsmodel = std::make_unique<cdm::DropletSizeModel>(m->in.dsd);
         try {
-            m->out.dsdmodel->fit(m->in.dsd);
+            m->out.dsmodel->fit();
         } catch (const std::exception& e) {
             cdm_error_handler("[DropletSizeModel] %s\n", e.what());
             return 1;
@@ -120,7 +119,7 @@ int cdm_run_model(cdm_model_t *model)
     
     try {
         m->out.applume = cdm::Deposition(m->in.iar, m->in.xactive, m->in.FD, m->in.PL, m->in.dN,
-            m->out.ppp, m->out.rhoL, m->out.dp, m->out.xdist, m->in.dsd, m->out.dsdmodel,
+            m->out.ppp, m->out.rhoL, m->out.dp, m->out.xdist, m->in.dsd, m->out.dsmodel,
             m->in.dpmin, m->in.dpmax, m->in.Lmax, m->in.lambda);
     } catch (const std::exception& e) {
         cdm_error_handler("[Deposition] %s\n", e.what());
@@ -140,19 +139,19 @@ void cdm_print_report(cdm_model_t *model)
         fmt::print("{:->{}}\n\n", "", 80);
     };
 
-    if (m->out.dsdmodel) {
+    if (m->out.dsmodel) {
         print_header("Droplet Size Distribution");
-        fmt::print("{}\n", m->out.dsdmodel->report());
-        const auto dsdparams = m->out.dsdmodel->params();
+        fmt::print("{}\n", m->out.dsmodel->report());
+        const auto dsparams = m->out.dsmodel->params();
         fmt::print("\nParameters\n");
-        fmt::print("a1 = {}\n", dsdparams.a1);
-        fmt::print("a2 = {}\n", dsdparams.a2);
-        fmt::print("d1 = {}\n", dsdparams.d1);
-        fmt::print("d2 = {}\n", dsdparams.d2);
-        fmt::print("k1 = {}\n", dsdparams.k1);
+        fmt::print("a1 = {}\n", dsparams.a1);
+        fmt::print("a2 = {}\n", dsparams.a2);
+        fmt::print("d1 = {}\n", dsparams.d1);
+        fmt::print("d2 = {}\n", dsparams.d2);
+        fmt::print("k1 = {}\n", dsparams.k1);
         fmt::print("\n{:<6} {:>6} {:>6}\n", "DD", "Obs.", "Pred.");
         for (const auto& xy : m->in.dsd) {
-            fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, m->out.dsdmodel->cdf(xy.first)*100);
+            fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, m->out.dsmodel->cdf(xy.first)*100);
         }
     }
 
