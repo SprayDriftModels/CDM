@@ -48,5 +48,5 @@ CDM_SYMBOL_EXPORT void R_init_cdm(DllInfo *info)
     R_forceSymbols(info, FALSE);
 
     // Set static error handler callback.
-    cdm_set_error_handler(Rf_error);
+    cdm_set_error_handler(REprintf);
 }
