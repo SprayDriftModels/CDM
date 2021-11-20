@@ -89,6 +89,8 @@ target_link_libraries(libcdm PRIVATE
 #-------------------------------------------------------------------------------
 
 add_executable(cdmcli ${CMAKE_CURRENT_SOURCE_DIR}/src/CDMCLI.cpp)
+set_property(TARGET cdmcli PROPERTY CXX_STANDARD 17)
+set_property(TARGET cdmcli PROPERTY CXX_STANDARD_REQUIRED ON)
 target_link_libraries(cdmcli PRIVATE libcdm::libcdm fmt::fmt)
 
 #-------------------------------------------------------------------------------
