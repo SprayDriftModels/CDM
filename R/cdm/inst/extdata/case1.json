@@ -55,7 +55,7 @@
             "ddd": 60                           // Optional: scale factor for maximum deposition time (δδδ), ≥1
         },
         "deposition": {
-            "dsdCurveFitting": true,           // Enable curve fitting for DSD by non-linear least squares. If disabled, finite difference approximation is used.
+            "dsdCurveFitting": true,            // Enable curve fitting for DSD by non-linear least squares. If disabled, finite difference approximation is used.
             "applicationRate": 2.876078683,     // Intended application rate [kg/ha]
             "concentrationAI": 0.009566,        // Concentration in tank solution, wt. fraction
             "downwindFieldDepth": 24.0,         // Downwind field depth [m]
@@ -63,8 +63,9 @@
             "nozzleSpacing": 0.5,               // Space between nozzles on boom [m]
             "minDropletSize": 17.831,           // Minimum droplet size for deposition [μm]
             "maxDropletSize": 3000.0,           // Maximum droplet size for deposition [μm]
-            "maxDriftDistance": 200.0,          // Optional: Maximum drift distance for deposition (Lmax) [m], or null
-            "lambda": 1                         // Optional: scale factor for number of drift segments (λ), ≥1
+            "maxDriftDistance": 50.0,           // Optional: Maximum drift distance for deposition (Lmax) [m], or null
+            "lambda": 4,                        // Optional: scale factor for number of drift segments (λ), ≥1, default 1
+			"outputInterval": 0.2               // Optional: distance interval for deposition output (Δx) [m], default 0.5
         }
     }
 }
