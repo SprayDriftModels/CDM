@@ -14,8 +14,6 @@
 
 #include <blaze/Math.h>
 
-#include <fmt/core.h>
-
 #include "Deposition.hpp"
 #include "Interpolate1D.hpp"
 
@@ -146,17 +144,17 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
     auto propAppliedPlume = CS / (volumeAppRate / 10000.);
     auto propAppliedNoPlume = NPDR / (volumeAppRate / 10000.);
 
-    fmt::print("Spray Segment Count (Nsa)  = {}\n", Nsa);
-    fmt::print("Drift Segment Count (Nda)  = {}\n", Nda);
-    fmt::print("Spray Segment Width (ΔWsa) = {}\n", dwsa);
-    fmt::print("Drift Segment Width (ΔWda) = {}\n", dwda);
-    fmt::print("Max. Drift Distance (Lmax) = {}\n", *Lmax);
-    fmt::print("Sprayed Area               = {}\n", sprayedArea);
-    fmt::print("Volume Sprayed             = {}\n", volumeSprayed);
-    fmt::print("Σ(SVP) × Nsa               = {}\n", blaze::sum(SVP) * Nsa);
-    fmt::print("Σ(VPS[0…Nsa+Nda])          = {}\n", blaze::sum(VPS));
-    fmt::print("Σ(VPS[0…Nsa])              = {}\n", blaze::sum(blaze::subvector(VPS, 0UL, Nsa)));
-    fmt::print("Σ(CS)                      = {}\n", blaze::sum(CS));
+    //fmt::print("Spray Segment Count (Nsa)  = {}\n", Nsa);
+    //fmt::print("Drift Segment Count (Nda)  = {}\n", Nda);
+    //fmt::print("Spray Segment Width (ΔWsa) = {}\n", dwsa);
+    //fmt::print("Drift Segment Width (ΔWda) = {}\n", dwda);
+    //fmt::print("Max. Drift Distance (Lmax) = {}\n", *Lmax);
+    //fmt::print("Sprayed Area               = {}\n", sprayedArea);
+    //fmt::print("Volume Sprayed             = {}\n", volumeSprayed);
+    //fmt::print("Σ(SVP) × Nsa               = {}\n", blaze::sum(SVP) * Nsa);
+    //fmt::print("Σ(VPS[0…Nsa+Nda])          = {}\n", blaze::sum(VPS));
+    //fmt::print("Σ(VPS[0…Nsa])              = {}\n", blaze::sum(blaze::subvector(VPS, 0UL, Nsa)));
+    //fmt::print("Σ(CS)                      = {}\n", blaze::sum(CS));
 
     std::vector<std::pair<double, double>> propAppliedPlumeXY;
     propAppliedPlumeXY.reserve(Nsa+Nda);
