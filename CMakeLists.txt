@@ -25,6 +25,9 @@ endif()
 
 project(cdm LANGUAGES CXX)
 
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
 option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
 #-------------------------------------------------------------------------------
@@ -42,7 +45,7 @@ find_package(nlohmann_json CONFIG REQUIRED)
 # CDM Library
 #-------------------------------------------------------------------------------
 
-add_library(libcdm
+add_library(cdm
   ${CMAKE_CURRENT_SOURCE_DIR}/src/CDM.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Deposition.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/DropletSizeModel.cpp
@@ -52,30 +55,32 @@ add_library(libcdm
   ${CMAKE_CURRENT_SOURCE_DIR}/src/WetBulbTemperature.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/WindVelocityProfile.cpp)
 
-add_library(libcdm::libcdm ALIAS libcdm)
+add_library(cdm::cdm ALIAS cdm)
 
-set_property(TARGET libcdm PROPERTY CXX_STANDARD 17)
-set_property(TARGET libcdm PROPERTY CXX_STANDARD_REQUIRED ON)
-set_property(TARGET libcdm PROPERTY LIBRARY_OUTPUT_NAME libcdm)
-set_property(TARGET libcdm PROPERTY PREFIX "")
+set_property(TARGET cdm PROPERTY CXX_STANDARD 17)
+set_property(TARGET cdm PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET cdm PROPERTY OUTPUT_NAME libcdm)
+set_property(TARGET cdm PROPERTY PREFIX "")
 
-target_compile_definitions(libcdm PRIVATE BOOST_MATH_STANDALONE=1)
+target_compile_definitions(cdm PRIVATE BOOST_MATH_STANDALONE=1)
 
 if(BUILD_SHARED_LIBS)
-  target_compile_definitions(libcdm PRIVATE CDM_EXPORTS)
+  target_compile_definitions(cdm PRIVATE CDM_EXPORTS)
 else()
-  target_compile_definitions(libcdm PUBLIC CDM_STATIC_DEFINE)
+  target_compile_definitions(cdm PUBLIC CDM_STATIC_DEFINE)
 endif()
 
 if(MSVC)
-  target_compile_options(libcdm PUBLIC "/utf-8")
-  target_compile_definitions(libcdm PRIVATE _CRT_SECURE_NO_WARNINGS)
+  target_compile_options(cdm PUBLIC "/utf-8")
+  target_compile_definitions(cdm PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()
 
-target_include_directories(libcdm PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_include_directories(libcdm PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(cdm PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(cdm PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
-target_link_libraries(libcdm PRIVATE
+target_link_libraries(cdm PRIVATE
   blaze::blaze
   Ceres::ceres
   fmt::fmt
@@ -91,14 +96,29 @@ target_link_libraries(libcdm PRIVATE
 add_executable(cdmcli ${CMAKE_CURRENT_SOURCE_DIR}/src/CDMCLI.cpp)
 set_property(TARGET cdmcli PROPERTY CXX_STANDARD 17)
 set_property(TARGET cdmcli PROPERTY CXX_STANDARD_REQUIRED ON)
-target_link_libraries(cdmcli PRIVATE libcdm::libcdm fmt::fmt)
+target_link_libraries(cdmcli PRIVATE cdm::cdm fmt::fmt)
 
 #-------------------------------------------------------------------------------
-# Testing
+# Install
 #-------------------------------------------------------------------------------
 
-#add_executable(crtdbg ${CMAKE_CURRENT_SOURCE_DIR}/test/crtdbg.cpp)
-#target_link_libraries(crtdbg PRIVATE cdm::cdm fmt::fmt)
+set(CDM_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/cdm)
 
-#include(CTest)
-#add_subdirectory(test)
+configure_package_config_file(
+  ${PROJECT_SOURCE_DIR}/cmake/cdm-config.cmake.in
+  ${PROJECT_BINARY_DIR}/cdm-config.cmake
+  INSTALL_DESTINATION ${CDM_CMAKE_DIR})
+
+install(TARGETS cdm EXPORT cdm-targets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(TARGETS cdmcli)
+
+export(TARGETS cdm NAMESPACE cdm:: FILE ${PROJECT_BINARY_DIR}/cdm-targets.cmake)
+
+install(FILES ${PROJECT_BINARY_DIR}/cdm-config.cmake DESTINATION ${CDM_CMAKE_DIR})
+install(FILES ${PROJECT_SOURCE_DIR}/include/CDM.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(EXPORT cdm-targets DESTINATION ${CDM_CMAKE_DIR} NAMESPACE cdm::)
