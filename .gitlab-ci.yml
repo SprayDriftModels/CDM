@@ -6,8 +6,14 @@ stages:
 build-job:
   stage: build
   script:
-    - cmake -B ./build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=On . && cd ./build && ninja
+    - cmake -B ./build -S . -G Ninja
+      -DCMAKE_BUILD_TYPE=Release
+      -DBUILD_SHARED_LIBS=Off
+      -DCMAKE_VERBOSE_MAKEFILE=On
+      -DCMAKE_POSITION_INDEPENDENT_CODE=On
+      -DCMAKE_EXE_LINKER_FLAGS="-static"
+    - cmake --build ./build
   artifacts:
     paths:
+      - ./bin/libcdm.a
       - ./bin/cdmcli
-      - ./bin/libcdm.so
