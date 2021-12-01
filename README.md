@@ -33,6 +33,15 @@ The model library (libcdm.dll) and command-line executable (cdmcli.exe) will be 
 
 ## Build on Linux with vcpkg
 
+If necessary, install C++ development tools and Git using the package management tool that comes with your Linux distribution. On a Debian-based distribution, such as Ubuntu, use APT:
+
+```
+sudo apt update
+sudo apt install build-essential git-all
+```
+
+Follow the instructions at [apt.kitware.com](https://apt.kitware.com/) to install the latest version of CMake using APT. For alternative installation options, see [cmake.org/download](https://cmake.org/download/).
+
 Install vcpkg as follows, assuming it will be installed in your home directory (~):
 
 ```
@@ -56,7 +65,7 @@ Clone this repository, build and install CDM:
 
 ```
 git clone --branch cpp https://gitlab.bayer.com/GBBFX/mondep.git ./cdm
-cmake -B ./cdm/build -S ./cdm -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=On -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux
+cmake -B ./cdm/build -S ./cdm -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=On -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux
 cmake --build ./cdm/build
 cmake --install ./cdm/build
 ```
