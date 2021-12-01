@@ -2,7 +2,9 @@
 
 ## Build on Windows with vcpkg
 
-Make sure Visual Studio is installed with C++ development tools. Open an x64 Native Tools Command Prompt and install vcpkg as follows, assuming it will be installed in your home directory (%USERPROFILE%):
+Download and install [Visual Studio](https://visualstudio.microsoft.com/). In the Visual Studio installer, Workloads tab, select the **Desktop development with C++** workload. Under Individual components tab, select **Git for Windows**.
+
+Open the x64 Native Tools Command Prompt and install [vcpkg](https://github.com/microsoft/vcpkg) as follows, assuming it will be installed in your home directory (%USERPROFILE%):
 
 ```
 cd %USERPROFILE%
@@ -33,7 +35,7 @@ The model library (libcdm.dll) and command-line executable (cdmcli.exe) will be 
 
 ## Build on Linux with vcpkg
 
-If necessary, install C++ development tools and Git using the package management tool that comes with your Linux distribution. On a Debian-based distribution, such as Ubuntu, use APT:
+Install C++ development tools and Git using the package management tool that comes with your Linux distribution. On a Debian-based distribution, such as Ubuntu, use APT:
 
 ```
 sudo apt update
