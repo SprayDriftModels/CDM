@@ -4,7 +4,7 @@
 
 Download and install [Visual Studio](https://visualstudio.microsoft.com/). In the Visual Studio installer, Workloads tab, select the **Desktop development with C++** workload. Under Individual components tab, select **Git for Windows**.
 
-Open the x64 Native Tools Command Prompt and install [vcpkg](https://github.com/microsoft/vcpkg) as follows, assuming it will be installed in your home directory (%USERPROFILE%):
+Open an x64 Native Tools Command Prompt and install [vcpkg](https://github.com/microsoft/vcpkg) as follows, assuming it will be installed in your home directory (%USERPROFILE%):
 
 ```
 cd %USERPROFILE%
@@ -31,7 +31,11 @@ cmake -B ./cdm/build -S ./cdm -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED
 cmake --build ./cdm/build
 ```
 
-The model library (libcdm.dll) and command-line executable (cdmcli.exe) will be located in the ./cdm/bin directory. libcdm.dll must be copied to inst/libs/x64 in the R package.
+The model library (libcdm.dll) and command-line executable (cdmcli.exe) will be located in the ./cdm/bin directory. If you are using the R package, copy libcdm.dll to ./cdm/R/cdm/inst/libs/x64:
+
+```
+copy ./cdm/bin/libcdm.dll ./cdm/R/cdm/inst/libs/x64
+```
 
 ## Build on Linux with vcpkg
 
@@ -73,3 +77,15 @@ cmake --install ./cdm/build
 ```
 
 The header file (CDM.h), library (libcdm.so), and executable (cdmcli) are copied to /usr/local/include, /usr/local/lib and /usr/local/bin respectively.
+
+## Install the R package
+
+On Windows, install [Rtools](https://cran.r-project.org/bin/windows/Rtools/). From an R (64-bit) session, install the `cdm` package as follows, assuming this repository is located at "~/cdm":
+
+```
+install.packages("~/cdm/R/cdm", repos=NULL, type="source", INSTALL_opts="--no-multiarch")
+```
+
+Run the test case as follows:
+
+demo("case1", package="cdm")
