@@ -88,4 +88,6 @@ install.packages("~/cdm/R/cdm", repos=NULL, type="source", INSTALL_opts="--no-mu
 
 Run the test case as follows:
 
+```
 demo("case1", package="cdm")
+```
