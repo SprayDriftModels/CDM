@@ -1,7 +1,6 @@
 #include <chrono>
 #include <iostream>
 #include <fstream>
-#include <filesystem>
 #include <sstream>
 #include <string>
 
@@ -12,13 +11,6 @@
 int main(int argc, char *argv[])
 {
     const std::string filename = argc > 1 ? argv[1] : "config.json";
-
-    std::error_code ec;
-    uintmax_t filesize = std::filesystem::file_size(filename, ec);
-    if (ec) {
-        fmt::print("{}\n", ec.message());
-        return 1;
-    }
 
     std::ifstream ifs;
     std::stringstream buffer;
