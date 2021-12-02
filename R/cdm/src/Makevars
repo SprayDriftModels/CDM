@@ -1,2 +1,2 @@
-PKG_LIBS= -L/usr/local/lib -lcdm
-PKG_CPPFLAGS= -I/usr/local/include -DR_NO_REMAP -DSTRICT_R_HEADERS
+PKG_LIBS=-lcdm -Wl,-rpath /usr/local/lib64
+PKG_CPPFLAGS=-DR_NO_REMAP -DSTRICT_R_HEADERS

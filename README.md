@@ -76,7 +76,7 @@ cmake --build ./cdm/build
 cmake --install ./cdm/build
 ```
 
-The header file (CDM.h), library (libcdm.so), and executable (cdmcli) are copied to /usr/local/include, /usr/local/lib and /usr/local/bin respectively.
+The header file (CDM.h), library (libcdm.so), and executable (cdmcli) are copied to /usr/local/include, /usr/local/lib64 and /usr/local/bin respectively.
 
 ## Install the R package
 
