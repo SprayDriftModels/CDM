@@ -1,2 +1,0 @@
-PKG_LIBS=-lcdm -Wl,-rpath /usr/local/lib64
-PKG_CPPFLAGS=-DR_NO_REMAP -DSTRICT_R_HEADERS
