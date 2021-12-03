@@ -25,7 +25,7 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-project(cdm LANGUAGES CXX)
+project(cdm LANGUAGES CXX DESCRIPTION "Casanova Deposition Model")
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -156,3 +156,32 @@ join_paths(CDM_PKGCONFIG_LIBDIR "\${exec_prefix}" "${CMAKE_INSTALL_LIBDIR}")
 join_paths(CDM_PKGCONFIG_INCLUDEDIR "\${prefix}" "${CMAKE_INSTALL_INCLUDEDIR}")
 configure_file("${PROJECT_SOURCE_DIR}/cmake/cdm.pc.in" "${PROJECT_BINARY_DIR}/cdm.pc" @ONLY)
 install(FILES "${PROJECT_BINARY_DIR}/cdm.pc" DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+
+#-------------------------------------------------------------------------------
+# Packaging
+#-------------------------------------------------------------------------------
+
+set(CPACK_PACKAGE_NAME cdm)
+set(CPACK_PACKAGE_VENDOR "Bayer")
+set(CPACK_RESOURCE_FILE_README ${PROJECT_SOURCE_DIR}/README.md)
+set(CPACK_SOURCE_PACKAGE_FILE_NAME cdm-${CDM_VERSION})
+set(CPACK_SOURCE_GENERATOR ZIP)
+set(CPACK_SOURCE_IGNORE_FILES
+  "\\\\.DS_Store"
+  "/\\\\.git/"
+  "/\\\\.gitlab/"
+  "/\\\\.vscode/"
+  "/\\\\.clang-format"
+  "/\\\\.gitattributes"
+  "/\\\\.gitignore"
+  ".gitlab-ci.yml"
+  "/bin/"
+  "/build/"
+  "/R/cdm/inst/libs/i386/.*.dll$"
+  "/R/cdm/inst/libs/x64/.*.dll$"
+  "/R/cdm/src/Makevars$"
+  "/R/cdm/src/.*.o$"
+  "/R/cdm/src/.*.so$"
+  "/R/cdm/src/.*.dll$")
+
+include(CPack)
