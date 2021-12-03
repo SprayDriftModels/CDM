@@ -2,6 +2,9 @@
 
 #pragma once
 
+// The cdm library version in the form major * 10000 + minor * 100 + patch.
+#define CDM_VERSION 10000
+
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__)
   #ifdef __GNUC__
     #define CDM_SYMBOL_EXPORT __attribute__ ((dllexport))

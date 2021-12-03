@@ -6,7 +6,8 @@
 #define R_NO_REMAP
 #endif
 
-#include <CDM.h>
+#include <cdm/CDM.h>
+
 #include <R.h>
 #include <Rinternals.h>
 

@@ -23,11 +23,30 @@ if(NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 endif()
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 project(cdm LANGUAGES CXX)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
+include(JoinPaths)
 
+# Options
+option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
+
+# Version
+file(READ include/cdm/CDM.h CDM_H)
+if(NOT CDM_H MATCHES "CDM_VERSION ([0-9]+)([0-9][0-9])([0-9][0-9])")
+  message(FATAL_ERROR "Cannot read CDM_VERSION from CDM.h.")
+endif()
+math(EXPR CPACK_PACKAGE_VERSION_MAJOR ${CMAKE_MATCH_1})
+math(EXPR CPACK_PACKAGE_VERSION_MINOR ${CMAKE_MATCH_2})
+math(EXPR CPACK_PACKAGE_VERSION_PATCH ${CMAKE_MATCH_3})
+set(CDM_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
+message(STATUS "CDM version: ${CDM_VERSION}")
+
+# Always use full RPATH.
+# See: https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
@@ -35,9 +54,7 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" isSystemDir)
 if("${isSystemDir}" STREQUAL "-1")
   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-endif("${isSystemDir}" STREQUAL "-1")
-
-option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
+endif()
 
 #-------------------------------------------------------------------------------
 # Dependencies
@@ -45,7 +62,7 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
 find_package(Boost) # Boost.Math
 find_package(blaze CONFIG REQUIRED)
-find_package(Ceres CONFIG REQUIRED) # Requires Eigen, glog
+find_package(Ceres CONFIG REQUIRED) # Requires Eigen, gflags, glog
 find_package(fmt CONFIG REQUIRED)
 find_package(SUNDIALS CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
@@ -70,6 +87,8 @@ set_property(TARGET cdm PROPERTY CXX_STANDARD 17)
 set_property(TARGET cdm PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET cdm PROPERTY OUTPUT_NAME libcdm)
 set_property(TARGET cdm PROPERTY PREFIX "")
+set_property(TARGET cdm PROPERTY VERSION ${CDM_VERSION})
+set_property(TARGET cdm PROPERTY SOVERSION ${CPACK_PACKAGE_VERSION_MAJOR})
 
 target_compile_definitions(cdm PRIVATE BOOST_MATH_STANDALONE=1)
 
@@ -86,7 +105,7 @@ endif()
 
 target_include_directories(cdm PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_include_directories(cdm PUBLIC
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/cdm>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 target_link_libraries(cdm PRIVATE
@@ -129,5 +148,11 @@ install(TARGETS cdmcli)
 export(TARGETS cdm NAMESPACE cdm:: FILE ${PROJECT_BINARY_DIR}/cdm-targets.cmake)
 
 install(FILES ${PROJECT_BINARY_DIR}/cdm-config.cmake DESTINATION ${CDM_CMAKE_DIR})
-install(FILES ${PROJECT_SOURCE_DIR}/include/CDM.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES ${PROJECT_SOURCE_DIR}/include/cdm/CDM.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cdm)
 install(EXPORT cdm-targets DESTINATION ${CDM_CMAKE_DIR} NAMESPACE cdm::)
+
+# Generate cdm.pc for pkg-config.
+join_paths(CDM_PKGCONFIG_LIBDIR "\${exec_prefix}" "${CMAKE_INSTALL_LIBDIR}")
+join_paths(CDM_PKGCONFIG_INCLUDEDIR "\${prefix}" "${CMAKE_INSTALL_INCLUDEDIR}")
+configure_file("${PROJECT_SOURCE_DIR}/cmake/cdm.pc.in" "${PROJECT_BINARY_DIR}/cdm.pc" @ONLY)
+install(FILES "${PROJECT_BINARY_DIR}/cdm.pc" DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
