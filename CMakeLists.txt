@@ -25,7 +25,7 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-project(cdm LANGUAGES CXX DESCRIPTION "Casanova Deposition Model")
+project(cdm LANGUAGES CXX DESCRIPTION "Casanova Drift Model")
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)

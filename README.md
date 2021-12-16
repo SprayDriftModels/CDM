@@ -1,4 +1,4 @@
-# Casanova Deposition Model (CDM)
+# Casanova Drift Model (CDM)
 
 ## Build on Windows with vcpkg
 

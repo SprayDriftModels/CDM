@@ -4,7 +4,7 @@ libdir=@CDM_PKGCONFIG_LIBDIR@
 includedir=@CDM_PKGCONFIG_INCLUDEDIR@
 
 Name: cdm
-Description: Casanova Deposition Model
+Description: Casanova Drift Model
 Version: @CDM_VERSION@
 Libs: -L${libdir} -lcdm
 Cflags: -I${includedir}
