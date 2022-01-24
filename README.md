@@ -3,4 +3,7 @@
 MonDep model translation and development
 
 
--  Git push did not work if working under another .Rproj. This is confusing. 
+-  Please do not use the master repo (version 1 of the model, deprecated)!
+-  branch cpp: cpp library and corresponding R package
+-  branch exp_working: cdmshiny package for the web-interface.
+-  branch zhenglei: personal testing branch. 
