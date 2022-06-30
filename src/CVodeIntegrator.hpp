@@ -7,6 +7,7 @@
 #include <utility>
 
 #include <sundials/sundials_config.h>
+#include <sundials/sundials_context.h>
 #include <cvode/cvode.h>
 #include <nvector/nvector_serial.h>
 #include <sunlinsol/sunlinsol_dense.h>
@@ -36,15 +37,15 @@ template<sunindextype N>
 struct Integrator
 {
     Integrator() :
-        ctx_(CVodeCreate(CV_BDF)) 
+        mem_(CVodeCreate(CV_BDF, ctx_))
     {
         // Install custom error handler for exception support.
-        CVodeSetErrHandlerFn(ctx_, cvode::error_handler, &cb_);
+        CVodeSetErrHandlerFn(mem_, cvode::error_handler, &cb_);
     }
 
     ~Integrator()
     {
-        if (ctx_) CVodeFree(&ctx_);
+        if (mem_) CVodeFree(&mem_);
     }
     
     static const char * version()
@@ -52,61 +53,56 @@ struct Integrator
         return SUNDIALS_VERSION;
     }
 
-    void * context() const
-    {
-        return ctx_;
-    }
-
     void setTolerances(double reltol, const std::array<double, N>& abstol)
     {
         reltol_ = reltol;
-        abstol_.reset(N_VNew_Serial(N));
+        abstol_.reset(N_VNew_Serial(N, ctx_));
         for (size_t i = 0; i < N; ++i) {
             NV_Ith_S(abstol_,i) = abstol[i];
         }
-        CVodeSVtolerances(ctx_, reltol_, abstol_.get());
+        CVodeSVtolerances(mem_, reltol_, abstol_.get());
         cb_.throw_if_error();
     }
 
     // Maximum order for BDF method
     void setMaxOrd(int maxord)
     {
-        CVodeSetMaxOrd(ctx_, maxord);
+        CVodeSetMaxOrd(mem_, maxord);
         cb_.throw_if_error();
     }
 
     // Maximum no. of internal steps before tout
     void setMaxNumSteps(int mxsteps)
     {
-        CVodeSetMaxNumSteps(ctx_, (long)mxsteps);
+        CVodeSetMaxNumSteps(mem_, (long)mxsteps);
         cb_.throw_if_error();
     }
 
     // Flag to activate stability limit detection
     void setStabLimDet(bool stldet)
     {
-        CVodeSetStabLimDet(ctx_, (booleantype)stldet);
+        CVodeSetStabLimDet(mem_, (booleantype)stldet);
         cb_.throw_if_error();
     }
 
     // Maximum no. of error test failures
     void setMaxErrTestFails(int maxnef)
     {
-        CVodeSetMaxErrTestFails(ctx_, maxnef);
+        CVodeSetMaxErrTestFails(mem_, maxnef);
         cb_.throw_if_error();
     }
 
     // Maximum no. of nonlinear iterations
     void setMaxNonlinIters(int maxcor)
     {
-        CVodeSetMaxNonlinIters(ctx_, maxcor);
+        CVodeSetMaxNonlinIters(mem_, maxcor);
         cb_.throw_if_error();
     }
 
     // Maximum no. of convergence failures
     void setMaxConvFails(int maxncf)
     {
-        CVodeSetMaxConvFails(ctx_, maxncf);
+        CVodeSetMaxConvFails(mem_, maxncf);
         cb_.throw_if_error();
     }
 
@@ -114,7 +110,7 @@ struct Integrator
     int getNumSteps()
     {
         long nsteps = 0;
-        CVodeGetNumSteps(ctx_, &nsteps);
+        CVodeGetNumSteps(mem_, &nsteps);
         return (int)nsteps;
     }
 
@@ -122,7 +118,7 @@ struct Integrator
     int getNumRhsEvals() const
     {
         long nfevals = 0;
-        CVodeGetNumRhsEvals(ctx_, &nfevals);
+        CVodeGetNumRhsEvals(mem_, &nfevals);
         return (int)nfevals;
     }
 
@@ -130,7 +126,7 @@ struct Integrator
     int getNumLinSolvSetups() const
     {
         long nlinsetups = 0;
-        CVodeGetNumLinSolvSetups(ctx_, &nlinsetups);
+        CVodeGetNumLinSolvSetups(mem_, &nlinsetups);
         return (int)nlinsetups;
     }
 
@@ -138,7 +134,7 @@ struct Integrator
     int getNumErrTestFails() const
     {
         long netfails = 0;
-        CVodeGetNumErrTestFails(ctx_, &netfails);
+        CVodeGetNumErrTestFails(mem_, &netfails);
         return (int)netfails;
     }
     
@@ -146,7 +142,7 @@ struct Integrator
     int getNumNonlinSolvIters() const
     {
         long nniters = 0;
-        CVodeGetNumNonlinSolvIters(ctx_, &nniters);
+        CVodeGetNumNonlinSolvIters(mem_, &nniters);
         return (int)nniters;
     }
 
@@ -154,7 +150,7 @@ struct Integrator
     int getNumNonlinSolvConvFails() const
     {
         long nncfails = 0;
-        CVodeGetNumNonlinSolvConvFails(ctx_, &nncfails);
+        CVodeGetNumNonlinSolvConvFails(mem_, &nncfails);
         return (int)nncfails;
     }
 
@@ -162,7 +158,7 @@ struct Integrator
     int getNumJacEvals() const
     {
         long njevals = 0;
-        CVodeGetNumJacEvals(ctx_, &njevals);
+        CVodeGetNumJacEvals(mem_, &njevals);
         return (int)njevals;
     }
 
@@ -171,31 +167,31 @@ struct Integrator
     int getNumLinRhsEvals() const
     {
         long nfevalsLS = 0;
-        CVodeGetNumLinRhsEvals(ctx_, &nfevalsLS);
+        CVodeGetNumLinRhsEvals(mem_, &nfevalsLS);
         return (int)nfevalsLS;
     }
 
     void init(CVRhsFn f, double t0, const std::array<double, N>& y0)
     {
         t_ = t0;
-        y_.reset(N_VNew_Serial(N));
+        y_.reset(N_VNew_Serial(N, ctx_));
         for (size_t i = 0; i < N; ++i) {
             NV_Ith_S(y_.get(),i) = y0[i];
         }
         
-        matrix_.reset(SUNDenseMatrix(N, N));
-        linsol_.reset(SUNLinSol_Dense(y_.get(), matrix_.get()));
+        matrix_.reset(SUNDenseMatrix(N, N, ctx_));
+        linsol_.reset(SUNLinSol_Dense(y_.get(), matrix_.get(), ctx_));
 
-        CVodeInit(ctx_, f, t0, y_.get());
+        CVodeInit(mem_, f, t0, y_.get());
         cb_.throw_if_error();
 
-        CVodeSetLinearSolver(ctx_, linsol_.get(), matrix_.get());
+        CVodeSetLinearSolver(mem_, linsol_.get(), matrix_.get());
         cb_.throw_if_error();
     }
 
     void step(double tout)
     {
-        CVode(ctx_, tout, y_.get(), &t_, CV_NORMAL);
+        CVode(mem_, tout, y_.get(), &t_, CV_NORMAL);
         cb_.throw_if_error();
     }
 
@@ -209,14 +205,15 @@ struct Integrator
     }
 
 private:
-    void *ctx_;
+    sundials::Context ctx_;
+    void *mem_;
+    error_handler_callback cb_;
     double reltol_ = 0;
     N_VectorUniquePtr abstol_;
     N_VectorUniquePtr y_;
     SUNMatrixUniquePtr matrix_;
     SUNLinearSolverUniquePtr linsol_;
     double t_ = 0;
-    cvode::error_handler_callback cb_;
 };
 
 } // namespace cvode
