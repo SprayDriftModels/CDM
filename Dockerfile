@@ -1,4 +1,4 @@
-# Copyright (c) 2021 John Buonagurio <jbuonagurio@exponent.com>
+# Copyright (c) 2022 John Buonagurio <jbuonagurio@exponent.com>
 
 FROM alpine:latest as build
 
@@ -6,7 +6,7 @@ LABEL description="CDM Build Container"
 
 RUN apk update && apk add --no-cache binutils cmake make libgcc musl-dev gcc g++ ninja git
 
-RUN git clone --branch v3.8 https://bitbucket.org/blaze-lib/blaze.git /tmp/blaze \
+RUN git clone --branch v3.8.1 https://bitbucket.org/blaze-lib/blaze.git /tmp/blaze \
     && cmake -S /tmp/blaze -B /tmp/blaze-build -G Ninja \
              -DCMAKE_BUILD_TYPE=Release \
              -DUSE_LAPACK=Off \
@@ -18,7 +18,7 @@ RUN git clone --branch v1.77-standalone https://github.com/boostorg/math.git /tm
     && cp -R /tmp/boost-math/include/* /usr/local/include \
     && rm -rf /tmp/boost-math
 
-RUN git clone --branch 8.0.1 https://github.com/fmtlib/fmt.git /tmp/fmt \
+RUN git clone --branch 8.1.1 https://github.com/fmtlib/fmt.git /tmp/fmt \
     && cmake -S /tmp/fmt -B /tmp/fmt-build -G Ninja \
              -DCMAKE_BUILD_TYPE=Release \
              -DBUILD_SHARED_LIBS=Off \
@@ -27,7 +27,7 @@ RUN git clone --branch 8.0.1 https://github.com/fmtlib/fmt.git /tmp/fmt \
     && cmake --install /tmp/fmt-build \
     && rm -rf /tmp/fmt && rm -rf /tmp/fmt-build
 
-RUN git clone --branch v3.10.4 https://github.com/nlohmann/json.git /tmp/nlohmann-json \
+RUN git clone --branch v3.10.5 https://github.com/nlohmann/json.git /tmp/nlohmann-json \
     && cmake -S /tmp/nlohmann-json -B /tmp/nlohmann-json-build -G Ninja \
              -DCMAKE_BUILD_TYPE=Release \
              -DJSON_MultipleHeaders=On \
@@ -43,7 +43,7 @@ RUN git clone --branch v2.2.2 https://github.com/gflags/gflags.git /tmp/gflags \
     && cmake --install /tmp/gflags-build \
     && rm -rf /tmp/gflags && rm -rf /tmp/gflags-build
 
-RUN git clone --branch v0.5.0 https://github.com/google/glog.git /tmp/glog \
+RUN git clone --branch v0.6.0 https://github.com/google/glog.git /tmp/glog \
     && cmake -S /tmp/glog -B /tmp/glog-build -G Ninja \
              -DCMAKE_BUILD_TYPE=Release \
              -DBUILD_SHARED_LIBS=Off \
@@ -58,7 +58,7 @@ RUN git clone --branch 3.4.0 https://gitlab.com/libeigen/eigen.git /tmp/eigen \
     && cmake --install /tmp/eigen-build \
     && rm -rf /tmp/eigen && rm -rf /tmp/eigen-build
 
-RUN git clone --branch 2.0.0 https://github.com/ceres-solver/ceres-solver.git /tmp/ceres \
+RUN git clone --branch 2.1.0 https://github.com/ceres-solver/ceres-solver.git /tmp/ceres \
     && cmake -S /tmp/ceres -B /tmp/ceres-build -G Ninja \
              -DCMAKE_BUILD_TYPE=Release \
              -DBUILD_SHARED_LIBS=Off \
@@ -71,7 +71,7 @@ RUN git clone --branch 2.0.0 https://github.com/ceres-solver/ceres-solver.git /t
     && cmake --install /tmp/ceres-build \
     && rm -rf /tmp/ceres && rm -rf /tmp/ceres-build
 
-RUN git clone --branch v5.8.0 https://github.com/LLNL/sundials.git /tmp/sundials \
+RUN git clone --branch v6.2.0 https://github.com/LLNL/sundials.git /tmp/sundials \
     && cmake -S /tmp/sundials -B /tmp/sundials-build -G Ninja \
              -DCMAKE_BUILD_TYPE=Release \
              -DBUILD_SHARED_LIBS=Off \
