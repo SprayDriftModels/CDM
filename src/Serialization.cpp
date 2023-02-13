@@ -6,7 +6,8 @@
 
 #include "Serialization.hpp"
 
-NLOHMANN_JSON_NAMESPACE_BEGIN
+namespace nlohmann {
+
 template <typename T>
 struct adl_serializer<std::optional<T>>
 {
@@ -27,7 +28,8 @@ struct adl_serializer<std::optional<T>>
             j = nullptr;
     }
 };
-NLOHMANN_JSON_NAMESPACE_END
+
+} // namespace nlohmann
 
 namespace cdm {
 
