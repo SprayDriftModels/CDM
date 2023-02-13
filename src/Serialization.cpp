@@ -2,32 +2,32 @@
 
 #include <optional>
 
-namespace nlohmann {
-namespace detail {
-
-template<typename BasicJsonType, typename T>
-void from_json(const BasicJsonType& j, std::optional<T>& opt) {
-    if (j.is_null())
-        opt = std::nullopt;
-    else
-        opt = j.template get<T>();
-}
-
-template<typename BasicJsonType, typename T,
-         std::enable_if_t<std::is_constructible<BasicJsonType, T>::value, int> = 0>
-void to_json(BasicJsonType& j, const std::optional<T>& opt) {
-    if (opt.has_value())
-        j = *opt;
-    else
-        j = nullptr;
-}
-
-} // namespace detail
-} // namespace nlohmann
-
 #include <nlohmann/json.hpp>
 
 #include "Serialization.hpp"
+
+NLOHMANN_JSON_NAMESPACE_BEGIN
+template <typename T>
+struct adl_serializer<std::optional<T>>
+{
+    template<typename BasicJsonType>
+    static void from_json(const BasicJsonType& j, std::optional<T>& opt) {
+        if (j.is_null())
+            opt = std::nullopt;
+        else
+            opt = j.template get<T>();
+    }
+
+    template<typename BasicJsonType,
+             std::enable_if_t<std::is_constructible<BasicJsonType, T>::value, int> = 0>
+    static void to_json(BasicJsonType& j, const std::optional<T>& opt) {
+        if (opt.has_value())
+            j = *opt;
+        else
+            j = nullptr;
+    }
+};
+NLOHMANN_JSON_NAMESPACE_END
 
 namespace cdm {
 

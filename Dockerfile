@@ -27,7 +27,7 @@ RUN git clone --branch 8.1.1 https://github.com/fmtlib/fmt.git /tmp/fmt \
     && cmake --install /tmp/fmt-build \
     && rm -rf /tmp/fmt && rm -rf /tmp/fmt-build
 
-RUN git clone --branch v3.10.5 https://github.com/nlohmann/json.git /tmp/nlohmann-json \
+RUN git clone --branch v3.11.2 https://github.com/nlohmann/json.git /tmp/nlohmann-json \
     && cmake -S /tmp/nlohmann-json -B /tmp/nlohmann-json-build -G Ninja \
              -DCMAKE_BUILD_TYPE=Release \
              -DJSON_MultipleHeaders=On \
