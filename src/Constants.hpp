@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <cstddef>
+
 namespace cdm {
 namespace constants {
 
@@ -20,6 +22,9 @@ constexpr double liquid_sheet_offset = 0.1016;
 
 // Default horizontal variation in wind direction around mean (ψψψ) [degrees]
 constexpr double default_psipsipsi = 15.0;
+
+// Number of flow segment streamlines for droplet transport calculations (Ns)
+constexpr size_t ns = 11;
 
 } // namespace constants
 } // namespace cdm

@@ -5,30 +5,34 @@
 
 #include <array>
 
+#include "Constants.hpp"
+
 namespace cdm {
 
 struct NozzleVelocity
 {
     /**
-     * Calculates nozzle straight down, downwind and upwind velocity components.
+     * Calculates nozzle velocity components.
      * \param[in] PN Nozzle pressure [Pa]
-     * \param[in] thetaN Nozzle angle [degrees]
+     * \param[in] theta Nozzle angle [degrees]
      * \param[in] rhoL Mixture density [g/cm³]
      */
-    NozzleVelocity(double PN, double thetaN, double rhoL);
+    NozzleVelocity(double PN, double theta, double rhoL);
 
     /**
-     * Vertical components of nozzle velocity (centerline, downwind, upwind) [m/s]
+     * Streamline vector angles [degrees]
      */
-    const std::array<double, 3> z;
+    std::array<double, constants::ns> angle;
 
     /**
-     * Horizontal components of nozzle velocity (centerline, downwind, upwind) [m/s]
+     * Vertical components of nozzle velocity [m/s]
      */
-    const std::array<double, 3> x;
+    std::array<double, constants::ns> z;
 
-private:
-    NozzleVelocity(double PN, double thetaN, double rhoL, double zi);
+    /**
+     * Horizontal components of nozzle velocity [m/s]
+     */
+    std::array<double, constants::ns> x;
 };
 
 } // namespace cdm

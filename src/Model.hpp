@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "Constants.hpp"
+
 namespace cdm {
 
 struct DropletSizeModel;
@@ -21,15 +23,15 @@ struct Model
     struct Input
     {
         // Droplet Size Distribution
-        std::vector<std::pair<double, double>> dsd;     // [INPUT] μm, cumulative volume fraction
-        double dpmin;                                   // [INPUT] Minimum droplet size for deposition [μm]
-        double dpmax;                                   // [INPUT] Maximum droplet size for deposition [μm]
-        bool dsdfit;                                    // [INPUT] Enable curve fitting for DSD
+        std::vector<std::pair<double, double>> dsd;             // [INPUT] μm, cumulative volume fraction
+        double dpmin;                                           // [INPUT] Minimum droplet size for deposition [μm]
+        double dpmax;                                           // [INPUT] Maximum droplet size for deposition [μm]
+        bool dsdfit;                                            // [INPUT] Enable curve fitting for DSD
 
         // Ambient Conditions
-        double Tair;                                    // [INPUT] Dry air temperature, [°C]
-        double Patm;                                    // [INPUT] Barometric pressure [Pa]
-        double RH;                                      // [INPUT] Relative humidity [percent]
+        double Tair;                                            // [INPUT] Dry air temperature, [°C]
+        double Patm;                                            // [INPUT] Barometric pressure [Pa]
+        double RH;                                              // [INPUT] Relative humidity [percent]
 
         // Wind Velocity Profile
         enum class PPPMethod {
@@ -37,59 +39,60 @@ struct Model
             INTERPOLATE = 1,
             SDTF = 2
         };
-        double hC;                                      // [INPUT] Canopy height [m]
-        std::vector<std::pair<double, double>> wvu;     // [INPUT] Elevation [m], Velocity [m/s]
-        std::vector<std::pair<double, double>> wvT;     // [INPUT] Elevation [m], Temperature [°C]
-        std::optional<double> ppp;                      // [INPUT/DERIVED] Horizontal variation in wind direction around mean (ψψψ) [degrees]
-        PPPMethod pppMethod = PPPMethod::ENTERED;       // [INPUT] Calculation method for ψψψ
+        double hC;                                              // [INPUT] Canopy height [m]
+        std::vector<std::pair<double, double>> wvu;             // [INPUT] Elevation [m], Velocity [m/s]
+        std::vector<std::pair<double, double>> wvT;             // [INPUT] Elevation [m], Temperature [°C]
+        std::optional<double> ppp;                              // [INPUT/DERIVED] Horizontal variation in wind direction around mean (ψψψ) [degrees]
+        PPPMethod pppMethod = PPPMethod::ENTERED;               // [INPUT] Calculation method for ψψψ
 
         // Solution Properties
-        double rhoW;                                    // [INPUT] Density of pure water in droplet [g/cm³]
-        double rhoS;                                    // [INPUT] Density of dissolved solids in droplet [g/cm³]
-        double xs0;                                     // [INPUT] Mass fraction total dissolved solids in droplet, unitless
+        double rhoW;                                            // [INPUT] Density of pure water in droplet [g/cm³]
+        double rhoS;                                            // [INPUT] Density of dissolved solids in droplet [g/cm³]
+        double xs0;                                             // [INPUT] Mass fraction total dissolved solids in droplet, unitless
 
         // Droplet Transport
-        double hN;                                      // [INPUT] Height of nozzle above ground [m]
-        double PN;                                      // [INPUT] Nozzle pressure [Pa]
-        double thetaN;                                  // [INPUT] Nozzle angle [degrees]
-        double ddd = 60;                                // [INPUT] Scale factor for maximum deposition time (δδδ)
+        double hN;                                              // [INPUT] Height of nozzle above ground [m]
+        double PN;                                              // [INPUT] Nozzle pressure [Pa]
+        double thetaN;                                          // [INPUT] Nozzle angle [degrees]
+        double ddd = 60;                                        // [INPUT] Scale factor for maximum deposition time (δδδ)
 
         // Deposition
-        double iar;                                     // [INPUT] Intended application rate [kg/ha]
-        double xactive;                                 // [INPUT] Concentration in tank solution [wt. fraction]
-        double FD;                                      // [INPUT] Downwind field depth [m]
-        double PL;                                      // [INPUT] Crosswind field width [m]
-        double dN;                                      // [INPUT] Space between nozzles on boom [m]
-        std::optional<double> Lmax;                     // [INPUT/DERIVED] Maximum drift distance for deposition [m]
-        double lambda = 1;                              // [INPUT] scale factor for number of drift segments (λ), ≥1
-        double dx = 0.5;                                // [INPUT] distance interval for deposition output [m]
+        double iar;                                             // [INPUT] Intended application rate [kg/ha]
+        double xactive;                                         // [INPUT] Concentration in tank solution [wt. fraction]
+        double FD;                                              // [INPUT] Downwind field depth [m]
+        double PL;                                              // [INPUT] Crosswind field width [m]
+        double dN;                                              // [INPUT] Space between nozzles on boom [m]
+        std::optional<double> Lmax;                             // [INPUT/DERIVED] Maximum drift distance for deposition [m]
+        double lambda = 1;                                      // [INPUT] scale factor for number of drift segments (λ), ≥1
+        double dx = 0.5;                                        // [INPUT] distance interval for deposition output [m]
     };
 
     struct Output
     {
         // Droplet Size Distribution
-        std::vector<double> dp;                         // [DERIVED] Calculated droplet sizes [μm]
-        std::unique_ptr<DropletSizeModel> dsmodel;      // [DERIVED] Non-linear least squares model
+        std::vector<double> dp;                                 // [DERIVED] Calculated droplet sizes [μm]
+        std::unique_ptr<DropletSizeModel> dsmodel;              // [DERIVED] Non-linear least squares model
         
         // Ambient Conditions
-        double Twb;                                     // [DERIVED] Wet bulb temperature [°C]
-        double dTwb;                                    // [DERIVED] Wet bulb temperature depression [°C]
+        double Twb;                                             // [DERIVED] Wet bulb temperature [°C]
+        double dTwb;                                            // [DERIVED] Wet bulb temperature depression [°C]
 
         // Wind Velocity Profile
-        double ppp;                                     // [DERIVED] Horizontal variation in wind direction around mean (ψψψ) [degrees]
-        double z0;                                      // [DERIVED] Friction height [m]
-        double Uf;                                      // [DERIVED] Friction velocity [m/s]
+        double ppp;                                             // [DERIVED] Horizontal variation in wind direction around mean (ψψψ) [degrees]
+        double z0;                                              // [DERIVED] Friction height [m]
+        double Uf;                                              // [DERIVED] Friction velocity [m/s]
 
         // Solution Properties
-        double rhoL;                                    // [DERIVED] Mixture density [g/cm³]
+        double rhoL;                                            // [DERIVED] Mixture density [g/cm³]
 
         // Droplet Transport
-        std::array<double, 3> nvz;                      // [DERIVED] Nozzle velocity, vertical components [m/s]
-        std::array<double, 3> nvx;                      // [DERIVED] Nozzle velocity, horizontal components [m/s]
-        std::array<std::vector<double>, 3> xdist;       // [DERIVED] Transport distance [m]
+        std::array<double, constants::ns> nva;                  // [DERIVED] Streamline vector angles [degrees]
+        std::array<double, constants::ns> nvz;                  // [DERIVED] Nozzle velocity, vertical components [m/s]
+        std::array<double, constants::ns> nvx;                  // [DERIVED] Nozzle velocity, horizontal components [m/s]
+        std::array<std::vector<double>, constants::ns> xdist;   // [DERIVED] Transport distances [m]
 
         // Deposition
-        std::vector<std::pair<double, double>> applume; // [DERIVED] Deposition output
+        std::vector<std::pair<double, double>> applume;         // [DERIVED] Deposition output
     };
 
     Input in;

@@ -8,13 +8,14 @@
 #include <utility>
 #include <vector>
 
+#include "Constants.hpp"
 #include "DropletSizeModel.hpp"
 
 namespace cdm {
 
 std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, double FD, double PL, double dN, double ppp, double rhoL,
                                                   const std::vector<double>& dp,
-                                                  const std::array<std::vector<double>, 3>& xdist,
+                                                  const std::array<std::vector<double>, constants::ns>& xdist,
                                                   const std::vector<std::pair<double, double>>& dsd,
                                                   const std::unique_ptr<DropletSizeModel>& dsmodel,
                                                   double dpmin, double dpmax, std::optional<double> Lmax, double lambda, double dx);

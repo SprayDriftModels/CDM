@@ -99,13 +99,14 @@ int cdm_run_model(cdm_model_t *model)
     
     m->out.rhoL = 1. / ((m->in.xs0 / m->in.rhoS) + ((1. - m->in.xs0) / m->in.rhoW));
     cdm::NozzleVelocity nv(m->in.PN, m->in.thetaN, m->out.rhoL);
+    m->out.nva = nv.angle;
     m->out.nvz = nv.z;
     m->out.nvx = nv.x;
 
     m->out.dp.resize(23, 0);
     for (size_t i = 0; i < m->out.dp.size(); ++i) {
         m->out.dp[i] = m->in.dpmin * pow(m->in.dpmax/m->in.dpmin, i/22.);
-        for (size_t j = 0; j < m->out.xdist.size(); ++j) { // Centerline, Downwind, Upwind
+        for (size_t j = 0; j < m->out.xdist.size(); ++j) {
             try {
                 m->out.xdist[j].emplace_back(cdm::DropletTransport(m->in.Tair, m->in.RH, m->out.dTwb,
                     m->out.z0, m->out.Uf, m->in.rhoW, m->in.rhoS, m->in.xs0, m->in.hN, m->in.hC,
@@ -165,10 +166,18 @@ void cdm_print_report(cdm_model_t *model)
     fmt::print("ΔTwb = {}\n", m->out.dTwb);
 
     print_header("Droplet Transport");
-    fmt::print("{:<8} {:>10} {:>10} {:>10}\n", "DD", "Centerline", "Downwind", "Upwind");
+    fmt::print("{:<8} {:>10} {:>10}\n", "Angle", "Vx", "Vz");
+    for (size_t i = 0; i < m->out.nva.size(); ++i) {
+        fmt::print("{:<8.3f} {:>10.2f} {:>10.2f}\n", m->out.nva.at(i), m->out.nvx.at(i), m->out.nvz.at(i));
+    }
+    fmt::print("\n");
+    fmt::print("{:<8} {:>10}\n", "DD", "Distance");
     for (size_t i = 0; i < m->out.dp.size(); ++i) {
-        fmt::print("{:<8.3f} {:>10.2f} {:>10.2f} {:>10.2f}\n", m->out.dp.at(i),
-            m->out.xdist[0].at(i), m->out.xdist[1].at(i), m->out.xdist[2].at(i));
+        fmt::print("{:<8.3f}", m->out.dp.at(i));
+        for (size_t j = 0; j < m->out.xdist.size(); ++j) {
+            fmt::print(" {:>10.2f}", m->out.xdist[j].at(i));
+        }
+        fmt::print("\n");
     }
 
     print_header("Deposition");

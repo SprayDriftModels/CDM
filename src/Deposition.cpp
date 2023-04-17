@@ -21,7 +21,7 @@ namespace cdm {
 
 std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, double FD, double PL, double dN, double ppp, double rhoL,
                                                   const std::vector<double>& dp,
-                                                  const std::array<std::vector<double>, 3>& xdist,
+                                                  const std::array<std::vector<double>, constants::ns>& xdist,
                                                   const std::vector<std::pair<double, double>>& dsd,
                                                   const std::unique_ptr<DropletSizeModel>& dsdmodel,
                                                   double dpmin, double dpmax, std::optional<double> Lmax, double lambda, double dx)
@@ -38,21 +38,41 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
     blaze::DynamicVector<double> dpavg = blaze::generate(mm, [=](size_t i)
         { return dpmin + i * ddp; });
     
+    // Log transformation function for numeric vectors.
+    auto vlog = [](const std::vector<double>& v) {
+        std::vector<double> result = v;
+        for (auto&& element : result)
+            element = log(element);
+        return result;
+    };
+
     // Generate drift distance vectors from xdist. May throw std::domain_error.
-    std::array<std::vector<double>, 3> driftdist;
+    // Use log transformation for the first (Ns+1)/2 streamline vectors.
+    // Otherwise, take the absolute value of the result.
+    std::array<std::vector<double>, constants::ns> driftdist;
     for (size_t n = 0; n < driftdist.size(); ++n) {
-        auto ff = Interpolate1D(dp, xdist.at(n));
-        driftdist[n].resize(mm, 0.);
-        for (size_t i = 1; i < driftdist[n].size(); ++i) {
-            driftdist[n].at(i) = ff(dpavg[i]);
+        if (n <= (driftdist.size() + 1) / 2) {
+            auto ff = Interpolate1D(vlog(dp), vlog(xdist.at(n)));
+            driftdist[n].resize(mm, 0.);
+            for (size_t i = 1; i < driftdist[n].size(); ++i) {
+                driftdist[n].at(i) = std::exp(ff(std::log(dpavg[i])));
+            }
+        }
+        else {
+            auto ff = Interpolate1D(dp, xdist.at(n));
+            driftdist[n].resize(mm, 0.);
+            for (size_t i = 1; i < driftdist[n].size(); ++i) {
+                driftdist[n].at(i) = std::abs(ff(dpavg[i]));
+            }
         }
     }
 
     // Use maximum drift distance for Lmax if not specified.
     if (!Lmax.has_value()) {
-        Lmax = std::max({*std::max_element(driftdist[0].begin(), driftdist[0].end()),
-                         *std::max_element(driftdist[1].begin(), driftdist[1].end()),
-                         *std::max_element(driftdist[2].begin(), driftdist[2].end())});
+        std::array<double, constants::ns> ddmax;
+        std::transform(driftdist.cbegin(), driftdist.cend(), ddmax.begin(),
+            [](const auto& v) { return *std::max_element(v.begin(), v.end()); });
+        Lmax = *std::max_element(ddmax.cbegin(), ddmax.cend());
     }
     
     // Nsa = number of segments in sprayed area along field depth.
@@ -118,8 +138,8 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
             for (ptrdiff_t j = salower; j < saupper; ++j) {
                 auto DVMsa = blaze::submatrix(DVM, i, j, 1UL, Nsa-j); // DVM[i,j:Nsa]
                 auto CMsa = blaze::submatrix(CM, i, j, 1UL, Nsa-j); // CM[i,j:Nsa]
-                DVMsa += SVP[i]/3;
-                CMsa += (SVP[i]/3) / (dwsa*(PL+2*(x[j]-0.5*dwsa)*tan(ppp*pi*zeta/180.)));
+                DVMsa += SVP[i]/driftdist.size();
+                CMsa += (SVP[i]/driftdist.size()) / (dwsa*(PL+2*(x[j]-0.5*dwsa)*tan(ppp*pi*zeta/180.)));
             }
 
             for (size_t j = Nsa; j < Nsa+Nda; ++j) {
@@ -131,8 +151,8 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
                     break;
                 }
                 for (ptrdiff_t k = dalower; k < daupper; ++k) {
-                    DVM(i,j) += SVP[i]/3;
-                    CM(i,j) += (SVP[i]/3) / (dwda*(PL+2*(x[j]-x[Nsa-k])*tan(ppp*pi*zeta/180.)));
+                    DVM(i,j) += SVP[i]/driftdist.size();
+                    CM(i,j) += (SVP[i]/driftdist.size()) / (dwda*(PL+2*(x[j]-x[Nsa-k])*tan(ppp*pi*zeta/180.)));
                 }
             }
         }
