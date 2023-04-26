@@ -65,7 +65,7 @@
             "maxDropletSize": 3000.0,           // Maximum droplet size for deposition [μm]
             "maxDriftDistance": 50.0,           // Optional: Maximum drift distance for deposition (Lmax) [m], or null
             "lambda": 4,                        // Optional: scale factor for number of drift segments (λ), ≥1, default 1
-			"outputInterval": 0.2               // Optional: distance interval for deposition output (Δx) [m], default 0.5
+            "outputInterval": 0.2               // Optional: distance interval for deposition output (Δx) [m], default 0.5
         }
     }
 }
