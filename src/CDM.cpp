@@ -83,7 +83,10 @@ int cdm_run_model(cdm_model_t *model)
         cdm::WindVelocityProfile wvp(m->in.wvu, m->in.wvT, m->in.pppMethod, m->in.hC);
         m->out.z0 = wvp.frictionHeight();
         m->out.Uf = wvp.frictionVelocity();
-        m->out.ppp = wvp.psipsipsi();
+        if (m->in.pppMethod == cdm::Model::Input::PPPMethod::ENTERED)
+            m->out.ppp = m->in.ppp.value_or(cdm::constants::default_psipsipsi);
+        else
+            m->out.ppp = wvp.psipsipsi();
     } catch (const std::exception& e) {
         cdm_error_handler("[WindVelocityProfile] %s\n", e.what());
         return 1;
@@ -103,14 +106,14 @@ int cdm_run_model(cdm_model_t *model)
     m->out.nvz = nv.z;
     m->out.nvx = nv.x;
 
+    cdm::DropletTransport dt(*m);
     m->out.dp.resize(23, 0);
     for (size_t i = 0; i < m->out.dp.size(); ++i) {
         m->out.dp[i] = m->in.dpmin * pow(m->in.dpmax/m->in.dpmin, i/22.);
         for (size_t j = 0; j < m->out.xdist.size(); ++j) {
             try {
-                m->out.xdist[j].emplace_back(cdm::DropletTransport(m->in.Tair, m->in.RH, m->out.dTwb,
-                    m->out.z0, m->out.Uf, m->in.rhoW, m->in.rhoS, m->in.xs0, m->in.hN, m->in.hC,
-                    m->out.nvz[j], m->out.nvx[j], m->out.dp.at(i), m->in.ddd));
+                double xdist = dt(m->out.nvz[j], m->out.nvx[j], m->out.dp.at(i));
+                m->out.xdist[j].emplace_back(xdist);
             } catch (const std::exception& e) {
                 cdm_error_handler("[DropletTransport] %s\n", e.what());
                 return 1;
@@ -145,21 +148,31 @@ void cdm_print_report(cdm_model_t *model)
         fmt::print("{}\n", m->out.dsmodel->report());
         const auto dsparams = m->out.dsmodel->params();
         fmt::print("\nParameters\n");
-        fmt::print("a1 = {}\n", dsparams.a1);
-        fmt::print("a2 = {}\n", dsparams.a2);
-        fmt::print("d1 = {}\n", dsparams.d1);
-        fmt::print("d2 = {}\n", dsparams.d2);
-        fmt::print("k1 = {}\n", dsparams.k1);
+        fmt::print("μ1 = {}\n", dsparams.a1);
+        fmt::print("μ2 = {}\n", dsparams.a2);
+        fmt::print("σ1 = {}\n", dsparams.d1);
+        fmt::print("σ2 = {}\n", dsparams.d2);
+        fmt::print("w1 = {}\n", dsparams.k1);
         fmt::print("\n{:<6} {:>6} {:>6}\n", "DD", "Obs.", "Pred.");
         for (const auto& xy : m->in.dsd) {
             fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, m->out.dsmodel->cdf(xy.first)*100);
         }
     }
-
+    
     print_header("Wind Velocity Profile");
     fmt::print("Uf  = {}\n", m->out.Uf); 
     fmt::print("z0  = {}\n", m->out.z0);
-    fmt::print("ψψψ = {}\n", m->out.ppp);
+    fmt::print("ψψψ = {} ", m->out.ppp);
+    switch (m->in.pppMethod) {
+    case cdm::Model::Input::PPPMethod::ENTERED:
+        fmt::print("(ENTERED)\n"); break;
+    case cdm::Model::Input::PPPMethod::INTERPOLATE:
+        fmt::print("(INTERPOLATE)\n"); break;
+    case cdm::Model::Input::PPPMethod::SDTF:
+        fmt::print("(SDTF)\n"); break;
+    default:
+        fmt::print("\n"); break;
+    }
 
     print_header("Wet Bulb Temperature");
     fmt::print("Twb  = {}\n", m->out.Twb);

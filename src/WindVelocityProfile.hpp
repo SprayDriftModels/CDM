@@ -6,6 +6,7 @@
 #include <optional>
 
 #include "Model.hpp"
+#include "Constants.hpp"
 
 namespace cdm {
 
@@ -37,7 +38,7 @@ struct WindVelocityProfile
 private:
     double z0_; // Friction height [m]
     double Uf_; // Friction velocity [m/s]
-    double psipsipsi_;
+    double psipsipsi_ = constants::default_psipsipsi;
 };
 
 } // namespace cdm
