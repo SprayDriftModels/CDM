@@ -16,45 +16,46 @@ double WetBulbTemperature(double Tair, double Patm, double RH)
 {
     using boost::math::tools::eps_tolerance;
     using boost::math::tools::toms748_solve;
-    using constants::mol_wt_air;
-    using constants::mol_wt_water;
 
     // Antoine vapor pressure constants. Regressed for high accuracy between -10 and 50°C.
-    constexpr double Aw = 18.92676;
-    constexpr double Bw = -4169.627;
-    constexpr double Cw = -33.568;
+    static constexpr double Aw = 18.92676;
+    static constexpr double Bw = -4169.627;
+    static constexpr double Cw = -33.568;
 
     // Convert input pressure from Pa to mmHg
     // 101325 Pa = 760 torr (mmHg) = 1 atm
-    Patm = Patm * (760./101325.);
+    Patm *= 760. / 101325.;
 
     // Antoine vapor pressure for water in mmHg. 
-    constexpr auto Psw = [=](double T) {
+    constexpr auto Psw = [](double T) {
         return exp(Aw + Bw / (T + 273.15 + Cw));
     };
 
     // Air heat capacity equation .vs. T, in cal/g air-°C
-    constexpr auto Cpair = [=](double T) {
-        double Aair = 6.917;
-        double Bair = 9.911e-4;
-        double Cair = 7.627e-7;
-        double Dair = -4.696e-10;
-        return (Aair + Bair*T + Cair*pow(T,2.) + Dair*pow(T,3.)) / mol_wt_air;
+    constexpr auto Cpair = [](double T) {
+        using constants::mwa;
+        constexpr double Aair = 6.917;
+        constexpr double Bair = 9.911e-4;
+        constexpr double Cair = 7.627e-7;
+        constexpr double Dair = -4.696e-10;
+        return (Aair + Bair*T + Cair*pow(T,2.) + Dair*pow(T,3.)) / mwa;
     };
     
     // Heat of vaporization for water .vs. T, in cal/g water
-    constexpr auto Dhv = [=](double T) {
-        double Dh0 = 717.2184;
-        double N = 0.33246;
+    constexpr auto Dhv = [](double T) {
+        constexpr double Dh0 = 717.2184;
+        constexpr double N = 0.33246;
         return Dh0 * pow(1-(T+273.15)/647.3, N);
     };
 
     // Dew point temperature, °C.
-    double Tdp = Bw / (log(Psw(Tair) * (RH/100.)) - Aw) - 273.15 - Cw;
+    const double Tdp = Bw / (log(Psw(Tair) * (RH/100.)) - Aw) - 273.15 - Cw;
 
     // Wet bulb temperature function.
     auto EqnTwb = [=](double Twb) {
-        return Psw(Tdp) - Psw(Twb) - Patm * mol_wt_air/mol_wt_water * Cpair(Twb) * (Twb-Tair) / Dhv(Twb);
+        using constants::mwa;
+        using constants::mww;
+        return Psw(Tdp) - Psw(Twb) - Patm * mwa/mww * Cpair(Twb) * (Twb-Tair) / Dhv(Twb);
     };
 
     // Find root using TOMS 748.
