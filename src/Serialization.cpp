@@ -92,6 +92,17 @@ void to_json(nlohmann::ordered_json& json, const Model& m)
                 {"lambda", m.in.lambda},
                 {"outputInterval", m.in.dx}
             }},
+            {"integrationOptions", {
+                {"relativeTolerance", m.in.cvreltol},
+                {"absoluteTolerances", m.in.cvabstol},
+                {"maxOrder", m.in.cvmaxord},
+                {"maxSteps", m.in.cvmxsteps},
+                {"stabilityLimitDetection", m.in.cvstldet},
+                {"maxErrorTestFailures", m.in.cvmaxnef},
+                {"maxNonlinearIterations", m.in.cvmaxcor},
+                {"maxConvergenceFailures", m.in.cvmaxncf},
+                {"convergenceCoefficient", m.in.cvnlscoef}
+            }},
             {"output", {
                 {"dropletSizeModel", m.out.dsmodel},
                 {"wetBulbTemperature", m.out.Twb},
@@ -168,6 +179,37 @@ void from_json(const nlohmann::ordered_json& json, Model& m)
     }
     if (j2.count("outputInterval") != 0) {
         j2.at("outputInterval").get_to(m.in.dx);
+    }
+
+    if (j.count("integrationOptions") != 0) {
+        auto j3 = j.at("integrationOptions");
+        if (j3.count("relativeTolerance") != 0) {
+            j3.at("relativeTolerance").get_to(m.in.cvreltol);
+        }
+        if (j3.count("absoluteTolerances") != 0) {
+            j3.at("absoluteTolerances").get_to(m.in.cvabstol);
+        }
+        if (j3.count("maxOrder") != 0) {
+            j3.at("maxOrder").get_to(m.in.cvmaxord);
+        }
+        if (j3.count("maxSteps") != 0) {
+            j3.at("maxSteps").get_to(m.in.cvmxsteps);
+        }
+        if (j3.count("stabilityLimitDetection") != 0) {
+            j3.at("stabilityLimitDetection").get_to(m.in.cvstldet);
+        }
+        if (j3.count("maxErrorTestFailures") != 0) {
+            j3.at("maxErrorTestFailures").get_to(m.in.cvmaxnef);
+        }
+        if (j3.count("maxNonlinearIterations") != 0) {
+            j3.at("maxNonlinearIterations").get_to(m.in.cvmaxcor);
+        }
+        if (j3.count("maxConvergenceFailures") != 0) {
+            j3.at("maxConvergenceFailures").get_to(m.in.cvmaxncf);
+        }
+        if (j3.count("convergenceCoefficient") != 0) {
+            j3.at("convergenceCoefficient").get_to(m.in.cvnlscoef);
+        }
     }
 }
 

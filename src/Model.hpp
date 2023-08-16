@@ -63,8 +63,20 @@ struct Model
         double PL;                                              // [INPUT] Crosswind field width [m]
         double dN;                                              // [INPUT] Space between nozzles on boom [m]
         std::optional<double> Lmax;                             // [INPUT/DERIVED] Maximum drift distance for deposition [m]
-        double lambda = 1;                                      // [INPUT] scale factor for number of drift segments (λ), ≥1
-        double dx = 0.5;                                        // [INPUT] distance interval for deposition output [m]
+        double lambda = 1;                                      // [INPUT] Scale factor for number of drift segments (λ), ≥1
+        double dx = 0.5;                                        // [INPUT] Distance interval for deposition output [m]
+
+        // CVODE Integration Options
+        double cvreltol = 1e-6;                                 // [INPUT] Relative error tolerance
+        std::array<double, 6> cvabstol =
+            {1e-8, 1e-8, 1e-8, 1e-8, 1e-10, 1e-8};              // [INPUT] Absolute error tolerances for solution vector components: Z, X, Vz, Vx, Mw, Vvwx
+        int cvmaxord = 5;                                       // [INPUT] Maximum order for BDF method, ≥1, default 5
+        int cvmxsteps = 2000;                                   // [INPUT] Maximum number of internal steps per output step, ≥1, default 500
+        bool cvstldet = false;                                  // [INPUT] Enable BDF stability limit detection algorithm, default false
+        int cvmaxnef = 10;                                      // [INPUT] Maximum number of error test failures permitted per output step, ≥1, default 7
+        int cvmaxcor = 3;                                       // [INPUT] Maximum number of nonlinear solver iterations per output step, ≥1, default 3
+        int cvmaxncf = 20;                                      // [INPUT] Maximum number of nonlinear solver convergence failures per output step, ≥1, default 10
+        double cvnlscoef = 0.1;                                 // [INPUT] Safety factor for nonlinear solver convergence test, >0, default 0.1
     };
 
     struct Output
