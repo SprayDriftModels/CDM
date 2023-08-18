@@ -8,23 +8,34 @@
 namespace cdm {
 namespace constants {
 
+// Antoine vapor pressure constants; regressed for high accuracy between -10 and 50°C.
+static constexpr double Aw = 18.92676;
+static constexpr double Bw = -4169.627;
+static constexpr double Cw = -33.568;
+
 // von Kármán constant (κ)
-constexpr double karman = 0.40;
+static constexpr double karman = 0.40;
 
 // Molecular weight of water [g/mol]
-constexpr double mww = 1.00794 * 2. + 15.9994;
+static constexpr double mww = 1.00794 * 2. + 15.9994;
 
 // Molecular weight of air [g/mol]
-constexpr double mwa = 0.209 * 2. * 15.9994 + (1. - 0.209) * 2. * 14.007;
+static constexpr double mwa = 0.209 * 2. * 15.9994 + (1. - 0.209) * 2. * 14.007;
 
 // Distance between nozzle and liquid sheet [m]
-constexpr double liquid_sheet_offset = 0.1016;
+static constexpr double liquid_sheet_offset = 0.1016;
 
 // Default horizontal variation in wind direction around mean (ψψψ) [degrees]
-constexpr double default_psipsipsi = 15.0;
+static constexpr double default_psipsipsi = 15.0;
 
-// Number of flow segment streamlines for droplet transport calculations (Ns)
-constexpr size_t ns = 11;
+// Multiplier for one sigma variation in wind direction (ζ) [degrees]
+static constexpr double zeta = 2.5;
+
+// Number of flow segment streamlines for droplet transport calculations.
+static constexpr size_t ns = 11;
+
+// Number of output steps for droplet transport calculations.
+static constexpr size_t nout = 10000;
 
 } // namespace constants
 } // namespace cdm
