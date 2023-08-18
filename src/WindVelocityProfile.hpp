@@ -18,7 +18,6 @@ namespace cdm {
  * \param[in] wvT Elevation [m], Temperature [°C]
  * \param[in] method 1=Interpolate, 2=SDTF
  * \param[in] hC Canopy height [m]
- * \return Friction height [m] and friction velocity [m/s]
  */
 struct WindVelocityProfile
 {
