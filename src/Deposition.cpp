@@ -27,10 +27,8 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
                                                   double dpmin, double dpmax, std::optional<double> Lmax, double lambda, double dx)
 {
     using namespace boost::math::differentiation;
-    using boost::math::double_constants::pi;
-
-    // Multiplier for one sigma variation in wind direction (ζ), degrees.
-    const double zeta = 2.5;
+    using boost::math::double_constants::degree;
+    using constants::zeta;
 
     // Droplet sizes to evaluate.
     const double ddp = 0.5;
@@ -46,33 +44,28 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
         return result;
     };
 
-    // Generate drift distance vectors from xdist. May throw std::domain_error.
+    // Generate drift distance matrix from xdist. May throw std::domain_error.
     // Use log transformation for the first (Ns+1)/2 streamline vectors.
     // Otherwise, take the absolute value of the result.
-    std::array<std::vector<double>, constants::ns> driftdist;
-    for (size_t n = 0; n < driftdist.size(); ++n) {
-        if (n <= (driftdist.size() + 1) / 2) {
+    blaze::DynamicMatrix<double> driftdist(constants::ns, dpavg.size(), 0);
+    for (size_t n = 0; n < driftdist.rows(); ++n) {
+        if (n < (driftdist.rows() + 1) / 2) {
             auto ff = Interpolate1D(vlog(dp), vlog(xdist.at(n)));
-            driftdist[n].resize(mm, 0.);
-            for (size_t i = 1; i < driftdist[n].size(); ++i) {
-                driftdist[n].at(i) = std::exp(ff(std::log(dpavg[i])));
+            for (size_t i = 1; i < driftdist.columns(); ++i) {
+                driftdist(n,i) = std::exp(ff(std::log(dpavg.at(i))));
             }
         }
         else {
             auto ff = Interpolate1D(dp, xdist.at(n));
-            driftdist[n].resize(mm, 0.);
-            for (size_t i = 1; i < driftdist[n].size(); ++i) {
-                driftdist[n].at(i) = std::abs(ff(dpavg[i]));
+            for (size_t i = 1; i < driftdist.columns(); ++i) {
+                driftdist(n,i) = std::abs(ff(dpavg.at(i)));
             }
         }
     }
-
+    
     // Use maximum drift distance for Lmax if not specified.
     if (!Lmax.has_value()) {
-        std::array<double, constants::ns> ddmax;
-        std::transform(driftdist.cbegin(), driftdist.cend(), ddmax.begin(),
-            [](const auto& v) { return *std::max_element(v.begin(), v.end()); });
-        Lmax = *std::max_element(ddmax.cbegin(), ddmax.cend());
+        Lmax = blaze::max(driftdist);
     }
     
     // Nsa = number of segments in sprayed area along field depth.
@@ -118,41 +111,37 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
     blaze::DynamicVector<double> x = blaze::generate(Nsa+Nda, [=](size_t i)
         { return i < Nsa ? dwsa*(0.5+i) : dwda*(0.5+i-Nsa)+FD; });
 
-    // Iterators to spray segment distances.
-    const auto itsa0 = x.begin();
-    const auto itsa1 = std::next(x.begin(), Nsa);
-
-    // Iterators to drift segment distances.
-    const auto itda0 = std::next(x.begin(), Nsa);
-    const auto itda1 = std::next(x.begin(), Nsa+Nda);
+    // Iterators to spray and drift segment distances.
+    const auto itsa = x.begin();
+    const auto itda = std::next(x.begin(), Nsa);
 
     // Create DVM and CM matrices.
-    // Upper and lower bound reversed for driftdist vectors in descending order. 
-    blaze::DynamicMatrix<double> DVM(mm, Nsa+Nda, 0);
-    blaze::DynamicMatrix<double> CM(mm, Nsa+Nda, 0);
-    for (size_t n = 0; n < driftdist.size(); ++n) {
-        for (size_t i = 1; i < mm; ++i) {
-            // driftdist[i] >= (x[1:nsa]-dwsa) && driftdist[i] < x[1:nsa]
-            const auto saupper = std::distance(itsa0, std::lower_bound(itsa0, itsa1, driftdist[n].at(i) + dwsa));
-            const auto salower = std::distance(itsa0, std::upper_bound(itsa0, itsa1, driftdist[n].at(i)));
+    // Upper and lower bound reversed for drift distances in descending order. 
+    blaze::DynamicMatrix<double> DVM(driftdist.columns(), Nsa+Nda, 0);
+    blaze::DynamicMatrix<double> CM(driftdist.columns(), Nsa+Nda, 0);
+    for (size_t n = 0; n < driftdist.rows(); ++n) {
+        for (size_t i = 1; i < driftdist.columns(); ++i) {
+            // driftdist[n,i] >= (x[1:nsa]-dwsa) && driftdist[n,i] < x[1:nsa]
+            const auto saupper = std::distance(itsa, std::lower_bound(itsa, itda, driftdist(n,i) + dwsa));
+            const auto salower = std::distance(itsa, std::upper_bound(itsa, itda, driftdist(n,i)));
             for (ptrdiff_t j = salower; j < saupper; ++j) {
                 auto DVMsa = blaze::submatrix(DVM, i, j, 1UL, Nsa-j); // DVM[i,j:Nsa]
                 auto CMsa = blaze::submatrix(CM, i, j, 1UL, Nsa-j); // CM[i,j:Nsa]
-                DVMsa += SVP[i]/driftdist.size();
-                CMsa += (SVP[i]/driftdist.size()) / (dwsa*(PL+2*(x[j]-0.5*dwsa)*tan(ppp*pi*zeta/180.)));
+                DVMsa += SVP[i]/driftdist.rows();
+                CMsa += (SVP[i]/driftdist.rows()) / (dwsa*(PL+2*(x[j]-0.5*dwsa)*tan(ppp*zeta*degree)));
             }
 
             for (size_t j = Nsa; j < Nsa+Nda; ++j) {
-                // driftdist[i] >= (x[1:Nsa]+(j-Nsa)*dwda) && driftdist[i] < (x[1:Nsa]+(j+1-Nsa)*dwda)
-                const auto daupper = std::distance(itsa0, std::lower_bound(itsa0, itsa1, driftdist[n].at(i) - (j-Nsa)*dwda));
-                const auto dalower = std::distance(itsa0, std::upper_bound(itsa0, itsa1, driftdist[n].at(i) - (j+1-Nsa)*dwda));
+                // driftdist[n,i] >= (x[1:Nsa]+(j-Nsa)*dwda) && driftdist[n,i] < (x[1:Nsa]+(j+1-Nsa)*dwda)
+                const auto daupper = std::distance(itsa, std::lower_bound(itsa, itda, driftdist(n,i) - (j-Nsa)*dwda));
+                const auto dalower = std::distance(itsa, std::upper_bound(itsa, itda, driftdist(n,i) - (j+1-Nsa)*dwda));
                 if (dalower == 0 && daupper == 0) {
                     // Distances will continue to decrease above the current droplet size; exit loop.
                     break;
                 }
                 for (ptrdiff_t k = dalower; k < daupper; ++k) {
-                    DVM(i,j) += SVP[i]/driftdist.size();
-                    CM(i,j) += (SVP[i]/driftdist.size()) / (dwda*(PL+2*(x[j]-x[Nsa-k])*tan(ppp*pi*zeta/180.)));
+                    DVM(i,j) += SVP[i]/driftdist.rows();
+                    CM(i,j) += (SVP[i]/driftdist.rows()) / (dwda*(PL+2*(x[j]-x[Nsa-k])*tan(ppp*zeta*degree)));
                 }
             }
         }
@@ -174,7 +163,6 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
     //fmt::print("Σ(SVP) × Nsa               = {}\n", blaze::sum(SVP) * Nsa);
     //fmt::print("Σ(VPS[0…Nsa+Nda])          = {}\n", blaze::sum(VPS));
     //fmt::print("Σ(VPS[0…Nsa])              = {}\n", blaze::sum(blaze::subvector(VPS, 0UL, Nsa)));
-    //fmt::print("Σ(CS)                      = {}\n", blaze::sum(CS));
 
     std::vector<std::pair<double, double>> propAppliedPlumeXY;
     propAppliedPlumeXY.reserve(Nsa+Nda);
