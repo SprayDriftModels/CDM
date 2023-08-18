@@ -28,9 +28,9 @@ struct Model
         double dpmax;                                           // [INPUT] Maximum droplet size for deposition [μm]
         bool dsdfit;                                            // [INPUT] Enable curve fitting for DSD
 
-        // Ambient Conditions
+        // Atmospheric Properties
         double Tair;                                            // [INPUT] Dry air temperature, [°C]
-        double Patm;                                            // [INPUT] Barometric pressure [Pa]
+        double Patm;                                            // [INPUT] Absolute arometric pressure [Pa]
         double RH;                                              // [INPUT] Relative humidity [percent]
 
         // Wind Velocity Profile
@@ -42,7 +42,7 @@ struct Model
         double hC;                                              // [INPUT] Canopy height [m]
         std::vector<std::pair<double, double>> wvu;             // [INPUT] Elevation [m], Velocity [m/s]
         std::vector<std::pair<double, double>> wvT;             // [INPUT] Elevation [m], Temperature [°C]
-        std::optional<double> ppp;                              // [INPUT/DERIVED] Horizontal variation in wind direction around mean (ψψψ) [degrees]
+        std::optional<double> ppp;                              // [INPUT] Horizontal variation in wind direction around mean (ψψψ) [degrees]
         PPPMethod pppMethod = PPPMethod::ENTERED;               // [INPUT] Calculation method for ψψψ
 
         // Solution Properties
@@ -62,7 +62,7 @@ struct Model
         double FD;                                              // [INPUT] Downwind field depth [m]
         double PL;                                              // [INPUT] Crosswind field width [m]
         double dN;                                              // [INPUT] Space between nozzles on boom [m]
-        std::optional<double> Lmax;                             // [INPUT/DERIVED] Maximum drift distance for deposition [m]
+        std::optional<double> Lmax;                             // [INPUT] Maximum drift distance for deposition [m]
         double lambda = 1;                                      // [INPUT] Scale factor for number of drift segments (λ), ≥1
         double dx = 0.5;                                        // [INPUT] Distance interval for deposition output [m]
 
@@ -85,7 +85,13 @@ struct Model
         std::vector<double> dp;                                 // [DERIVED] Calculated droplet sizes [μm]
         std::unique_ptr<DropletSizeModel> dsmodel;              // [DERIVED] Non-linear least squares model
         
-        // Ambient Conditions
+        // Solution Properties
+        double rhoL;                                            // [DERIVED] Mixture density [g/cm³]
+
+        // Atmospheric Properties
+        double rhoA;                                            // [DERIVED] Density of wet air (ρA) [g/cm³]
+        double muA;                                             // [DERIVED] Dynamic viscosity of wet air at film (μA) [g·cm⁻¹s⁻¹]
+        double Tdp;                                             // [DERIVED] Dew point temperature [°C]
         double Twb;                                             // [DERIVED] Wet bulb temperature [°C]
         double dTwb;                                            // [DERIVED] Wet bulb temperature depression [°C]
 
@@ -93,9 +99,6 @@ struct Model
         double ppp;                                             // [DERIVED] Horizontal variation in wind direction around mean (ψψψ) [degrees]
         double z0;                                              // [DERIVED] Friction height [m]
         double Uf;                                              // [DERIVED] Friction velocity [m/s]
-
-        // Solution Properties
-        double rhoL;                                            // [DERIVED] Mixture density [g/cm³]
 
         // Droplet Transport
         std::array<double, constants::ns> nva;                  // [DERIVED] Streamline vector angles [degrees]

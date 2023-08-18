@@ -14,22 +14,22 @@ class DropletTransport
 {
 public:
     struct Params {
-        double z0;     /**< Friction height [m] */
-        double Uf;     /**< Friction velocity [m/s] */
-        double hN;     /**< Height of nozzle above ground [m] */
-        double hC;     /**< Canopy height [m] */
+        double z0;     /**< Friction height [cm] */
+        double Uf;     /**< Friction velocity [cm/s] */
+        double hN;     /**< Height of nozzle above ground [cm] */
+        double hC;     /**< Canopy height [cm] */
         double dTwb;   /**< Wet bulb temperature depression [°C] */
-        double rhoW;   /**< Density of pure water in droplet [g/cm³] */
-        double rhoS;   /**< Density of dissolved solids in droplet, [g/cm³] */
+        double rhoW;   /**< Density of pure water in droplet (ρW) [g/cm³] */
+        double rhoS;   /**< Density of dissolved solids in droplet (ρS) [g/cm³] */
+        double rhoL;   /**< Density of sprayed solution (ρL₀) [g/cm³] */
+        double rhoA;   /**< Density of wet air (ρA₀) [g/cm³] */
+        double muA;    /**< Dynamic viscosity of wet air at film (μA₀) [g·cm⁻¹s⁻¹] */
         double xs0;    /**< Mass fraction total dissolved solids in solution [fraction] */
         double ddd;    /**< Scale factor for maximum deposition time (δδδ) [unitless] */
         /** Derived */
-        double rhoL0;  /**< Density of sprayed solution, g/cm³ */
-        double rhoA0;  /**< Density of wet air, g/cm³ */
-        double muA0;   /**< Dynamic viscosity of wet air at film, g/cm-sec */
-        double vwx0;   /**< Horizontal wind velocity profile function, cm/sec */
-        double Ms0;    /**< Mass of sprayed solution in droplet, g */
-        double Mw0;    /**< Mass of water in droplet, g */
+        double Vvwx0;  /**< Horizontal wind velocity profile function [cm/s] */
+        double Ms0;    /**< Mass of sprayed solution in droplet [g] */
+        double Mw0;    /**< Mass of water in droplet [g] */
     };
 
     /**
@@ -39,12 +39,12 @@ public:
 
     /**
      * Calculates droplet transport distance for a given droplet size and velocity.
-     * \param[in] vz Vertical components of nozzle velocity [m/s]
-     * \param[in] vx Horizontal component of nozzle velocity [m/s]
+     * \param[in] Vz0 Vertical component of nozzle velocity [m/s]
+     * \param[in] Vx0 Horizontal component of nozzle velocity [m/s]
      * \param[in] dp Droplet diameter [μm]
      * \return Distance [m]
      */
-    double operator()(double vz, double vx, double dp);
+    double operator()(double Vz, double Vx0, double dp0);
 
     /**
      * Returns the current solution vector (Z, X, Vz, Vx, Mw, Vvwx).

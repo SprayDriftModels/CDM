@@ -20,7 +20,7 @@ namespace cdm {
 static int RhsFn(double t, N_Vector nvx, N_Vector nvdxdt, void *userdata)
 {
     using boost::math::double_constants::pi;
-
+    
     double *x = N_VGetArrayPointer(nvx);
     double *dxdt = N_VGetArrayPointer(nvdxdt);
     DropletTransport::Params *p = static_cast<DropletTransport::Params *>(userdata);
@@ -33,6 +33,14 @@ static int RhsFn(double t, N_Vector nvx, N_Vector nvdxdt, void *userdata)
     const double& Mw = x[4];
     const double& Vvwx = x[5];
 
+    // Named elements of output vector.
+    double& dZ = dxdt[0];
+    double& dX = dxdt[1];
+    double& dVz = dxdt[2];
+    double& dVx = dxdt[3];
+    double& dMw = dxdt[4];
+    double& dVvwx = dxdt[5];
+
     // Additional parameters from caller.
     const double& z0 = p->z0;
     const double& Uf = p->Uf;
@@ -40,43 +48,45 @@ static int RhsFn(double t, N_Vector nvx, N_Vector nvdxdt, void *userdata)
     const double& dTwb = p->dTwb;
     const double& rhoW = p->rhoW;
     const double& rhoS = p->rhoS;
-    const double& rhoA0 = p->rhoA0;
-    const double& muA0 = p->muA0;
+    const double& rhoA = p->rhoA;
+    const double& muA = p->muA;
     const double& Ms = p->Ms0;
 
     // Drag coefficient function, unitless
     auto CD = [](double Re)
         { return 24. / Re * (1. + 0.197 * pow(Re, 0.63) + 0.00026 * pow(Re, 1.38)); };
 
-    // Water evaporation function, g/sec
+    // Water evaporation function, g/s
     auto W = [dTwb, Ms, rhoW, rhoS](double Mw, double Re) {
         const double lw = 76.4e-8; // Evaporation rate (λw), cm²/(s·°C)
-        return (3. * pow(pi, 2./3.) / 2. / pow(6., 2./3.)) * (lw * dTwb) * rhoW * pow(Ms/rhoS + Mw/rhoW, 1./3.) * (1. + 0.276 * sqrt(Re)) * Mw / (Ms + Mw);
+        return (3. * pow(pi, 2./3.) / 2. / pow(6., 2./3.)) *
+               (lw * dTwb) * rhoW * pow(Ms/rhoS + Mw/rhoW, 1./3.) *
+               (1. + 0.276 * sqrt(Re)) * Mw / (Ms + Mw);
     };
 
     if (Z <= z0 + hC) {
         std::fill_n(dxdt, 6, 0.);
     }
     else {
-        const double gc = 980.665;                                // Standard gravity
-        const double VD = Mw/rhoW + Ms/rhoS;                      // Droplet volume
-        const double DD = cbrt(6./pi * VD);                       // Droplet diameter
-        const double Re = rhoA0 * DD * hypot(Vz,Vvwx-Vx) / muA0;  // Reynolds number
-        
-        /* dZ    */ dxdt[0] = Vz;
-        /* dX    */ dxdt[1] = Vx;
-        /* dVz   */ dxdt[2] = ( pi * CD((rhoA0 * DD * abs(Vz)) / muA0) * rhoA0 * pow(DD,2.) * (-Vz) * abs(-Vz) / 8.
-                                + Vz * W(Mw,Re) + VD * gc * (rhoA0-(Mw+Ms)/VD) ) / (Mw+Ms);
-        /* dVx   */ dxdt[3] = ( pi * CD((rhoA0 * DD * abs(Vx-Vvwx)) / muA0) * rhoA0 * pow(DD,2.) * (-Vx+Vvwx) * abs(-Vx+Vvwx) / 8.
-                                + Vx * W(Mw,Re) ) / (Mw+Ms) * (Vvwx <= 0. ? 0. : 1.);
-        /* dMw   */ dxdt[4] = -W(Mw,Re);
-        /* dVvwx */ dxdt[5] = Z <= z0 ? 0. : Vz * (Uf/0.4) / (Z-hC);
+        const double gc = 980.665; // Standard gravity, cm/s²
+        const double VD = Mw/rhoW + Ms/rhoS; // Droplet volume, cm³
+        const double DD = cbrt(6./pi * VD); // Droplet diameter, cm
+        const double Re = rhoA * DD * hypot(Vz,Vvwx-Vx) / muA; // Reynolds number
+
+        dZ = Vz;
+        dX = Vx;
+        dVz = ( pi * CD((rhoA * DD * abs(Vz)) / muA) * rhoA * pow(DD,2.) * (-Vz) * abs(-Vz) / 8.
+              + Vz * W(Mw,Re) + VD * gc * (rhoA-(Mw+Ms)/VD) ) / (Mw+Ms);
+        dVx = ( pi * CD((rhoA * DD * abs(Vx-Vvwx)) / muA) * rhoA * pow(DD,2.) * (-Vx+Vvwx) * abs(-Vx+Vvwx) / 8.
+              + Vx * W(Mw,Re) ) / (Mw+Ms) * (Vvwx <= 0. ? 0. : 1.);
+        dMw = -W(Mw,Re);
+        dVvwx = Z <= z0 ? 0. : Vz * (Uf/constants::karman) / (Z-hC);
     }
 
     return 0;
 }
 
-static double EstimateVt(double dp, double rhoL0, double rhoA0, double muA0)
+static double EstimateVt(double dp, double rhoL, double rhoA, double muA)
 {
     using boost::math::tools::eps_tolerance;
     using boost::math::tools::bracket_and_solve_root;
@@ -88,9 +98,9 @@ static double EstimateVt(double dp, double rhoL0, double rhoA0, double muA0)
         evaluation_error<errno_on_error>>;
 
     auto EqnVt = [=](double Vt) {
-        const double Re = (rhoA0 * Vt * dp) / muA0;
+        const double Re = (rhoA * Vt * dp) / muA;
         const double CD = 24. / Re * (1. + 0.197 * pow(Re, 0.63) + 0.00026 * pow(Re, 1.38));
-        return Vt - sqrt(4. * dp * 980.1 * (rhoL0 - rhoA0) / (3. * rhoA0 * CD));
+        return Vt - sqrt(4. * dp * 980.1 * (rhoL - rhoA) / (3. * rhoA * CD));
     };
 
     // Termination condition functor for specified number of bits.
@@ -119,6 +129,9 @@ DropletTransport::DropletTransport(const cdm::Model &m)
     params.dTwb = m.out.dTwb;
     params.rhoW = m.in.rhoW;
     params.rhoS = m.in.rhoS;
+    params.rhoL = m.out.rhoL;
+    params.rhoA = m.out.rhoA;
+    params.muA = m.out.muA;
     params.xs0 = m.in.xs0;
     params.ddd = m.in.ddd;
     params.Ms0 = 0;
@@ -127,37 +140,9 @@ DropletTransport::DropletTransport(const cdm::Model &m)
     // Adjust nozzle height for distance to liquid sheet.
     params.hN = params.hN - constants::liquid_sheet_offset * 100.;
     
-    // Density of sprayed solution (ρL0), g/cm³
-    params.rhoL0 = [](double xs, double rhoS, double rhoW)
-        { return 1. / (xs/rhoS + (1.-xs)/rhoW); }
-        (params.xs0, params.rhoS, params.rhoW);
-
-    // Antoine vapor pressure for water, atm
-    // 101325 Pa = 760 torr (mmHg) = 1 atm
-    auto Psw = [](double T, double RH) {
-        const double Aw = 18.92676;
-        const double Bw = -4169.627;
-        const double Cw = -33.568;
-        return exp(Aw + log(RH/100.) + Bw / (T + 273.15 + Cw)) / 760.; };
-
-    // Density of wet air (ρA0), g/cm³
-    params.rhoA0 = [Psw](double Tair, double RH) {
-        using constants::mwa;
-        using constants::mww;
-        return (mww * Psw(Tair,RH) + mwa * (1.-Psw(Tair,RH))) / (82.061 * (Tair + 273.15)); }
-        (m.in.Tair, m.in.RH);
-
-    // Dynamic viscosity of wet air at film (μA0), g/cm-sec
-    params.muA0 = [Psw](double Tair, double RH) {
-        const double K0 = 1.765e-4;
-        const double K1 = 4.752e-7;
-        const double K2 = -1.478e-4;
-        return K0 + K1*Tair + K2*Psw(Tair,RH); }
-        (m.in.Tair, m.in.RH);
-
-    // Horizontal wind velocity profile function, cm/sec
-    params.vwx0 = [](double hN, double z0, double Uf, double hC)
-        { return hN > z0 ? (Uf/0.4)*log((hN-hC)/z0) : 0.; }
+    // Horizontal wind velocity profile function, cm/s
+    params.Vvwx0 = [](double hN, double z0, double Uf, double hC)
+        { return hN <= z0 ? 0. : (Uf/constants::karman) * log((hN-hC)/z0); }
         (params.hN, params.z0, params.Uf, params.hC);
     
     // Initialize CVODE with default state.
@@ -173,35 +158,35 @@ DropletTransport::DropletTransport(const cdm::Model &m)
     cvi.setNonlinConvCoef(m.in.cvnlscoef);
 }
 
-double DropletTransport::operator()(double vz, double vx, double dp)
+double DropletTransport::operator()(double Vz0, double Vx0, double dp)
 {
-    vz = vz * 100.; // m/s to cm/s
-    vx = vx * 100.; // m/s to cm/s
+    using boost::math::double_constants::sixth_pi;
+
+    Vz0 = Vz0 * 100.; // m/s to cm/s
+    Vx0 = Vx0 * 100.; // m/s to cm/s
     dp = dp / 10000.; // μm to cm
 
     // Calculate mass of water and solution phases in droplet.
-    using boost::math::double_constants::sixth_pi;
     const double& xs0 = params.xs0;
     const double& rhoS = params.rhoS;
     const double& rhoW = params.rhoW;
     params.Ms0 = (sixth_pi) * pow(dp,3.) * xs0      / (xs0/rhoS + (1.-xs0)/rhoW);
     params.Mw0 = (sixth_pi) * pow(dp,3.) * (1.-xs0) / (xs0/rhoS + (1.-xs0)/rhoW);
 
-    // Calculate terminal velocity of particle, cm/sec
-    double Vt = EstimateVt(dp, params.rhoL0, params.rhoA0, params.muA0);
+    // Calculate terminal velocity of particle, cm/s
+    double Vt = EstimateVt(dp, params.rhoL, params.rhoA, params.muA);
 
     // Reinitialize CVODE with state vector:
     // Z, X, Vz, Vx, Mw, Vvwx
-    cvi.reinit(0, {params.hN, 0, vz, vx, params.Mw0, params.vwx0});
+    cvi.reinit(0, {params.hN, 0, Vz0, Vx0, params.Mw0, params.Vvwx0});
 
     double t = 0;
-    double tmax = params.ddd * params.hN / Vt; // Time for deposition, sec
-    size_t nout = 10000; // Number of output steps
-    double step = tmax / nout;
+    double tmax = params.ddd * params.hN / Vt; // Time for deposition, s
+    double step = tmax / constants::nout;
     double tout = step;
     
     // Solve ODE. May throw cvode::system_error.
-    for (size_t istep = 0; istep < nout; ++istep) {
+    for (size_t i = 0; i < constants::nout; ++i) {
         cvi.step(tout);
         tout += step;
     }

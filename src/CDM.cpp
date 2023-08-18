@@ -10,13 +10,13 @@
 #include <nlohmann/json.hpp>
 
 #include "CDM.h"
+#include "AtmosphericProperties.hpp"
 #include "Deposition.hpp"
 #include "DropletSizeModel.hpp"
 #include "DropletTransport.hpp"
 #include "Model.hpp"
 #include "NozzleVelocity.hpp"
 #include "Serialization.hpp"
-#include "WetBulbTemperature.hpp"
 #include "WindVelocityProfile.hpp"
 
 static void cdm_default_error_handler(const char *format, ...)
@@ -69,6 +69,7 @@ int cdm_run_model(cdm_model_t *model)
         return 1;
     
     cdm::Model *m = reinterpret_cast<cdm::Model *>(model);
+
     if (m->in.dsdfit) {
         m->out.dsmodel = std::make_unique<cdm::DropletSizeModel>(m->in.dsd);
         try {
@@ -77,6 +78,20 @@ int cdm_run_model(cdm_model_t *model)
             cdm_error_handler("[DropletSizeModel] %s\n", e.what());
             return 1;
         }
+    }
+
+    m->out.rhoL = 1. / ((m->in.xs0 / m->in.rhoS) + ((1. - m->in.xs0) / m->in.rhoW));
+
+    try {
+        cdm::AtmosphericProperties ap(m->in.Tair, m->in.Patm, m->in.RH);
+        m->out.rhoA = ap.wetAirDensity();
+        m->out.muA = ap.wetAirDynamicViscosity();
+        m->out.Tdp = ap.dewPointTemperature();
+        m->out.Twb = ap.wetBulbTemperature();
+        m->out.dTwb = ap.wetBulbTemperatureDepression();
+    } catch (const std::exception& e) {
+        cdm_error_handler("[AtmosphericProperties] %s\n", e.what());
+        return 1;
     }
 
     try {
@@ -92,15 +107,6 @@ int cdm_run_model(cdm_model_t *model)
         return 1;
     }
     
-    try {
-        m->out.Twb = cdm::WetBulbTemperature(m->in.Tair, m->in.Patm, m->in.RH);
-        m->out.dTwb = m->in.Tair - m->out.Twb; // Wet bulb T depression
-    } catch (const std::exception& e) {
-        cdm_error_handler("[WetBulbTemperature] %s\n", e.what());
-        return 1;
-    }
-    
-    m->out.rhoL = 1. / ((m->in.xs0 / m->in.rhoS) + ((1. - m->in.xs0) / m->in.rhoW));
     cdm::NozzleVelocity nv(m->in.PN, m->in.thetaN, m->out.rhoL);
     m->out.nva = nv.angle;
     m->out.nvz = nv.z;
@@ -154,11 +160,17 @@ void cdm_print_report(cdm_model_t *model)
         fmt::print("σ2 = {}\n", dsparams.d2);
         fmt::print("w1 = {}\n", dsparams.k1);
         fmt::print("\n{:<6} {:>6} {:>6}\n", "DD", "Obs.", "Pred.");
-        for (const auto& xy : m->in.dsd) {
+        for (const auto& xy : m->in.dsd)
             fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, m->out.dsmodel->cdf(xy.first)*100);
-        }
     }
-    
+
+    print_header("Atmospheric Properties");
+    fmt::print("ρA   = {}\n", m->out.rhoA);
+    fmt::print("μA   = {}\n", m->out.muA);
+    fmt::print("Tdp  = {}\n", m->out.Tdp);
+    fmt::print("Twb  = {}\n", m->out.Twb);
+    fmt::print("ΔTwb = {}\n", m->out.dTwb);
+
     print_header("Wind Velocity Profile");
     fmt::print("Uf  = {}\n", m->out.Uf); 
     fmt::print("z0  = {}\n", m->out.z0);
@@ -174,30 +186,23 @@ void cdm_print_report(cdm_model_t *model)
         fmt::print("\n"); break;
     }
 
-    print_header("Wet Bulb Temperature");
-    fmt::print("Twb  = {}\n", m->out.Twb);
-    fmt::print("ΔTwb = {}\n", m->out.dTwb);
-
     print_header("Droplet Transport");
     fmt::print("{:<8} {:>10} {:>10}\n", "Angle", "Vx", "Vz");
-    for (size_t i = 0; i < m->out.nva.size(); ++i) {
+    for (size_t i = 0; i < m->out.nva.size(); ++i)
         fmt::print("{:<8.3f} {:>10.2f} {:>10.2f}\n", m->out.nva.at(i), m->out.nvx.at(i), m->out.nvz.at(i));
-    }
     fmt::print("\n");
     fmt::print("{:<8} {:>10}\n", "DD", "Distance");
     for (size_t i = 0; i < m->out.dp.size(); ++i) {
         fmt::print("{:<8.3f}", m->out.dp.at(i));
-        for (size_t j = 0; j < m->out.xdist.size(); ++j) {
+        for (size_t j = 0; j < m->out.xdist.size(); ++j)
             fmt::print(" {:>10.2f}", m->out.xdist[j].at(i));
-        }
         fmt::print("\n");
     }
 
     print_header("Deposition");
     fmt::print("{:<8} {:>9}\n", "Distance", "APPlume");
-    for (size_t i = 0; i < m->out.applume.size(); ++i) {
+    for (size_t i = 0; i < m->out.applume.size(); ++i)
         fmt::print("{:<8.3f} {:>8.4f}%\n", m->out.applume.at(i).first, m->out.applume.at(i).second);
-    }
 }
 
 char * cdm_get_output_string(cdm_model_t *model)
