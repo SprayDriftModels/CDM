@@ -25,7 +25,7 @@ WindVelocityProfile::WindVelocityProfile(const std::vector<std::pair<double, dou
     // Handle case where only one measurement is available.
     if (wvu.size() == 1) {
         auto [z1, ux1] = wvu[0];
-        Uf_ = ux1 * constants::karman / log(z1 / z0_);
+        Uf_ = ux1 * constants::karman / log((z1 - hC) / z0_);
         return;
     }
 
