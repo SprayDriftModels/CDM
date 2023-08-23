@@ -38,16 +38,18 @@ namespace cvode {
  */
 struct IntegratorStats
 {
-    long nsteps;     /**< number of steps taken by CVODE. */
-    long nfevals;    /**< number of calls to the user's `f` function. */
-    long nlinsetups; /**< number of calls made to the linear solver setup function. */
-    long netfails;   /**< number of error test failures. */
-    int qlast;       /**< method order used on the last internal step. */
-    int qcur;        /**< method order to be used on the next internal step. */
-    double hinused;  /**< actual value of initial step size. */
-    double hlast;    /**< step size taken on the last internal step. */
-    double hcur;     /**< step size to be attempted on the next internal step. */
-    double tcur;     /**< current internal time reached. */
+    long nsteps;     /**< Number of steps taken by CVODE. */
+    long nfevals;    /**< Number of calls to the user's `f` function. */
+    long nlinsetups; /**< Number of calls made to the linear solver setup function. */
+    long netfails;   /**< Number of error test failures. */
+    long nniters;    /**< Number of iterations in the nonlinear solver. */
+    long nnfails;    /**< Number of convergence failures in the nonlinear solver. */
+    int qlast;       /**< Method order used on the last internal step. */
+    int qcur;        /**< Method order to be used on the next internal step. */
+    double hinused;  /**< Actual value of initial step size. */
+    double hlast;    /**< Step size taken on the last internal step. */
+    double hcur;     /**< Step size to be attempted on the next internal step. */
+    double tcur;     /**< Current internal time reached. */
 };
 
 /**
@@ -203,6 +205,7 @@ struct Integrator
         CVodeGetIntegratorStats(mem_, &s.nsteps, &s.nfevals,
             &s.nlinsetups, &s.netfails, &s.qlast, &s.qcur,
             &s.hinused, &s.hlast, &s.hcur, &s.tcur);
+        CVodeGetNonlinSolvStats(mem_, &s.nniters, &s.nnfails);
         return s;
     }
 
@@ -264,6 +267,17 @@ struct Integrator
         long nslred = 0;
         CVodeGetNumStabLimOrderReds(mem_, &nslred);
         return (int)nslred;
+    }
+
+    /**
+     * Returns a suggested factor by which the user's tolerances should be scaled when too much
+     * accuracy has been requested for some internal step.
+     */
+    double getTolScaleFactor() const
+    {
+        double tolsfac = 0;
+        CVodeGetTolScaleFactor(mem_, &nslred);
+        return tolsfac;
     }
 
     /**
