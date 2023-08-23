@@ -122,18 +122,18 @@ static double EstimateVt(double dp, double rhoL, double rhoA, double muA)
 
 DropletTransport::DropletTransport(const cdm::Model &m)
 {
-    params.z0 = m.out.z0 * 100.; // m to cm
-    params.Uf = m.out.Uf * 100.; // m/s to cm/s
-    params.hN = m.in.hN * 100.;  // m to cm
-    params.hC = m.in.hC * 100.;  // m to cm
-    params.dTwb = m.out.dTwb;
-    params.rhoW = m.in.rhoW;
-    params.rhoS = m.in.rhoS;
-    params.rhoL = m.out.rhoL;
-    params.rhoA = m.out.rhoA;
-    params.muA = m.out.muA;
-    params.xs0 = m.in.xs0;
-    params.ddd = m.in.ddd;
+    params.z0 = m.z0 * 100.; // m to cm
+    params.Uf = m.Uf * 100.; // m/s to cm/s
+    params.hN = m.hN * 100.;  // m to cm
+    params.hC = m.hC * 100.;  // m to cm
+    params.dTwb = m.dTwb;
+    params.rhoW = m.rhoW;
+    params.rhoS = m.rhoS;
+    params.rhoL = m.rhoL;
+    params.rhoA = m.rhoA;
+    params.muA = m.muA;
+    params.xs0 = m.xs0;
+    params.ddd = m.ddd;
     params.Ms0 = 0;
     params.Mw0 = 0;
 
@@ -148,14 +148,14 @@ DropletTransport::DropletTransport(const cdm::Model &m)
     // Initialize CVODE with default state.
     cvi.init(RhsFn, 0, {});
     cvi.setUserData(&params);
-    cvi.setTolerances(m.in.cvreltol, m.in.cvabstol);
-    cvi.setMaxOrd(m.in.cvmaxord);
-    cvi.setMaxNumSteps(m.in.cvmxsteps);
-    cvi.setStabLimDet(m.in.cvstldet);
-    cvi.setMaxErrTestFails(m.in.cvmaxnef);
-    cvi.setMaxNonlinIters(m.in.cvmaxcor); 
-    cvi.setMaxConvFails(m.in.cvmaxncf);
-    cvi.setNonlinConvCoef(m.in.cvnlscoef);
+    cvi.setTolerances(m.cvreltol, m.cvabstol);
+    cvi.setMaxOrd(m.cvmaxord);
+    cvi.setMaxNumSteps(m.cvmxsteps);
+    cvi.setStabLimDet(m.cvstldet);
+    cvi.setMaxErrTestFails(m.cvmaxnef);
+    cvi.setMaxNonlinIters(m.cvmaxcor); 
+    cvi.setMaxConvFails(m.cvmaxncf);
+    cvi.setNonlinConvCoef(m.cvnlscoef);
 }
 
 double DropletTransport::operator()(double Vz0, double Vx0, double dp)

@@ -59,66 +59,66 @@ void to_json(nlohmann::ordered_json& json, const Model& m)
 {
     json = nlohmann::ordered_json{
         m.name, {
-            {"dropletSizeDistribution", m.in.dsd},
-            {"dryAirTemperature", m.in.Tair},
-            {"barometricPressure", m.in.Patm},
-            {"relativeHumidity", m.in.RH},
+            {"dropletSizeDistribution", m.dsd},
+            {"dryAirTemperature", m.Tair},
+            {"barometricPressure", m.Patm},
+            {"relativeHumidity", m.RH},
             {"windVelocityProfile", {
-                {"velocityMeasurements", m.in.wvu},
-                {"temperatureMeasurements", m.in.wvT},
-                {"horizontalVariation", m.in.ppp},
-                {"horizontalVariationMethod", m.in.pppMethod}
+                {"velocityMeasurements", m.wvu},
+                {"temperatureMeasurements", m.wvT},
+                {"horizontalVariation", m.ppp},
+                {"horizontalVariationMethod", m.pppMethod}
             }},
             {"dropletTransport", {
-                {"nozzleHeight", m.in.hN},
-                {"canopyHeight", m.in.hC},
-                {"nozzlePressure", m.in.PN},
-                {"nozzleAngle", m.in.thetaN},
-                {"waterDensity", m.in.rhoW},
-                {"solidsDensity", m.in.rhoS},
-                {"solidsFraction", m.in.xs0},
-                {"ddd", m.in.ddd}
+                {"nozzleHeight", m.hN},
+                {"canopyHeight", m.hC},
+                {"nozzlePressure", m.PN},
+                {"nozzleAngle", m.thetaN},
+                {"waterDensity", m.rhoW},
+                {"solidsDensity", m.rhoS},
+                {"solidsFraction", m.xs0},
+                {"ddd", m.ddd}
             }},
             {"deposition", {
-                {"dsdCurveFitting", m.in.dsdfit},
-                {"applicationRate", m.in.iar},
-                {"concentrationAI", m.in.xactive},
-                {"downwindFieldDepth", m.in.FD},
-                {"crosswindFieldDepth", m.in.PL},
-                {"nozzleSpacing", m.in.dN},
-                {"minDropletSize", m.in.dpmin},
-                {"maxDropletSize", m.in.dpmax},
-                {"maxDriftDistance", m.in.Lmax},
-                {"lambda", m.in.lambda},
-                {"outputInterval", m.in.dx}
+                {"dsdCurveFitting", m.dsdfit},
+                {"applicationRate", m.IAR},
+                {"concentrationAI", m.xactive},
+                {"downwindFieldDepth", m.FD},
+                {"crosswindFieldDepth", m.PL},
+                {"nozzleSpacing", m.dN},
+                {"minDropletSize", m.dpmin},
+                {"maxDropletSize", m.dpmax},
+                {"maxDriftDistance", m.Lmax},
+                {"lambda", m.lambda},
+                {"outputInterval", m.dx}
             }},
             {"integrationOptions", {
-                {"relativeTolerance", m.in.cvreltol},
-                {"absoluteTolerances", m.in.cvabstol},
-                {"maxOrder", m.in.cvmaxord},
-                {"maxSteps", m.in.cvmxsteps},
-                {"stabilityLimitDetection", m.in.cvstldet},
-                {"maxErrorTestFailures", m.in.cvmaxnef},
-                {"maxNonlinearIterations", m.in.cvmaxcor},
-                {"maxConvergenceFailures", m.in.cvmaxncf},
-                {"convergenceCoefficient", m.in.cvnlscoef}
+                {"relativeTolerance", m.cvreltol},
+                {"absoluteTolerances", m.cvabstol},
+                {"maxOrder", m.cvmaxord},
+                {"maxSteps", m.cvmxsteps},
+                {"stabilityLimitDetection", m.cvstldet},
+                {"maxErrorTestFailures", m.cvmaxnef},
+                {"maxNonlinearIterations", m.cvmaxcor},
+                {"maxConvergenceFailures", m.cvmaxncf},
+                {"convergenceCoefficient", m.cvnlscoef}
             }},
             {"output", {
-                {"dropletSizeModel", m.out.dsmodel},
-                {"mixtureDensity", m.out.rhoL},
-                {"wetAirDensity", m.out.rhoA},
-                {"wetAirDynamicViscosity", m.out.muA},
-                {"dewPointTemperature", m.out.Tdp},
-                {"wetBulbTemperature", m.out.Twb},
-                {"wetBulbTemperatureDepression", m.out.dTwb},
-                {"horizontalVariation", m.out.ppp},
-                {"frictionHeight", m.out.z0},
-                {"frictionVelocity", m.out.Uf},
-                {"nozzleVelocityZ", m.out.nvz},
-                {"nozzleVelocityX", m.out.nvx},
-                {"dropletSize", m.out.dp},
-                {"dropletTransportDistance", m.out.xdist},
-                {"deposition", m.out.applume}
+                {"dropletSizeModel", m.dsmodel},
+                {"mixtureDensity", m.rhoL},
+                {"wetAirDensity", m.rhoA},
+                {"wetAirDynamicViscosity", m.muA},
+                {"dewPointTemperature", m.Tdp},
+                {"wetBulbTemperature", m.Twb},
+                {"wetBulbTemperatureDepression", m.dTwb},
+                {"horizontalVariation", m.pppcalc},
+                {"frictionHeight", m.z0},
+                {"frictionVelocity", m.Uf},
+                {"nozzleVelocityZ", m.nvz},
+                {"nozzleVelocityX", m.nvx},
+                {"dropletSize", m.dp},
+                {"dropletTransportDistance", m.xdist},
+                {"deposition", m.applume}
             }}
         }
     };
@@ -129,89 +129,89 @@ void from_json(const nlohmann::ordered_json& json, Model& m)
     m.name = json.begin().key();
     auto j = json.front();
 
-    j.at("dropletSizeDistribution").get_to(m.in.dsd);
-    j.at("dryAirTemperature").get_to(m.in.Tair);
-    j.at("barometricPressure").get_to(m.in.Patm);
-    j.at("relativeHumidity").get_to(m.in.RH);
+    j.at("dropletSizeDistribution").get_to(m.dsd);
+    j.at("dryAirTemperature").get_to(m.Tair);
+    j.at("barometricPressure").get_to(m.Patm);
+    j.at("relativeHumidity").get_to(m.RH);
 
     auto j0 = j.at("windVelocityProfile");
-    j0.at("velocityMeasurements").get_to(m.in.wvu);
+    j0.at("velocityMeasurements").get_to(m.wvu);
     if (j0.count("temperatureMeasurements") != 0) {
-        j0.at("temperatureMeasurements").get_to(m.in.wvT);
+        j0.at("temperatureMeasurements").get_to(m.wvT);
     }
     if (j0.count("horizontalVariation") != 0) {
-        j0.at("horizontalVariation").get_to(m.in.ppp);
+        j0.at("horizontalVariation").get_to(m.ppp);
     }
     if (j0.count("horizontalVariationMethod") != 0) {
-        j0.at("horizontalVariationMethod").get_to(m.in.pppMethod);
-        switch (m.in.pppMethod) {
-        case Model::Input::PPPMethod::ENTERED:
-        case Model::Input::PPPMethod::INTERPOLATE:
-        case Model::Input::PPPMethod::SDTF:
+        j0.at("horizontalVariationMethod").get_to(m.pppMethod);
+        switch (m.pppMethod) {
+        case PPPMethod::ENTERED:
+        case PPPMethod::INTERPOLATE:
+        case PPPMethod::SDTF:
             break;
         default: // Invalid
-            m.in.pppMethod = Model::Input::PPPMethod::ENTERED;
+            m.pppMethod = PPPMethod::ENTERED;
             break;
         }
     }
     
     auto j1 = j.at("dropletTransport");
-    j1.at("nozzleHeight").get_to(m.in.hN);
-    j1.at("canopyHeight").get_to(m.in.hC);
-    j1.at("nozzlePressure").get_to(m.in.PN);
-    j1.at("nozzleAngle").get_to(m.in.thetaN);
-    j1.at("waterDensity").get_to(m.in.rhoW);
-    j1.at("solidsDensity").get_to(m.in.rhoS);
-    j1.at("solidsFraction").get_to(m.in.xs0);
-    j1.at("ddd").get_to(m.in.ddd);
+    j1.at("nozzleHeight").get_to(m.hN);
+    j1.at("canopyHeight").get_to(m.hC);
+    j1.at("nozzlePressure").get_to(m.PN);
+    j1.at("nozzleAngle").get_to(m.thetaN);
+    j1.at("waterDensity").get_to(m.rhoW);
+    j1.at("solidsDensity").get_to(m.rhoS);
+    j1.at("solidsFraction").get_to(m.xs0);
+    j1.at("ddd").get_to(m.ddd);
 
     auto j2 = j.at("deposition");
-    j2.at("dsdCurveFitting").get_to(m.in.dsdfit);
-    j2.at("applicationRate").get_to(m.in.iar);
-    j2.at("concentrationAI").get_to(m.in.xactive);
-    j2.at("downwindFieldDepth").get_to(m.in.FD);
-    j2.at("crosswindFieldDepth").get_to(m.in.PL);
-    j2.at("nozzleSpacing").get_to(m.in.dN);
-    j2.at("minDropletSize").get_to(m.in.dpmin);
-    j2.at("maxDropletSize").get_to(m.in.dpmax);
+    j2.at("dsdCurveFitting").get_to(m.dsdfit);
+    j2.at("applicationRate").get_to(m.IAR);
+    j2.at("concentrationAI").get_to(m.xactive);
+    j2.at("downwindFieldDepth").get_to(m.FD);
+    j2.at("crosswindFieldDepth").get_to(m.PL);
+    j2.at("nozzleSpacing").get_to(m.dN);
+    j2.at("minDropletSize").get_to(m.dpmin);
+    j2.at("maxDropletSize").get_to(m.dpmax);
     if (j2.count("maxDriftDistance") != 0) {
-        j2.at("maxDriftDistance").get_to(m.in.Lmax);
+        j2.at("maxDriftDistance").get_to(m.Lmax);
     }
     if (j2.count("lambda") != 0) {
-        j2.at("lambda").get_to(m.in.lambda);
+        j2.at("lambda").get_to(m.lambda);
     }
     if (j2.count("outputInterval") != 0) {
-        j2.at("outputInterval").get_to(m.in.dx);
+        j2.at("outputInterval").get_to(m.dx);
     }
 
     if (j.count("integrationOptions") != 0) {
         auto j3 = j.at("integrationOptions");
         if (j3.count("relativeTolerance") != 0) {
-            j3.at("relativeTolerance").get_to(m.in.cvreltol);
+            j3.at("relativeTolerance").get_to(m.cvreltol);
         }
         if (j3.count("absoluteTolerances") != 0) {
-            j3.at("absoluteTolerances").get_to(m.in.cvabstol);
+            j3.at("absoluteTolerances").get_to(m.cvabstol);
         }
         if (j3.count("maxOrder") != 0) {
-            j3.at("maxOrder").get_to(m.in.cvmaxord);
+            j3.at("maxOrder").get_to(m.cvmaxord);
         }
         if (j3.count("maxSteps") != 0) {
-            j3.at("maxSteps").get_to(m.in.cvmxsteps);
+            j3.at("maxSteps").get_to(m.cvmxsteps);
         }
         if (j3.count("stabilityLimitDetection") != 0) {
-            j3.at("stabilityLimitDetection").get_to(m.in.cvstldet);
+            j3.at("stabilityLimitDetection").get_to(m.cvstldet);
         }
         if (j3.count("maxErrorTestFailures") != 0) {
-            j3.at("maxErrorTestFailures").get_to(m.in.cvmaxnef);
+            j3.at("maxErrorTestFailures").get_to(m.cvmaxnef);
         }
         if (j3.count("maxNonlinearIterations") != 0) {
-            j3.at("maxNonlinearIterations").get_to(m.in.cvmaxcor);
+            j3.at("maxNonlinearIterations").get_to(m.cvmaxcor);
         }
         if (j3.count("maxConvergenceFailures") != 0) {
-            j3.at("maxConvergenceFailures").get_to(m.in.cvmaxncf);
+            j3.at("maxConvergenceFailures").get_to(m.cvmaxncf);
         }
         if (j3.count("convergenceCoefficient") != 0) {
-            j3.at("convergenceCoefficient").get_to(m.in.cvnlscoef);
+            j3.at("convergenceCoefficient").get_to(m.cvnlscoef);
         }
     }
 }

@@ -23,7 +23,7 @@ struct WindVelocityProfile
 {
     WindVelocityProfile(const std::vector<std::pair<double, double>>& wvu,
                         const std::vector<std::pair<double, double>>& wvT,
-                        Model::Input::PPPMethod pppMethod, double hC);
+                        PPPMethod pppMethod, double hC);
 
     double frictionHeight() const
         { return z0_; }

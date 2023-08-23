@@ -70,56 +70,56 @@ int cdm_run_model(cdm_model_t *model)
     
     cdm::Model *m = reinterpret_cast<cdm::Model *>(model);
 
-    if (m->in.dsdfit) {
-        m->out.dsmodel = std::make_unique<cdm::DropletSizeModel>(m->in.dsd);
+    if (m->dsdfit) {
+        m->dsmodel = std::make_unique<cdm::DropletSizeModel>(m->dsd);
         try {
-            m->out.dsmodel->fit();
+            m->dsmodel->fit();
         } catch (const std::exception& e) {
             cdm_error_handler("[DropletSizeModel] %s\n", e.what());
             return 1;
         }
     }
 
-    m->out.rhoL = 1. / ((m->in.xs0 / m->in.rhoS) + ((1. - m->in.xs0) / m->in.rhoW));
+    m->rhoL = 1. / ((m->xs0 / m->rhoS) + ((1. - m->xs0) / m->rhoW));
 
     try {
-        cdm::AtmosphericProperties ap(m->in.Tair, m->in.Patm, m->in.RH);
-        m->out.rhoA = ap.wetAirDensity();
-        m->out.muA = ap.wetAirDynamicViscosity();
-        m->out.Tdp = ap.dewPointTemperature();
-        m->out.Twb = ap.wetBulbTemperature();
-        m->out.dTwb = ap.wetBulbTemperatureDepression();
+        cdm::AtmosphericProperties ap(m->Tair, m->Patm, m->RH);
+        m->rhoA = ap.wetAirDensity();
+        m->muA = ap.wetAirDynamicViscosity();
+        m->Tdp = ap.dewPointTemperature();
+        m->Twb = ap.wetBulbTemperature();
+        m->dTwb = ap.wetBulbTemperatureDepression();
     } catch (const std::exception& e) {
         cdm_error_handler("[AtmosphericProperties] %s\n", e.what());
         return 1;
     }
 
     try {
-        cdm::WindVelocityProfile wvp(m->in.wvu, m->in.wvT, m->in.pppMethod, m->in.hC);
-        m->out.z0 = wvp.frictionHeight();
-        m->out.Uf = wvp.frictionVelocity();
-        if (m->in.pppMethod == cdm::Model::Input::PPPMethod::ENTERED)
-            m->out.ppp = m->in.ppp.value_or(cdm::constants::default_psipsipsi);
+        cdm::WindVelocityProfile wvp(m->wvu, m->wvT, m->pppMethod, m->hC);
+        m->z0 = wvp.frictionHeight();
+        m->Uf = wvp.frictionVelocity();
+        if (m->pppMethod == cdm::PPPMethod::ENTERED)
+            m->pppcalc = m->ppp.value_or(cdm::constants::default_psipsipsi);
         else
-            m->out.ppp = wvp.psipsipsi();
+            m->pppcalc = wvp.psipsipsi();
     } catch (const std::exception& e) {
         cdm_error_handler("[WindVelocityProfile] %s\n", e.what());
         return 1;
     }
     
-    cdm::NozzleVelocity nv(m->in.PN, m->in.thetaN, m->out.rhoL);
-    m->out.nva = nv.angle;
-    m->out.nvz = nv.z;
-    m->out.nvx = nv.x;
+    cdm::NozzleVelocity nv(m->PN, m->thetaN, m->rhoL);
+    m->nva = nv.angle;
+    m->nvz = nv.z;
+    m->nvx = nv.x;
 
     cdm::DropletTransport dt(*m);
-    m->out.dp.resize(23, 0);
-    for (size_t i = 0; i < m->out.dp.size(); ++i) {
-        m->out.dp[i] = m->in.dpmin * pow(m->in.dpmax/m->in.dpmin, i/22.);
-        for (size_t j = 0; j < m->out.xdist.size(); ++j) {
+    m->dp.resize(23, 0);
+    for (size_t i = 0; i < m->dp.size(); ++i) {
+        m->dp[i] = m->dpmin * pow(m->dpmax/m->dpmin, i/22.);
+        for (size_t j = 0; j < m->xdist.size(); ++j) {
             try {
-                double xdist = dt(m->out.nvz[j], m->out.nvx[j], m->out.dp.at(i));
-                m->out.xdist[j].emplace_back(xdist);
+                double xdist = dt(m->nvz[j], m->nvx[j], m->dp.at(i));
+                m->xdist[j].emplace_back(xdist);
             } catch (const std::exception& e) {
                 cdm_error_handler("[DropletTransport] %s\n", e.what());
                 return 1;
@@ -128,9 +128,9 @@ int cdm_run_model(cdm_model_t *model)
     }
     
     try {
-        m->out.applume = cdm::Deposition(m->in.iar, m->in.xactive, m->in.FD, m->in.PL, m->in.dN,
-            m->out.ppp, m->out.rhoL, m->out.dp, m->out.xdist, m->in.dsd, m->out.dsmodel,
-            m->in.dpmin, m->in.dpmax, m->in.Lmax, m->in.lambda, m->in.dx);
+        m->applume = cdm::Deposition(m->IAR, m->xactive, m->FD, m->PL, m->dN,
+            m->pppcalc, m->rhoL, m->dp, m->xdist, m->dsd, m->dsmodel,
+            m->dpmin, m->dpmax, m->Lmax, m->lambda, m->dx);
     } catch (const std::exception& e) {
         cdm_error_handler("[Deposition] %s\n", e.what());
         return 1;
@@ -149,10 +149,10 @@ void cdm_print_report(cdm_model_t *model)
         fmt::print("{:->{}}\n\n", "", 80);
     };
 
-    if (m->out.dsmodel) {
+    if (m->dsmodel) {
         print_header("Droplet Size Distribution");
-        fmt::print("{}\n", m->out.dsmodel->report());
-        const auto dsparams = m->out.dsmodel->params();
+        fmt::print("{}\n", m->dsmodel->report());
+        const auto dsparams = m->dsmodel->params();
         fmt::print("\nParameters\n");
         fmt::print("μ1 = {}\n", dsparams.a1);
         fmt::print("μ2 = {}\n", dsparams.a2);
@@ -160,27 +160,27 @@ void cdm_print_report(cdm_model_t *model)
         fmt::print("σ2 = {}\n", dsparams.d2);
         fmt::print("w1 = {}\n", dsparams.k1);
         fmt::print("\n{:<6} {:>6} {:>6}\n", "DD", "Obs.", "Pred.");
-        for (const auto& xy : m->in.dsd)
-            fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, m->out.dsmodel->cdf(xy.first)*100);
+        for (const auto& xy : m->dsd)
+            fmt::print("{:<6} {:>6.2f} {:>6.2f}\n", xy.first, xy.second*100, m->dsmodel->cdf(xy.first)*100);
     }
 
     print_header("Atmospheric Properties");
-    fmt::print("ρA   = {}\n", m->out.rhoA);
-    fmt::print("μA   = {}\n", m->out.muA);
-    fmt::print("Tdp  = {}\n", m->out.Tdp);
-    fmt::print("Twb  = {}\n", m->out.Twb);
-    fmt::print("ΔTwb = {}\n", m->out.dTwb);
+    fmt::print("ρA = {}\n", m->rhoA);
+    fmt::print("μA = {}\n", m->muA);
+    fmt::print("Tdp = {}\n", m->Tdp);
+    fmt::print("Twb = {}\n", m->Twb);
+    fmt::print("ΔTwb = {}\n", m->dTwb);
 
     print_header("Wind Velocity Profile");
-    fmt::print("Uf  = {}\n", m->out.Uf); 
-    fmt::print("z0  = {}\n", m->out.z0);
-    fmt::print("ψψψ = {} ", m->out.ppp);
-    switch (m->in.pppMethod) {
-    case cdm::Model::Input::PPPMethod::ENTERED:
+    fmt::print("Uf = {}\n", m->Uf); 
+    fmt::print("z0 = {}\n", m->z0);
+    fmt::print("ψψψ = {} ", m->pppcalc);
+    switch (m->pppMethod) {
+    case cdm::PPPMethod::ENTERED:
         fmt::print("(ENTERED)\n"); break;
-    case cdm::Model::Input::PPPMethod::INTERPOLATE:
+    case cdm::PPPMethod::INTERPOLATE:
         fmt::print("(INTERPOLATE)\n"); break;
-    case cdm::Model::Input::PPPMethod::SDTF:
+    case cdm::PPPMethod::SDTF:
         fmt::print("(SDTF)\n"); break;
     default:
         fmt::print("\n"); break;
@@ -188,21 +188,21 @@ void cdm_print_report(cdm_model_t *model)
 
     print_header("Droplet Transport");
     fmt::print("{:<8} {:>10} {:>10}\n", "Angle", "Vx", "Vz");
-    for (size_t i = 0; i < m->out.nva.size(); ++i)
-        fmt::print("{:<8.3f} {:>10.2f} {:>10.2f}\n", m->out.nva.at(i), m->out.nvx.at(i), m->out.nvz.at(i));
+    for (size_t i = 0; i < m->nva.size(); ++i)
+        fmt::print("{:<8.3f} {:>10.2f} {:>10.2f}\n", m->nva.at(i), m->nvx.at(i), m->nvz.at(i));
     fmt::print("\n");
     fmt::print("{:<8} {:>10}\n", "DD", "Distance");
-    for (size_t i = 0; i < m->out.dp.size(); ++i) {
-        fmt::print("{:<8.3f}", m->out.dp.at(i));
-        for (size_t j = 0; j < m->out.xdist.size(); ++j)
-            fmt::print(" {:>10.2f}", m->out.xdist[j].at(i));
+    for (size_t i = 0; i < m->dp.size(); ++i) {
+        fmt::print("{:<8.3f}", m->dp.at(i));
+        for (size_t j = 0; j < m->xdist.size(); ++j)
+            fmt::print(" {:>10.2f}", m->xdist[j].at(i));
         fmt::print("\n");
     }
 
     print_header("Deposition");
     fmt::print("{:<8} {:>9}\n", "Distance", "APPlume");
-    for (size_t i = 0; i < m->out.applume.size(); ++i)
-        fmt::print("{:<8.3f} {:>8.4f}%\n", m->out.applume.at(i).first, m->out.applume.at(i).second);
+    for (size_t i = 0; i < m->applume.size(); ++i)
+        fmt::print("{:<8.3f} {:>8.4f}%\n", m->applume.at(i).first, m->applume.at(i).second);
 }
 
 char * cdm_get_output_string(cdm_model_t *model)
