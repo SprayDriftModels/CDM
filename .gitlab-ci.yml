@@ -1,4 +1,4 @@
-image: "gitlab.bayer.com:4567/gbbfx/mondep:latest"
+image: "gitlab.bayer.com:4567/migration-factory/mondep:latest"
 
 stages:
   - build
