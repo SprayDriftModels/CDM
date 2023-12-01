@@ -276,7 +276,7 @@ struct Integrator
     double getTolScaleFactor() const
     {
         double tolsfac = 0;
-        CVodeGetTolScaleFactor(mem_, &nslred);
+        CVodeGetTolScaleFactor(mem_, &tolsfac);
         return tolsfac;
     }
 
