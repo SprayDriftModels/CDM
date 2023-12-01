@@ -19,6 +19,8 @@ jobs:
             triplet: x64-linux
           - os: macos-latest
             triplet: x64-osx
+          - os: windows-latest
+            triplet: x64-windows
 
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
