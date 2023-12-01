@@ -169,6 +169,7 @@ set(CPACK_SOURCE_GENERATOR ZIP)
 set(CPACK_SOURCE_IGNORE_FILES
   "\\\\.DS_Store"
   "/\\\\.git/"
+  "/\\\\.github/"
   "/\\\\.gitlab/"
   "/\\\\.vscode/"
   "/\\\\.clang-format"
@@ -182,6 +183,7 @@ set(CPACK_SOURCE_IGNORE_FILES
   "/R/cdm/src/Makevars$"
   "/R/cdm/src/.*.o$"
   "/R/cdm/src/.*.so$"
-  "/R/cdm/src/.*.dll$")
+  "/R/cdm/src/.*.dll$"
+  "/R/cdm/src/.*.dylib$")
 
 include(CPack)
