@@ -21,4 +21,4 @@ jobs:
         submodules: 'recursive'
 
     - name: Run vcpkg
-      run: ${{ github.workspace }}/vcpkg/vcpkg install --dry-run
+      run: $VCPKG_INSTALLATION_ROOT/vcpkg install --dry-run
