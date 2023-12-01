@@ -2,10 +2,10 @@
   "version": 4,
   "configurePresets": [
     {
-      "name": "default",
-      "description": "Configure with vcpkg toolchain and generate Ninja project files",
-      "generator": "Ninja",
+      "name": "multi-vcpkg",
+      "description": "Configure with vcpkg toolchain and generate project files",
       "binaryDir": "${sourceDir}/build",
+      "generator": "Ninja",
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "environment": {
         "VCPKG_FEATURE_FLAGS": "manifests,versions,binarycaching,registries"
@@ -13,12 +13,17 @@
       "cacheVariables": {
         "BUILD_SHARED_LIBS": "ON"
       }
+    },
+    {
+      "name": "multi-vcpkg-ci",
+      "inherits": "multi-vcpkg",
+      "toolchainFile": "$env{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
     }
   ],
   "buildPresets": [
     {
       "name": "default",
-      "configurePreset": "default",
+      "configurePreset": "multi-vcpkg",
       "configuration": "Release"
     }
   ]
