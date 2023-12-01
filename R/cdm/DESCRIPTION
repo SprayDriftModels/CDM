@@ -1,0 +1,10 @@
+Package: cdm
+Type: Package
+Title: Casanova Drift Model
+Version: 1.0
+Date: 2021-11-11
+Author: Ed Casanova [aut], John Buonagurio [aut, cre]
+Maintainer: John Buonagurio <jbuonagurio@exponent.com>
+Description: R interface to Casanova Drift Model.
+License: file LICENSE
+Imports: jsonlite

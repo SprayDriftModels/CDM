@@ -1,0 +1,71 @@
+{
+    "case1": {
+        "dropletSizeDistribution": [            // μm, cumulative volume fraction
+            [ 18,   0.000054474 ],
+            [ 22,   0.001351014 ],
+            [ 26,   0.003268234 ],
+            [ 30,   0.005539554 ],
+            [ 36,   0.009579954 ],
+            [ 44,   0.016579621 ],
+            [ 52,   0.025932571 ],
+            [ 62,   0.041385637 ],
+            [ 74,   0.065469537 ],
+            [ 86,   0.095197171 ],
+            [ 100,  0.135661871 ],
+            [ 120,  0.201414871 ],
+            [ 150,  0.308171204 ],
+            [ 180,  0.414714871 ],
+            [ 210,  0.513876571 ],
+            [ 250,  0.628806237 ],
+            [ 300,  0.742035237 ],
+            [ 360,  0.837504004 ],
+            [ 410,  0.890662737 ],
+            [ 500,  0.945682704 ],
+            [ 600,  0.971602571 ],
+            [ 720,  0.980848457 ],
+            [ 860,  0.981796816 ],
+            [ 1020, 0.981797477 ],
+            [ 1220, 0.981821280 ],
+            [ 1460, 0.983314737 ],
+            [ 1740, 0.990302960 ],
+            [ 2060, 0.999217814 ],
+            [ 2460, 0.999992224 ],
+            [ 2940, 1.000000000 ]
+        ],
+        "dryAirTemperature": 14.0,              // Dry air temperature [°C]
+        "barometricPressure": 101325,           // Barometric pressure [Pa]
+        "relativeHumidity": 71.0,               // Relative humidity [percent]
+        "windVelocityProfile": {
+            "velocityMeasurements": [           // Elevation [m], Velocity [m/s]
+                [0.5, 2.716181348],
+                [2.0, 3.486125664]
+            ],
+            "temperatureMeasurements": [],      // Elevation [m], Temperature [°C]
+            "horizontalVariation": 5.2,         // Horizontal variation in wind direction around mean (ψψψ) [degrees]
+            "horizontalVariationMethod": 0      // Calculation method for ψψψ: 0=Entered, 1=Interpolate, 2=SDTF
+        },
+        "dropletTransport": {
+            "nozzleHeight": 0.5100066,          // Height of nozzle above ground [m]
+            "canopyHeight": 0.01,               // Canopy height [m]
+            "nozzlePressure": 300000.0,         // Nozzle pressure [Pa]
+            "nozzleAngle": 110.0,               // Nozzle angle [degrees]
+            "waterDensity": 1.0,                // Density of pure water in droplet [g/cm³]
+            "solidsDensity": 1.6,               // Density of dissolved solids in droplet [g/cm³]
+            "solidsFraction": 0.009566,         // Mass fraction dissolved solids in solution
+            "ddd": 60                           // Optional: scale factor for maximum deposition time (δδδ), ≥1
+        },
+        "deposition": {
+            "dsdCurveFitting": true,            // Enable curve fitting for DSD by non-linear least squares. If disabled, finite difference approximation is used.
+            "applicationRate": 2.876078683,     // Intended application rate [kg/ha]
+            "concentrationAI": 0.009566,        // Concentration in tank solution, wt. fraction
+            "downwindFieldDepth": 24.0,         // Downwind field depth [m]
+            "crosswindFieldDepth": 72.0,        // Crosswind field width [m]
+            "nozzleSpacing": 0.5,               // Space between nozzles on boom [m]
+            "minDropletSize": 17.831,           // Minimum droplet size for deposition [μm]
+            "maxDropletSize": 3000.0,           // Maximum droplet size for deposition [μm]
+            "maxDriftDistance": 50.0,           // Optional: Maximum drift distance for deposition (Lmax) [m], or null
+            "lambda": 4,                        // Optional: scale factor for number of drift segments (λ), ≥1, default 1
+            "outputInterval": 0.2               // Optional: distance interval for deposition output (Δx) [m], default 0.5
+        }
+    }
+}

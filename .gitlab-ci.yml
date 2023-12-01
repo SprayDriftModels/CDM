@@ -1,0 +1,20 @@
+image: "gitlab.bayer.com:4567/migration-factory/mondep:latest"
+
+stages:
+  - build
+
+build-job:
+  stage: build
+  script:
+    - cmake -B ./build -S . -G Ninja
+      -DCMAKE_BUILD_TYPE=Release
+      -DBUILD_SHARED_LIBS=Off
+      -DCMAKE_VERBOSE_MAKEFILE=On
+      -DCMAKE_POSITION_INDEPENDENT_CODE=On
+      -DCMAKE_EXE_LINKER_FLAGS="-static"
+      -DCMAKE_SKIP_RPATH=On
+    - cmake --build ./build
+    - (cd ./build && exec cpack -G ZIP -C Release)
+  artifacts:
+    paths:
+      - ./build/cdm-*-Linux.zip

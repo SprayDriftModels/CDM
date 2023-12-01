@@ -1,0 +1,7 @@
+PKG_CPPFLAGS=@cflags@ -DR_NO_REMAP -DSTRICT_R_HEADERS
+PKG_LIBS=@libs@
+
+all: clean
+
+clean:
+	rm -f $(SHLIB) $(OBJECTS)

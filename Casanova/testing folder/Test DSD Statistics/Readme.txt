@@ -1,1 +1,0 @@
-This folder contains data to only look at the statistics of the DSD calculations.
