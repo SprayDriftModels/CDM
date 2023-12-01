@@ -1,0 +1,24 @@
+name: update-dependency-graph
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  VCPKG_FEATURE_FLAGS: dependencygraph
+  VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+
+    - name: Run vcpkg
+      run: ${{ github.workspace }}/vcpkg/vcpkg install --dry-run
