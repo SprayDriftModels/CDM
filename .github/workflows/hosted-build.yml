@@ -1,4 +1,4 @@
-name: hosted-build-workflow
+name: hosted-build
 on:
   push:
   workflow_dispatch:
@@ -37,6 +37,8 @@ jobs:
         submodules: 'recursive'
 
     - uses: lukka/get-cmake@latest
+
+    - uses: fortran-lang/setup-fortran@v1.3
 
     - name: Install dependencies and configure project
       run: cmake --preset multi-vcpkg-ci
