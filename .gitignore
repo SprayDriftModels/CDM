@@ -1,4 +1,9 @@
 .vscode/
 bin/
 build/
+R/cdm/src/Makevars
+R/cdm/src/*.o
+R/cdm/src/*.so
+R/cdm/src/*.dll
+R/cdm/src/*.dylib
 .DS_Store
