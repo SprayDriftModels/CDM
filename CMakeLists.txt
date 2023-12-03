@@ -25,9 +25,6 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-# Workaround for "-isystem" issue in MinGW build.
-set(CMAKE_NO_SYSTEM_FROM_IMPORTED ON)
-
 project(cdm LANGUAGES CXX DESCRIPTION "Casanova Drift Model")
 
 include(GNUInstallDirs)

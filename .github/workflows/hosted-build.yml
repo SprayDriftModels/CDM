@@ -27,22 +27,25 @@ jobs:
       VCPKG_FEATURE_FLAGS: dependencygraph
       VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite'
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
-    
+
     steps:
     - uses: actions/github-script@v6
       with:
         script: |
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-    
+
     - uses: actions/checkout@v3
       with:
         submodules: 'recursive'
 
+    - uses: ilammy/msvc-dev-cmd@v1
+      if: runner.os == 'Windows'
+
     - uses: lukka/get-cmake@latest
 
     - name: Install dependencies and configure project
-      run: cmake --preset multi-vcpkg-ci
+      run: cmake --preset multi-vcpkg
 
     - name: Build all targets
       run: cmake --build --preset default
@@ -50,7 +53,7 @@ jobs:
     - name: Generate package
       working-directory: ./build
       run: cpack -G TGZ -C Release
-    
+
     - name: Upload package
       uses: actions/upload-artifact@v3
       with:
