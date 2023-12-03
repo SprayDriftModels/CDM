@@ -15,17 +15,18 @@ jobs:
       matrix:
         os: [ubuntu-20.04, macos-11, windows-2019]
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-latest
             triplet: x64-linux
-          - os: macos-11
+          - os: macos-latest
             triplet: x64-osx
-          - os: windows-2019
-            triplet: x64-windows
+          - os: windows-latest
+            triplet: x64-windows-static
 
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       VCPKG_FEATURE_FLAGS: dependencygraph
       VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite'
+      VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
     
     steps:
     - uses: actions/github-script@v6
@@ -40,8 +41,6 @@ jobs:
 
     - uses: lukka/get-cmake@latest
 
-    - uses: fortran-lang/setup-fortran@v1.3
-
     - name: Install dependencies and configure project
       run: cmake --preset multi-vcpkg-ci
 
@@ -50,10 +49,10 @@ jobs:
 
     - name: Generate package
       working-directory: ./build
-      run: cpack -G ZIP -C Release
+      run: cpack -G TGZ -C Release
     
     - name: Upload package
       uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.os }}
-        path: build/*.zip
+        path: build/*.tar.gz
