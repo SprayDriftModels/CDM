@@ -1,4 +1,4 @@
-# Copyright (c) 2022 John Buonagurio <jbuonagurio@exponent.com>
+# Copyright (c) 2023 John Buonagurio <jbuonagurio@exponent.com>
 
 FROM alpine:latest as build
 
@@ -6,7 +6,7 @@ LABEL description="CDM Build Container"
 
 RUN apk update && apk add --no-cache binutils cmake make libgcc musl-dev gcc g++ ninja git
 
-RUN git clone --branch v3.8.1 https://bitbucket.org/blaze-lib/blaze.git /tmp/blaze \
+RUN git clone --branch v3.8.2 https://bitbucket.org/blaze-lib/blaze.git /tmp/blaze \
     && cmake -S /tmp/blaze -B /tmp/blaze-build -G Ninja \
              -DCMAKE_BUILD_TYPE=Release \
              -DUSE_LAPACK=Off \
@@ -18,7 +18,7 @@ RUN git clone --branch v1.77-standalone https://github.com/boostorg/math.git /tm
     && cp -R /tmp/boost-math/include/* /usr/local/include \
     && rm -rf /tmp/boost-math
 
-RUN git clone --branch 8.1.1 https://github.com/fmtlib/fmt.git /tmp/fmt \
+RUN git clone --branch 10.1.1 https://github.com/fmtlib/fmt.git /tmp/fmt \
     && cmake -S /tmp/fmt -B /tmp/fmt-build -G Ninja \
              -DCMAKE_BUILD_TYPE=Release \
              -DBUILD_SHARED_LIBS=Off \
@@ -27,7 +27,7 @@ RUN git clone --branch 8.1.1 https://github.com/fmtlib/fmt.git /tmp/fmt \
     && cmake --install /tmp/fmt-build \
     && rm -rf /tmp/fmt && rm -rf /tmp/fmt-build
 
-RUN git clone --branch v3.11.2 https://github.com/nlohmann/json.git /tmp/nlohmann-json \
+RUN git clone --branch v3.11.3 https://github.com/nlohmann/json.git /tmp/nlohmann-json \
     && cmake -S /tmp/nlohmann-json -B /tmp/nlohmann-json-build -G Ninja \
              -DCMAKE_BUILD_TYPE=Release \
              -DJSON_MultipleHeaders=On \
@@ -67,11 +67,12 @@ RUN git clone --branch 2.1.0 https://github.com/ceres-solver/ceres-solver.git /t
              -DBUILD_DOCUMENTATION=Off \
              -DBUILD_EXAMPLES=Off \
              -DBUILD_TESTING=Off \
+             -DSCHUR_SPECIALIZATIONS=Off \
     && cmake --build /tmp/ceres-build \
     && cmake --install /tmp/ceres-build \
     && rm -rf /tmp/ceres && rm -rf /tmp/ceres-build
 
-RUN git clone --branch v6.2.0 https://github.com/LLNL/sundials.git /tmp/sundials \
+RUN git clone --branch v6.6.2 https://github.com/LLNL/sundials.git /tmp/sundials \
     && cmake -S /tmp/sundials -B /tmp/sundials-build -G Ninja \
              -DCMAKE_BUILD_TYPE=Release \
              -DBUILD_SHARED_LIBS=Off \
@@ -88,3 +89,20 @@ RUN git clone --branch v6.2.0 https://github.com/LLNL/sundials.git /tmp/sundials
     && cmake --build /tmp/sundials-build \
     && cmake --install /tmp/sundials-build \
     && rm -rf /tmp/sundials && rm -rf /tmp/sundials-build
+
+WORKDIR /src
+COPY . .
+RUN cmake -B /build -S . -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_SHARED_LIBS=Off \
+          -DCMAKE_POSITION_INDEPENDENT_CODE=On \
+          -DCMAKE_EXE_LINKER_FLAGS="-static" \
+          -DCMAKE_VERBOSE_MAKEFILE=On \
+          -DCMAKE_SKIP_RPATH=On \
+    && cmake --build /build \
+    && cmake --install /build
+
+WORKDIR /build
+RUN cpack -G TGZ -C Release
+FROM scratch as artifact
+COPY --from=build /build/cdm-*-Linux.tar.gz .
