@@ -1,3 +1,5 @@
+[![Build](https://github.com/bayer-int/cdmcpp/actions/workflows/hosted-build.yml/badge.svg)](https://github.com/bayer-int/cdmcpp/actions/workflows/hosted-build.yml)
+
 # Casanova Drift Model (CDM)
 
 ## Build on Windows with vcpkg
