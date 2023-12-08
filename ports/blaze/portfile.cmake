@@ -10,7 +10,7 @@ vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
         -DUSE_LAPACK=OFF
-        -DBLAZE_SMP_THREADS="C++11"
+        -DBLAZE_SHARED_MEMORY_PARALLELIZATION=OFF
 )
 
 vcpkg_cmake_install()
