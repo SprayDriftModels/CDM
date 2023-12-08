@@ -10,7 +10,7 @@ RUN git clone --branch v3.8.2 https://bitbucket.org/blaze-lib/blaze.git /tmp/bla
     && cmake -S /tmp/blaze -B /tmp/blaze-build -G Ninja \
              -DCMAKE_BUILD_TYPE=Release \
              -DUSE_LAPACK=Off \
-             -DBLAZE_SMP_THREADS="C++11" \
+             -DBLAZE_SHARED_MEMORY_PARALLELIZATION=Off \
     && cmake --install /tmp/blaze-build \
     && rm -rf /tmp/blaze && rm -rf /tmp/blaze-build
 
@@ -23,6 +23,9 @@ RUN git clone --branch 10.1.1 https://github.com/fmtlib/fmt.git /tmp/fmt \
              -DCMAKE_BUILD_TYPE=Release \
              -DBUILD_SHARED_LIBS=Off \
              -DCMAKE_POSITION_INDEPENDENT_CODE=On \
+             -DCMAKE_C_VISIBILITY_PRESET="hidden" \
+             -DCMAKE_CXX_VISIBILITY_PRESET="hidden" \
+             -DCMAKE_VISIBILITY_INLINES_HIDDEN=On \
     && cmake --build /tmp/fmt-build \
     && cmake --install /tmp/fmt-build \
     && rm -rf /tmp/fmt && rm -rf /tmp/fmt-build
@@ -39,6 +42,9 @@ RUN git clone --branch v2.2.2 https://github.com/gflags/gflags.git /tmp/gflags \
              -DCMAKE_BUILD_TYPE=Release \
              -DBUILD_SHARED_LIBS=Off \
              -DCMAKE_POSITION_INDEPENDENT_CODE=On \
+             -DCMAKE_C_VISIBILITY_PRESET="hidden" \
+             -DCMAKE_CXX_VISIBILITY_PRESET="hidden" \
+             -DCMAKE_VISIBILITY_INLINES_HIDDEN=On \
     && cmake --build /tmp/gflags-build \
     && cmake --install /tmp/gflags-build \
     && rm -rf /tmp/gflags && rm -rf /tmp/gflags-build
@@ -48,6 +54,9 @@ RUN git clone --branch v0.6.0 https://github.com/google/glog.git /tmp/glog \
              -DCMAKE_BUILD_TYPE=Release \
              -DBUILD_SHARED_LIBS=Off \
              -DCMAKE_POSITION_INDEPENDENT_CODE=On \
+             -DCMAKE_C_VISIBILITY_PRESET="hidden" \
+             -DCMAKE_CXX_VISIBILITY_PRESET="hidden" \
+             -DCMAKE_VISIBILITY_INLINES_HIDDEN=On \
     && cmake --build /tmp/glog-build \
     && cmake --install /tmp/glog-build \
     && rm -rf /tmp/glog && rm -rf /tmp/glog-build
@@ -63,6 +72,9 @@ RUN git clone --branch 2.1.0 https://github.com/ceres-solver/ceres-solver.git /t
              -DCMAKE_BUILD_TYPE=Release \
              -DBUILD_SHARED_LIBS=Off \
              -DCMAKE_POSITION_INDEPENDENT_CODE=On \
+             -DCMAKE_C_VISIBILITY_PRESET="hidden" \
+             -DCMAKE_CXX_VISIBILITY_PRESET="hidden" \
+             -DCMAKE_VISIBILITY_INLINES_HIDDEN=On \
              -DBUILD_BENCHMARKS=Off \
              -DBUILD_DOCUMENTATION=Off \
              -DBUILD_EXAMPLES=Off \
@@ -77,6 +89,9 @@ RUN git clone --branch v6.6.2 https://github.com/LLNL/sundials.git /tmp/sundials
              -DCMAKE_BUILD_TYPE=Release \
              -DBUILD_SHARED_LIBS=Off \
              -DCMAKE_POSITION_INDEPENDENT_CODE=On \
+             -DCMAKE_C_VISIBILITY_PRESET="hidden" \
+             -DCMAKE_CXX_VISIBILITY_PRESET="hidden" \
+             -DCMAKE_VISIBILITY_INLINES_HIDDEN=On \
              -DEXAMPLES_ENABLE_C=Off \
              -DEXAMPLES_ENABLE_CXX=Off \
              -DEXAMPLES_INSTALL=Off \
@@ -90,14 +105,18 @@ RUN git clone --branch v6.6.2 https://github.com/LLNL/sundials.git /tmp/sundials
     && cmake --install /tmp/sundials-build \
     && rm -rf /tmp/sundials && rm -rf /tmp/sundials-build
 
+# Static Build
+
 WORKDIR /src
 COPY . .
-RUN cmake -B /build -S . -G Ninja \
+RUN cmake -B /build -S /src -G Ninja \
+          -DVCPKG_MANIFEST_MODE=Off \
           -DCMAKE_BUILD_TYPE=Release \
           -DBUILD_SHARED_LIBS=Off \
           -DCMAKE_POSITION_INDEPENDENT_CODE=On \
           -DCMAKE_EXE_LINKER_FLAGS="-static" \
           -DCMAKE_VERBOSE_MAKEFILE=On \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=On \
           -DCMAKE_SKIP_RPATH=On \
     && cmake --build /build \
     && cmake --install /build
