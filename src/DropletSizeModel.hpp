@@ -85,7 +85,7 @@ struct DropletSizeModel
     double cdf(double x) const;
 
 private:
-    std::vector<std::pair<double, double>> dsd_;
+    const std::vector<std::pair<double, double>>& dsd_;
     std::pair<std::vector<std::pair<double, double>>::const_iterator,
               std::vector<std::pair<double, double>>::const_iterator> minmax_;
     Params params_ = {};
