@@ -12,7 +12,7 @@ PKG_CFLAGS=""
 
 # Use pkg-config if available
 if [ `command -v pkg-config` ]; then
-  if [ `pkg-config --exists cdm` ]; then
+  if [ `pkg-config --exists $PKG_CONFIG_NAME && echo $?` -eq 0 ]; then
     PKGCONFIG_CFLAGS=`pkg-config --cflags --silence-errors ${PKG_CONFIG_NAME}`
     PKGCONFIG_LIBS=`pkg-config --libs ${PKG_CONFIG_NAME}`
     PKGCONFIG_LIBDIR=`pkg-config --variable=libdir ${PKG_CONFIG_NAME}`
