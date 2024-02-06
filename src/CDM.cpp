@@ -234,3 +234,8 @@ void cdm_free_string(char *s)
     if (s)
         delete[] s;
 }
+
+const char * cdm_library_version()
+{
+    return CDM_VERSION_STRING;
+}

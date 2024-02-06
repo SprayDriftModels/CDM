@@ -3,7 +3,11 @@
 #pragma once
 
 // The cdm library version in the form major * 10000 + minor * 100 + patch.
-#define CDM_VERSION 10100
+// CDM_VERSION % 100 is the patch level
+// CDM_VERSION / 100 % 100 is the minor version
+// CDM_VERSION / 10000 is the major version
+#define CDM_VERSION 10200
+#define CDM_VERSION_STRING "1.2.0"
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__)
   #ifdef __GNUC__
@@ -85,6 +89,12 @@ CDM_EXPORT char * cdm_get_output_string(cdm_model_t *model);
  * \param[in] s string
  */
 CDM_EXPORT void cdm_free_string(char *s);
+
+/**
+ * Return the CDM library version string.
+ * \return version
+ */
+CDM_EXPORT const char * cdm_library_version(void);
 
 #ifdef __cplusplus
 }
