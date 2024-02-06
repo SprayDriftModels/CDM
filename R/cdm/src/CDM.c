@@ -35,8 +35,17 @@ extern SEXP _cdm(SEXP sconfig)
     return result;
 }
 
+extern SEXP _version(void)
+{
+    SEXP result = Rf_protect(Rf_allocVector(STRSXP, 1));
+    SET_STRING_ELT(result, 0, Rf_mkCharCE(CDM_VERSION_STRING, CE_UTF8));
+    Rf_unprotect(1);
+    return result;
+}
+
 static const R_CallMethodDef callMethods[] = {
     {"_cdm", (DL_FUNC) &_cdm, 1},
+    {"_version", (DL_FUNC) &_version, 0},
     {NULL, NULL, 0}
 };
 
