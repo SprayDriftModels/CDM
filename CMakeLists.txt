@@ -105,7 +105,7 @@ endif()
 
 if(MSVC)
   target_compile_options(cdm PUBLIC "/utf-8")
-  target_compile_definitions(cdm PRIVATE _CRT_SECURE_NO_WARNINGS)
+  target_compile_definitions(cdm PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 endif()
 
 target_include_directories(cdm PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
