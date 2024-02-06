@@ -92,6 +92,9 @@ struct Model
     int cvmaxcor = 3;                                       // [INPUT] Maximum number of nonlinear solver iterations per output step, ≥1, default 3
     int cvmaxncf = 20;                                      // [INPUT] Maximum number of nonlinear solver convergence failures per output step, ≥1, default 10
     double cvnlscoef = 0.1;                                 // [INPUT] Safety factor for nonlinear solver convergence test, >0, default 0.1
+
+    // Experimental Options
+    std::array<bool, constants::ns> sflags {true};          // [INPUT] Enable processing of selected streamlines, default true for NS=11
 };
 
 } // namespace cdm

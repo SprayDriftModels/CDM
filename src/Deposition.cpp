@@ -24,7 +24,8 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
                                                   const std::array<std::vector<double>, constants::ns>& xdist,
                                                   const std::vector<std::pair<double, double>>& dsd,
                                                   const std::unique_ptr<DropletSizeModel>& dsdmodel,
-                                                  double dpmin, double dpmax, std::optional<double> Lmax, double lambda, double dx)
+                                                  double dpmin, double dpmax, std::optional<double> Lmax, double lambda, double dx,
+                                                  const std::array<bool, constants::ns>& sflags)
 {
     using namespace boost::math::differentiation;
     using boost::math::double_constants::degree;
@@ -120,6 +121,9 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
     blaze::DynamicMatrix<double> DVM(dpavg.size(), Nsa+Nda, 0);
     blaze::DynamicMatrix<double> CM(dpavg.size(), Nsa+Nda, 0);
     for (size_t n = 0; n < constants::ns; ++n) {
+        if (!sflags.at(n)) {
+            continue; // Skip calculations for selected streamline if disabled.
+        }
         for (size_t i = 1; i < dpavg.size(); ++i) {
             // driftdist[n,i] >= (x[1:nsa]-dwsa) && driftdist[n,i] < x[1:nsa]
             const auto saupper = std::distance(itsa, std::lower_bound(itsa, itda, driftdist(n,i) + dwsa));

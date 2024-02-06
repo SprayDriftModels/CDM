@@ -103,6 +103,9 @@ void to_json(nlohmann::ordered_json& json, const Model& m)
                 {"maxConvergenceFailures", m.cvmaxncf},
                 {"convergenceCoefficient", m.cvnlscoef}
             }},
+            {"experimentalOptions", {
+                {"enableStreamlines", m.sflags}
+            }},
             {"output", {
                 {"dropletSizeModel", m.dsmodel},
                 {"mixtureDensity", m.rhoL},
@@ -212,6 +215,13 @@ void from_json(const nlohmann::ordered_json& json, Model& m)
         }
         if (j3.count("convergenceCoefficient") != 0) {
             j3.at("convergenceCoefficient").get_to(m.cvnlscoef);
+        }
+    }
+
+    if (j.count("experimentalOptions") != 0) {
+        auto j4 = j.at("experimentalOptions");
+        if (j4.count("enableStreamlines") != 0) {
+            j4.at("enableStreamlines").get_to(m.sflags);
         }
     }
 }

@@ -31,6 +31,7 @@ namespace cdm {
  * \param[in] Lmax Maximum drift distance for deposition [m]
  * \param[in] lambda Scale factor for number of drift segments (λ), ≥1
  * \param[in] dx Distance interval for deposition output [m]
+ * \param[in] sflags Enabled streamlines for deposition
  * \return Drift distance [m] and percent of applied.
  */
 std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, double FD, double PL, double dN, double ppp, double rhoL,
@@ -38,6 +39,7 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
                                                   const std::array<std::vector<double>, constants::ns>& xdist,
                                                   const std::vector<std::pair<double, double>>& dsd,
                                                   const std::unique_ptr<DropletSizeModel>& dsmodel,
-                                                  double dpmin, double dpmax, std::optional<double> Lmax, double lambda, double dx);
+                                                  double dpmin, double dpmax, std::optional<double> Lmax, double lambda, double dx,
+                                                  const std::array<bool, constants::ns>& sflags);
 
 } // namespace cdm
