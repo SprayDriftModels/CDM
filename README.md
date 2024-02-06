@@ -2,6 +2,16 @@
 
 # Casanova Drift Model (CDM)
 
+## Samples
+
+Model input files are included for the following SETAC DRAW test cases:
+
+| Case | Trial ID  | Nozzle Type | Nozzle Pressure   | Surfactant | Input File                       |
+| ---- | --------- | ----------- | ----------------- | ---------- | -------------------------------- |
+| B    | FR_1_017  | AXI 11002   | 250 kPa (36 psig) | None       | [Case_B.json](tests/Case_B.json) |
+| G    | NL_1_660  | XR 11004    | 300 kPa (44 psig) | Agral      | [Case_G.json](tests/Case_G.json) |
+| I    | DE_4_006  | XR 11004    | 250 kPa (36 psig) | None       | [Case_I.json](tests/Case_I.json) |
+
 ## Build on Windows with vcpkg
 
 Download and install [Visual Studio](https://visualstudio.microsoft.com/). In the Visual Studio installer, Workloads tab, select the **Desktop development with C++** workload. Under Individual components tab, select **Git for Windows**.
@@ -88,8 +98,10 @@ On Windows, install [Rtools](https://cran.r-project.org/bin/windows/Rtools/). Fr
 install.packages("~/cdm/R/cdm", repos=NULL, type="source", INSTALL_opts="--no-multiarch")
 ```
 
-Run the test case as follows:
+Run the test cases as follows:
 
 ```
-demo("case1", package="cdm")
+demo("caseB", package="cdm")
+demo("caseG", package="cdm")
+demo("caseI", package="cdm")
 ```
