@@ -24,22 +24,11 @@ git clone https://github.com/microsoft/vcpkg
 .\vcpkg\bootstrap-vcpkg.bat
 ```
 
-Install dependencies:
+Clone this repository and build CDM. Required dependencies will be automatically installed to the build directory.
 
 ```
-.\vcpkg\vcpkg install blaze:x64-windows-static
-.\vcpkg\vcpkg install boost-math:x64-windows-static
-.\vcpkg\vcpkg install fmt:x64-windows-static
-.\vcpkg\vcpkg install nlohmann-json:x64-windows-static
-.\vcpkg\vcpkg install ceres:x64-windows-static
-.\vcpkg\vcpkg install sundials:x64-windows-static
-```
-
-Clone this repository and build CDM:
-
-```
-git clone --branch cpp https://gitlab.bayer.com/GBBFX/mondep.git ./cdm
-cmake -B ./cdm/build -S ./cdm -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=On -DCMAKE_TOOLCHAIN_FILE=%USERPROFILE%\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static
+git clone https://github.com/bayer-int/cdmcpp.git ./cdm
+cmake -B ./cdm/build -S ./cdm -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=On -DCMAKE_TOOLCHAIN_FILE="%USERPROFILE%\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows-static
 cmake --build ./cdm/build
 ```
 
@@ -55,7 +44,7 @@ Install C++ development tools and Git using the package management tool that com
 
 ```
 sudo apt update
-sudo apt install build-essential git-all
+sudo apt install build-essential git-all ninja-build pkg-config
 ```
 
 Follow the instructions at [apt.kitware.com](https://apt.kitware.com/) to install the latest version of CMake using APT. For alternative installation options, see [cmake.org/download](https://cmake.org/download/).
@@ -68,27 +57,16 @@ git clone https://github.com/microsoft/vcpkg
 ./vcpkg/bootstrap-vcpkg.sh
 ```
 
-Install dependencies:
+Clone this repository, build and install CDM. Required dependencies will be automatically installed to the build directory.
 
 ```
-./vcpkg/vcpkg install blaze:x64-linux
-./vcpkg/vcpkg install boost-math:x64-linux
-./vcpkg/vcpkg install fmt:x64-linux
-./vcpkg/vcpkg install nlohmann-json:x64-linux
-./vcpkg/vcpkg install ceres:x64-linux
-./vcpkg/vcpkg install sundials:x64-linux
-```
-
-Clone this repository, build and install CDM:
-
-```
-git clone --branch cpp https://gitlab.bayer.com/GBBFX/mondep.git ./cdm
-cmake -B ./cdm/build -S ./cdm -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=On -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux
+git clone https://github.com/bayer-int/cdmcpp.git ./cdm
+cmake -B ./cdm/build -S ./cdm -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=On -DCMAKE_TOOLCHAIN_FILE="~/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-linux
 cmake --build ./cdm/build
 cmake --install ./cdm/build
 ```
 
-The header file (CDM.h), library (libcdm.so), and executable (cdmcli) are copied to /usr/local/include/cdm, /usr/local/lib64 and /usr/local/bin respectively.
+The header file (CDM.h), library (libcdm.so), and executable (cdmcli) are copied to /usr/local/include/cdm, /usr/local/lib and /usr/local/bin respectively.
 
 ## Install the R package
 
