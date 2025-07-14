@@ -1,0 +1,61 @@
+name: hosted-build
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  job:
+    name: ${{ matrix.os }}-${{ github.workflow }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            triplet: x64-linux
+          - os: macos-latest
+            triplet: x64-osx
+          - os: windows-latest
+            triplet: x64-windows-static
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      VCPKG_FEATURE_FLAGS: dependencygraph
+      VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite'
+      VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
+
+    steps:
+    - uses: actions/github-script@v6
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
+    - uses: ilammy/msvc-dev-cmd@v1
+      if: runner.os == 'Windows'
+
+    - uses: lukka/get-cmake@latest
+
+    - name: Install dependencies and configure project
+      run: cmake --preset multi-vcpkg
+
+    - name: Build all targets
+      run: cmake --build --preset default
+
+    - name: Generate package
+      working-directory: ./build
+      run: cpack -G TGZ -C Release
+
+    - name: Upload package
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.os }}
+        path: build/*.tar.gz
