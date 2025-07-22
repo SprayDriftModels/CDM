@@ -1,0 +1,27 @@
+{
+  "version": 4,
+  "configurePresets": [
+    {
+      "name": "multi-vcpkg",
+      "description": "Configure with vcpkg toolchain and generate project files",
+      "binaryDir": "${sourceDir}/build",
+      "generator": "Ninja",
+      "toolchainFile": "$env{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "environment": {
+        "VCPKG_FEATURE_FLAGS": "manifests,versions,binarycaching,registries"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_VERBOSE_MAKEFILE": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "multi-vcpkg"
+    }
+  ]
+}

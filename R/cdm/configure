@@ -1,0 +1,59 @@
+#!/bin/bash
+# configure script based on anticonf by Jeroen Ooms (2021).
+# This script will query 'pkg-config' for the required cflags and ldflags.
+# If pkg-config is unavailable or does not find the library, try setting
+# INCLUDE_DIR and LIB_DIR manually via e.g:
+# R CMD INSTALL --configure-vars='INCLUDE_DIR=/.../include LIB_DIR=/.../lib'
+
+PKG_CONFIG_NAME="cdm"
+PKG_TEST_HEADER="<cdm/CDM.h>"
+PKG_LIBS="-lcdm"
+PKG_CFLAGS=""
+
+# Use pkg-config if available
+if [ `command -v pkg-config` ]; then
+  if [ `pkg-config --exists $PKG_CONFIG_NAME && echo $?` -eq 0 ]; then
+    PKGCONFIG_CFLAGS=`pkg-config --cflags --silence-errors ${PKG_CONFIG_NAME}`
+    PKGCONFIG_LIBS=`pkg-config --libs ${PKG_CONFIG_NAME}`
+    PKGCONFIG_LIBDIR=`pkg-config --variable=libdir ${PKG_CONFIG_NAME}`
+  fi
+fi
+
+# Note that cflags may be empty in case of success
+if [ "$INCLUDE_DIR" ] || [ "$LIB_DIR" ]; then
+  PKG_CFLAGS="-I$INCLUDE_DIR $PKG_CFLAGS"
+  PKG_LIBS="-L$LIB_DIR $PKG_LIBS -Wl,-rpath $LIB_DIR"
+elif [ "$PKGCONFIG_CFLAGS" ] || [ "$PKGCONFIG_LIBS" ] || [ "$PKGCONFIG_LIBDIR" ]; then
+  echo "*** using pkg-config"
+  PKG_CFLAGS="$PKGCONFIG_CFLAGS"
+  PKG_LIBS="$PKGCONFIG_LIBS -Wl,-rpath $PKGCONFIG_LIBDIR"
+else
+  echo "*** using default installation prefix"
+  PKG_CFLAGS="-I/usr/local/include $PKG_CFLAGS"
+  PKG_LIBS="-L/usr/local/lib $PKG_LIBS -Wl,-rpath /usr/local/lib"
+fi
+
+# Find compiler
+CC=`${R_HOME}/bin/R CMD config CC`
+CFLAGS=`${R_HOME}/bin/R CMD config CFLAGS`
+CPPFLAGS=`${R_HOME}/bin/R CMD config CPPFLAGS`
+
+# For debugging
+echo "*** PKG_CFLAGS=$PKG_CFLAGS"
+echo "*** PKG_LIBS=$PKG_LIBS"
+
+# Test configuration
+echo "#include $PKG_TEST_HEADER" | ${CC} ${CPPFLAGS} ${PKG_CFLAGS} ${CFLAGS} -E -xc - >/dev/null 2>&1 || R_CONFIG_ERROR=1;
+
+if [ $R_CONFIG_ERROR ]; then
+  echo "Configuration failed because the CDM library was not found. If CDM is already"
+  echo "installed, check that 'pkg-config' is in your PATH and PKG_CONFIG_PATH contains"
+  echo "a cdm.pc file. If pkg-config is unavailable, you can set INCLUDE_DIR and LIB_DIR"
+  echo "manually via configure.vars in install.packages."
+  exit 1;
+fi
+
+# Write to Makevars
+sed -e "s|@cflags@|$PKG_CFLAGS|" -e "s|@libs@|$PKG_LIBS|" src/Makevars.in > src/Makevars
+
+exit 0;

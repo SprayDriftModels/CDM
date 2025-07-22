@@ -1,0 +1,5 @@
+# Fix syntax highlighting for test cases
+*.json linguist-language=jsonc
+
+# Apply overrides for vendored code
+src/CLI11.hpp linguist-vendored
