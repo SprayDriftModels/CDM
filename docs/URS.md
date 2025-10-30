@@ -547,6 +547,7 @@ The following enhancements may be considered for future versions:
 
 | Version | Date | Author | Description |
 |---------|------|--------|-------------|
+| 0.1 | 2025-01-30 | CDM Team | Draft URS document |
 | 1.0 | 2025-10-30 | CDM Team | Initial URS document |
 
 ---
