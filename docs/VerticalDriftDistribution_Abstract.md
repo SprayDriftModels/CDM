@@ -2,9 +2,9 @@
 
 ## Abstract
 
-Spray drift modeling has become increasingly important in the regulatory assessment of crop protection products applications, particularly as concerns grow over the potential impacts on non-target organisms, including non-target arthropods (NTAs) and non-target terrestrial plants (NTTPs). Regulatory frameworks demand accurate predictions of drift behavior to ensure the safety of ecosystems adjacent to agricultural fields. 
+Spray drift modeling has become increasingly important in the regulatory assessment of crop protection product applications, particularly as concerns grow over the potential impacts on non-target organisms, including non-target arthropods (NTAs) and non-target terrestrial plants (NTTPs). Regulatory frameworks demand accurate predictions of drift behavior to ensure the safety of ecosystems adjacent to agricultural fields. 
 
-However, assessing the risks to NTAs and NTTPs remains challenging due to the limitations of current models, which primarily generate spray drift deposition curves without accounting for vertical distribution of spray drift.
+However, assessing the risks to NTAs and NTTPs remains challenging due to the limitations of current models, which primarily generate spray drift deposition curves without accounting for vertical distribution.
 
 The relevance of spray drift to NTAs and NTTPs is significant, as they play critical roles in maintaining biodiversity, ecosystem services, and agricultural productivity. The regulatory assessment of these organisms is complex, often hindered by the difficulty in capturing short-range drift dynamics that affect off-crop capture and exposure. 
 
