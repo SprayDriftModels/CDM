@@ -4,7 +4,7 @@ This directory contains comprehensive documentation for the Casanova Drift Model
 
 ## Documentation Overview
 
-The CDM documentation is organized into three main specification documents that cover different aspects of the system:
+The CDM documentation is organized into three main specification documents that cover different aspects of the system, along with research documentation on model enhancements:
 
 ### 1. User Requirements Specification (URS)
 **File:** [URS.md](URS.md)
@@ -95,6 +95,24 @@ The Design Specification provides **technical implementation details** for devel
 └─────────────────────────────────────────────────────────────┘
 ```
 
+### 4. Research Documentation
+**File:** [VerticalDriftDistribution_Abstract.md](VerticalDriftDistribution_Abstract.md)
+
+This document presents research on enhancing the Casanova Drift Model with vertical drift distribution extraction capabilities. It addresses:
+
+- **Background**: Importance of spray drift modeling for regulatory assessment of non-target organisms (NTAs and NTTPs)
+- **Current Limitations**: Existing models primarily generate deposition curves without vertical distribution data
+- **Enhancement Approach**: Integration of vertical drift profiles to improve risk assessment
+- **Key Factors**: Analysis of droplet size, wind speed, and application technique influences
+- **Preliminary Results**: Short-range aerial drift pattern representation
+- **Regulatory Impact**: Improved risk analysis and regulatory compliance for crop protection management
+
+**Target Audience:**
+- Agricultural researchers studying spray drift dynamics
+- Regulatory scientists assessing environmental risks
+- Environmental risk assessors evaluating non-target organism exposure
+- Pesticide application specialists optimizing drift mitigation strategies
+
 ## Reading Guide
 
 ### For Users and Stakeholders
@@ -104,6 +122,8 @@ Start with the **User Requirements Specification (URS)** to understand:
 - What outputs are produced
 - Performance expectations
 - Validation approach
+
+For research context and future enhancements, see the **Vertical Drift Distribution Abstract** to understand ongoing work on vertical drift profile extraction for improved non-target organism risk assessment.
 
 ### For Integrators and Application Developers
 Read the **Functional Specification** to understand:

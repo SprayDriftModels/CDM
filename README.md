@@ -2,6 +2,10 @@
 
 # Casanova Drift Model (CDM)
 
+The Casanova Drift Model (CDM) is a mechanistic model that simulates the trajectory and fate of pesticide spray droplets released from agricultural spray equipment. For comprehensive documentation, see the [docs](docs/) directory.
+
+**Recent Research**: See [Vertical Drift Distribution Abstract](docs/VerticalDriftDistribution_Abstract.md) for information on enhancing CDM with vertical drift profile extraction capabilities for improved non-target organism risk assessment.
+
 ## Samples
 
 Model input files are included for the following SETAC DRAW test cases:
