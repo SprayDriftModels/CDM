@@ -2,9 +2,13 @@
 
 ## Abstract
 
-Spray drift modeling has become increasingly important in the regulatory assessment of crop protection products applications, particularly as concerns grow over the potential impacts on non-target organisms, including non-target arthropods (NTAs) and non-target terrestrial plants (NTTPs). Regulatory frameworks demand accurate predictions of drift behavior to ensure the safety of ecosystems adjacent to agricultural fields. However, assessing the risks to NTAs and NTTPs remains challenging due to the limitations of current models, which primarily generate spray drift deposition curves without accounting for vertical distribution of spray drift.
+Spray drift modeling has become increasingly important in the regulatory assessment of crop protection products applications, particularly as concerns grow over the potential impacts on non-target organisms, including non-target arthropods (NTAs) and non-target terrestrial plants (NTTPs). Regulatory frameworks demand accurate predictions of drift behavior to ensure the safety of ecosystems adjacent to agricultural fields. 
 
-The relevance of spray drift to NTAs and NTTPs is significant, as they play critical roles in maintaining biodiversity, ecosystem services, and agricultural productivity. The regulatory assessment of these organisms is complex, often hindered by the difficulty in capturing short-range drift dynamics that affect off-crop capture and exposure. This study addresses these challenges by leveraging the Casanova spray drift model, which provides enhanced simulation capabilities to estimate not only deposition curves but also vertical drift profiles. By doing so, we aim to facilitate a more comprehensive assessment of drift capture by NTAs and NTTPs, ultimately informing regulatory decisions.
+However, assessing the risks to NTAs and NTTPs remains challenging due to the limitations of current models, which primarily generate spray drift deposition curves without accounting for vertical distribution of spray drift.
+
+The relevance of spray drift to NTAs and NTTPs is significant, as they play critical roles in maintaining biodiversity, ecosystem services, and agricultural productivity. The regulatory assessment of these organisms is complex, often hindered by the difficulty in capturing short-range drift dynamics that affect off-crop capture and exposure. 
+
+This study addresses these challenges by leveraging the Casanova spray drift model, which provides enhanced simulation capabilities to estimate not only deposition curves but also vertical drift profiles. By doing so, we aim to facilitate a more comprehensive assessment of drift capture by NTAs and NTTPs, ultimately informing regulatory decisions.
 
 Our approach involves analyzing the influence of factors such as droplet size, wind speed, and application technique on drift behavior. Our hypothesis posits that the integration of vertical distribution data will yield more robust risk assessments, providing essential information for the protection of sensitive non-target species.
 
