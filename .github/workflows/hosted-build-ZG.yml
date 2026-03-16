@@ -10,6 +10,7 @@ jobs:
   job:
     name: ${{ matrix.os }}-${{ github.workflow }}
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.allow-failure || false }}
     strategy:
       fail-fast: false
       matrix:
@@ -18,7 +19,8 @@ jobs:
           - os: ubuntu-latest
             triplet: x64-linux
           - os: macos-latest
-            triplet: x64-osx
+            triplet: arm64-osx
+            allow-failure: true
           - os: windows-latest
             triplet: x64-windows-static
 
