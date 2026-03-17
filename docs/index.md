@@ -36,53 +36,7 @@ The Casanova Drift Model (CDM) is a mechanistic model that simulates the traject
 
 ## How It Works
 
-```mermaid
-flowchart LR
-    subgraph Inputs["Inputs"]
-        SPRAY["Spray<br/><i>droplet sizes,<br/>nozzle config</i>"]
-        WEATHER["Weather<br/><i>temperature,<br/>humidity, pressure</i>"]
-        WIND["Wind<br/><i>speed at<br/>multiple heights</i>"]
-        FIELD["Field<br/><i>dimensions,<br/>canopy height</i>"]
-    end
-
-    subgraph Physics["Physical Processes"]
-        direction TB
-        RELEASE["Droplet Release<br/><i>spray fan breakup<br/>into size classes</i>"]
-        DRAG["Aerodynamic Drag<br/><i>air resistance<br/>on moving droplets</i>"]
-        GRAVITY["Gravity<br/><i>settling velocity<br/>depends on size</i>"]
-        EVAP["Evaporation<br/><i>water loss driven by<br/>humidity &amp; temperature</i>"]
-        WINDTRANS["Wind Transport<br/><i>horizontal carry<br/>by wind profile</i>"]
-
-        RELEASE --> DRAG
-        RELEASE --> GRAVITY
-        RELEASE --> EVAP
-        RELEASE --> WINDTRANS
-        DRAG --> TRAJECTORY
-        GRAVITY --> TRAJECTORY
-        EVAP --> TRAJECTORY
-        WINDTRANS --> TRAJECTORY
-        TRAJECTORY["Droplet<br/>Trajectories"]
-    end
-
-    subgraph Results["Outputs"]
-        DEP["Ground Deposition<br/><i>spray deposit vs<br/>downwind distance</i>"]
-        VERT["Airborne Drift<br/><i>vertical concentration<br/>at distance</i>"]
-        MASS["Mass Balance<br/><i>on-field vs off-field<br/>spray fate</i>"]
-    end
-
-    SPRAY --> RELEASE
-    WEATHER --> EVAP
-    WIND --> WINDTRANS
-    FIELD --> TRAJECTORY
-
-    TRAJECTORY --> DEP
-    TRAJECTORY --> VERT
-    TRAJECTORY --> MASS
-
-    style Inputs fill:#e8f4fd,stroke:#0969da,color:#24292f
-    style Physics fill:#fff8e1,stroke:#d4a017,color:#24292f
-    style Results fill:#e8f5e9,stroke:#2e7d32,color:#24292f
-```
+![Physical processes in the Casanova Drift Model](assets/images/physical-processes.png)
 
 ## Test Cases
 
