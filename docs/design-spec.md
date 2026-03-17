@@ -32,6 +32,97 @@ The Design Specification provides technical implementation details for CDM devel
 └─────────────────────────────────────────────────────┘
 ```
 
+## Model Component Diagram
+
+The following diagram shows how inputs flow through the model processing pipeline to produce outputs, and how the different interfaces connect to the system.
+
+```mermaid
+flowchart TB
+    subgraph Inputs["📥 Inputs"]
+        DSD["Droplet Size<br/>Distribution<br/><i>diameter, cumulative<br/>volume fraction</i>"]
+        ATM["Atmospheric<br/>Properties<br/><i>temperature, pressure,<br/>relative humidity</i>"]
+        WIND["Wind Velocity<br/>Profile<br/><i>elevation/velocity<br/>measurements</i>"]
+        APP["Application<br/>Parameters<br/><i>nozzle height, pressure,<br/>angle, application rate</i>"]
+        FIELD["Field Geometry<br/><i>downwind depth,<br/>crosswind width,<br/>nozzle spacing</i>"]
+        SOL["Solution<br/>Properties<br/><i>water density,<br/>solids fraction</i>"]
+    end
+
+    subgraph Processing["⚙️ Model Processing"]
+        direction TB
+        JSON["JSON Parser<br/>&amp; Validator"]
+
+        subgraph Derived["Derived Properties"]
+            ATMC["Atmospheric<br/>Calculations<br/><i>ρ_A, μ_A, T_wet,<br/>T_dew</i>"]
+            WINDC["Wind Profile<br/>Characterization<br/><i>friction velocity U_f,<br/>roughness z₀</i>"]
+            DSDC["DSD Processing<br/><i>curve fitting or<br/>finite difference</i>"]
+            NOZZLE["Nozzle Velocity<br/><i>exit velocity,<br/>streamline angles<br/>−40° to −140°</i>"]
+        end
+
+        subgraph Transport["ODE Integration (CVODE)"]
+            ODE["6-Component System<br/><i>Z, X, V_z, V_x, M_w, V_vwx</i>"]
+            DRAG["Drag Forces"]
+            EVAP["Evaporation"]
+            GRAV["Gravitational<br/>Settling"]
+            WINDINT["Wind<br/>Interaction"]
+        end
+
+        DEP["Deposition<br/>Calculation<br/><i>ground crossings,<br/>mass accumulation</i>"]
+    end
+
+    subgraph Outputs["📤 Outputs"]
+        DEPO["Deposition Profile<br/><i>distance vs %IAR</i>"]
+        VERT["Vertical Drift<br/>Profile<br/><i>concentration at<br/>downwind distances</i>"]
+        REPORT["Summary Report<br/><i>atmospheric props,<br/>wind profile,<br/>mass balance</i>"]
+        JSONOUT["JSON Results<br/><i>full input echo +<br/>all outputs</i>"]
+    end
+
+    subgraph Interfaces["🔗 Interfaces"]
+        CAPI["C API<br/><i>libcdm shared library</i>"]
+        CLI["CLI<br/><i>cdmcli executable</i>"]
+        RPKG["R Package<br/><i>cdm</i>"]
+    end
+
+    DSD --> JSON
+    ATM --> JSON
+    WIND --> JSON
+    APP --> JSON
+    FIELD --> JSON
+    SOL --> JSON
+
+    JSON --> ATMC
+    JSON --> WINDC
+    JSON --> DSDC
+    JSON --> NOZZLE
+
+    ATMC --> ODE
+    WINDC --> ODE
+    DSDC --> ODE
+    NOZZLE --> ODE
+
+    DRAG --> ODE
+    EVAP --> ODE
+    GRAV --> ODE
+    WINDINT --> ODE
+
+    ODE --> DEP
+
+    DEP --> DEPO
+    DEP --> VERT
+    DEP --> REPORT
+    DEP --> JSONOUT
+
+    CAPI --> Outputs
+    CLI --> Outputs
+    RPKG --> Outputs
+
+    style Inputs fill:#e8f4fd,stroke:#0969da,color:#24292f
+    style Processing fill:#f6f8fa,stroke:#57606a,color:#24292f
+    style Derived fill:#fff8e1,stroke:#d4a017,color:#24292f
+    style Transport fill:#fce4ec,stroke:#c62828,color:#24292f
+    style Outputs fill:#e8f5e9,stroke:#2e7d32,color:#24292f
+    style Interfaces fill:#f3e5f5,stroke:#7b1fa2,color:#24292f
+```
+
 ## Module Design
 
 ### Source Files
