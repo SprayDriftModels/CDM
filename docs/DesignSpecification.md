@@ -48,17 +48,17 @@ This document covers:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      Client Applications                      │
+│                      Client Applications                    │
 │  (Command-Line Tool, R Package, Custom C/C++ Applications)  │
 └───────────────────────────┬─────────────────────────────────┘
                             │
 ┌───────────────────────────┴─────────────────────────────────┐
-│                        C API Layer                           │
+│                        C API Layer                          │
 │  (CDM.h - C-compatible interface with error handling)       │
 └───────────────────────────┬─────────────────────────────────┘
                             │
 ┌───────────────────────────┴─────────────────────────────────┐
-│                    C++ Implementation Core                   │
+│                    C++ Implementation Core                  │
 ├─────────────────────────────────────────────────────────────┤
 │  Serialization Module     │  Model Data Structure           │
 │  (JSON I/O)               │  (Input/Output/Derived)         │
@@ -74,8 +74,8 @@ This document covers:
 └───────────────────────────┴─────────────────────────────────┘
                             │
 ┌───────────────────────────┴─────────────────────────────────┐
-│                    External Dependencies                     │
-│  SUNDIALS │ Ceres │ Blaze │ Boost │ nlohmann_json │ fmt    │
+│                    External Dependencies                    │
+│  SUNDIALS │ Ceres │ Blaze │ Boost │ nlohmann_json │ fmt     │
 └─────────────────────────────────────────────────────────────┘
 ```
 
