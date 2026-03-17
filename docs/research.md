@@ -53,10 +53,11 @@ By solving coupled ODEs that account for drag forces, evaporation, and wind prof
 - **Application technique parameters** — nozzle height, pressure, and angle
 - **Spray fan geometry** — multiple streamline vectors (typically 11) spanning ejection angles from −40° to −140°
 
-## Preliminary Results
+## Preliminary (Expected) Results
 
-- The Casanova model effectively represents short-range aerial drift patterns
-- Validation against SETAC DRAW test cases demonstrates accurate prediction of both horizontal deposition and vertical concentration profiles
+- Expected: *The Casanova model effectively represents short-range in-flight drift patterns*
+- Validation against SETAC DRAW test data and xxxx trial data 
+  - demonstrates adequate prediction of both horizontal deposition and vertical concentration profiles
 - The model successfully captures:
   - Droplet evaporation effects (via wet bulb temperature depression)
   - Atmospheric stability (through wind profile parameterization)

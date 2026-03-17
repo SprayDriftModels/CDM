@@ -16,7 +16,7 @@ Our approach involves analyzing the influence of multiple factors on drift behav
 
 Our hypothesis posits that the integration of vertical distribution data will yield more robust risk assessments, providing essential information for the protection of sensitive non-target species.
 
-Preliminary results indicate that the Casanova model can effectively represent short-range aerial drift patterns. Validation against SETAC DRAW test cases demonstrates accurate prediction of both horizontal deposition and vertical concentration profiles. The model successfully captures the effects of droplet evaporation (via wet bulb temperature depression calculations), atmospheric stability (through wind profile parameterization), and size-dependent transport on the spatial distribution of drift. 
+Preliminary results indicate that the Casanova model can effectively represent short-range in-flight drift patterns. Validation against SETAC DRAW test cases and xxx trial data demonstrates adequate prediction of both horizontal deposition and vertical concentration profiles. The model successfully captures the effects of droplet evaporation (via wet bulb temperature depression calculations), atmospheric stability (through wind profile parameterization), and size-dependent transport on the spatial distribution of drift. 
 
 This advancement is expected to improve risk analysis and foster regulatory compliance, enabling better-informed decisions in crop protection management and contributing to sustainable agricultural practices.
 
