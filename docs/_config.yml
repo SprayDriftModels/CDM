@@ -1,0 +1,22 @@
+title: Casanova Drift Model (CDM)
+description: A mechanistic model for simulating pesticide spray drift during agricultural applications
+url: https://spraydriftmodels.github.io
+baseurl: /CDM
+
+remote_theme: pages-themes/minimal@v0.2.0
+plugins:
+  - jekyll-remote-theme
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+
+exclude:
+  - README.md

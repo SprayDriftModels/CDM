@@ -1,6 +1,5 @@
-name: hosted-build
+name: hosted-build-original
 on:
-  push:
   workflow_dispatch:
 
 permissions:

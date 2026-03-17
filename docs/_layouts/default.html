@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.title }} | {{ site.title }}</title>
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <h1><a href="{{ '/' | relative_url }}">{{ site.title }}</a></h1>
+      <p class="tagline">{{ site.description }}</p>
+    </div>
+  </header>
+
+  <div class="container">
+    <nav class="sidebar">
+      <ul>
+        <li><a href="{{ '/' | relative_url }}">Home</a></li>
+        <li><a href="{{ '/getting-started' | relative_url }}">Getting Started</a></li>
+        <li><a href="{{ '/api-reference' | relative_url }}">API Reference</a></li>
+        <li><a href="{{ '/user-requirements' | relative_url }}">User Requirements</a></li>
+        <li><a href="{{ '/functional-spec' | relative_url }}">Functional Specification</a></li>
+        <li><a href="{{ '/design-spec' | relative_url }}">Design Specification</a></li>
+        <li><a href="{{ '/research' | relative_url }}">Research</a></li>
+      </ul>
+      <hr>
+      <ul>
+        <li><a href="https://github.com/SprayDriftModels/CDM">GitHub Repository</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      {{ content }}
+    </main>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <p>&copy; {{ 'now' | date: "%Y" }} Casanova Drift Model. Hosted on <a href="https://pages.github.com">GitHub Pages</a>.</p>
+    </div>
+  </footer>
+</body>
+</html>

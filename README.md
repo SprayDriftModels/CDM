@@ -1,4 +1,4 @@
-[![Build](https://github.com/bayer-int/cdmcpp/actions/workflows/hosted-build.yml/badge.svg)](https://github.com/bayer-int/cdmcpp/actions/workflows/hosted-build.yml)
+[![Build](https://github.com/bayer-int/cdmcpp/actions/workflows/hosted-build-ZG.yml/badge.svg)](https://github.com/bayer-int/cdmcpp/actions/workflows/hosted-build-ZG.yml)
 
 # Casanova Drift Model (CDM)
 
