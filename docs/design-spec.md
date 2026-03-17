@@ -16,19 +16,19 @@ The Design Specification provides technical implementation details for CDM devel
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│              Client Applications                     │
-│          (CLI, R Package, Custom)                    │
+│              Client Applications                    │
+│          (CLI, R Package, Custom)                   │
 ├─────────────────────────────────────────────────────┤
-│                   C API Layer                        │
-│              (CDM.h / CDM.cpp)                       │
+│                   C API Layer                       │
+│              (CDM.h / CDM.cpp)                      │
 ├─────────────────────────────────────────────────────┤
-│              Model Orchestration                     │
-│                 (Model.hpp)                          │
+│              Model Orchestration                    │
+│                 (Model.hpp)                         │
 ├──────────┬──────────┬──────────┬────────────────────┤
 │ Atmos.   │ Wind     │ Droplet  │ Transport /        │
 │ Props    │ Profile  │ Size     │ Deposition         │
 ├──────────┴──────────┴──────────┴────────────────────┤
-│           SUNDIALS / Ceres / Blaze                   │
+│           SUNDIALS / Ceres / Blaze                  │
 └─────────────────────────────────────────────────────┘
 ```
 
