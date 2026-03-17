@@ -4,8 +4,6 @@ title: Research
 
 # Research: Vertical Drift Distribution
 
-> View the [full abstract on GitHub](https://github.com/SprayDriftModels/CDM/blob/main/docs/VerticalDriftDistribution_Abstract.md).
-
 ## Enhancing Spray Drift Assessment
 
 Integration of vertical drift distribution in the Casanova Drift Model for non-target organism risk evaluation.
@@ -75,3 +73,6 @@ This advancement is expected to:
 ---
 
 **Keywords:** spray drift modeling, vertical drift distribution, non-target arthropods, non-target terrestrial plants, regulatory assessment, environmental risk assessment
+
+
+> View the [full abstract on GitHub](https://github.com/SprayDriftModels/CDM/blob/main/docs/VerticalDriftDistribution_Abstract.md).
