@@ -147,10 +147,12 @@ def run_model(config: dict) -> dict | None:
 
     try:
         result = subprocess.run(
-            [CDMCLI, tmp_input, "-o", tmp_output, "-q"],
+            [CDMCLI, tmp_input, "-o", tmp_output],
             capture_output=True,
             text=True,
             timeout=120,
+            encoding="utf-8",
+            errors="replace",
         )
         if result.returncode != 0:
             print(f"  ERROR: {result.stderr.strip()}")
@@ -167,24 +169,21 @@ def run_model(config: dict) -> dict | None:
                 os.remove(p)
 
 
-def extract_deposition(output: dict, distances: list[float]) -> dict[float, float]:
+def extract_deposition(output: dict | list, distances: list[float]) -> dict[float, float]:
     """Extract deposition (%IAR) at specified downwind distances from model output."""
-    # Navigate to the deposition results — adjust key based on actual output structure
-    key = list(output.keys())[0]
-    dep_data = output[key].get("deposition", output[key].get("results", {}))
-
-    # Try to find distance/deposition arrays
-    if isinstance(dep_data, list):
-        dist_arr = [row[0] for row in dep_data]
-        dep_arr = [row[1] for row in dep_data]
-    elif isinstance(dep_data, dict):
-        dist_arr = dep_data.get("distance", dep_data.get("distances", []))
-        dep_arr = dep_data.get("deposition", dep_data.get("values", []))
+    # Output format is [case_name, {config + output}]
+    if isinstance(output, list) and len(output) == 2:
+        data = output[1]
     else:
+        data = output
+
+    dep_data = data.get("output", {}).get("deposition", [])
+
+    if not dep_data:
         return {d: np.nan for d in distances}
 
-    dist_arr = np.array(dist_arr, dtype=float)
-    dep_arr = np.array(dep_arr, dtype=float)
+    dist_arr = np.array([row[0] for row in dep_data], dtype=float)
+    dep_arr = np.array([row[1] for row in dep_data], dtype=float)
 
     results = {}
     for d in distances:
@@ -193,23 +192,23 @@ def extract_deposition(output: dict, distances: list[float]) -> dict[float, floa
     return results
 
 
-def compute_total_off_field(output: dict, field_depth: float = 24.0) -> float:
+def compute_total_off_field(output: dict | list, field_depth: float = 24.0) -> float:
     """Compute total off-field deposition by summing deposition beyond field edge."""
-    key = list(output.keys())[0]
-    dep_data = output[key].get("deposition", output[key].get("results", {}))
-
-    if isinstance(dep_data, list):
-        dist_arr = np.array([row[0] for row in dep_data])
-        dep_arr = np.array([row[1] for row in dep_data])
-    elif isinstance(dep_data, dict):
-        dist_arr = np.array(dep_data.get("distance", []))
-        dep_arr = np.array(dep_data.get("deposition", []))
+    if isinstance(output, list) and len(output) == 2:
+        data = output[1]
     else:
+        data = output
+
+    dep_data = data.get("output", {}).get("deposition", [])
+
+    if not dep_data:
         return np.nan
+
+    dist_arr = np.array([row[0] for row in dep_data])
+    dep_arr = np.array([row[1] for row in dep_data])
 
     mask = dist_arr > field_depth
     if mask.any():
-        # Trapezoidal integration of off-field deposition
         return float(np.trapz(dep_arr[mask], dist_arr[mask]))
     return 0.0
 
