@@ -456,7 +456,12 @@ def plot_sweeps(sweep_dfs: list[pl.DataFrame]):
 
 def plot_interaction(df_int: pl.DataFrame, label_a: str, label_b: str):
     """Plot a heatmap for two-factor interaction."""
-    pdf = df_int.to_pandas()
+    # Round the parameter values for clean axis labels
+    df_rounded = df_int.with_columns(
+        pl.col(label_a).round(2),
+        pl.col(label_b).round(2),
+    )
+    pdf = df_rounded.to_pandas()
     pivot = pdf.pivot_table(values="dep_10m", index=label_b, columns=label_a)
 
     fig, ax = plt.subplots(figsize=(9, 7))
