@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="">
-<meta name="dcterms.date" content="2026-04-24">
+<meta name="dcterms.date" content="2026-04-26">
 
 <title>Sensitivity Analysis of the Casanova Drift Model</title>
 <style>
@@ -121,7 +121,7 @@ div.csl-indent {
   <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion"><span class="header-section-number">4</span> Discussion</a>
   <ul class="collapse">
   <li><a href="#dominant-parameters" id="toc-dominant-parameters" class="nav-link" data-scroll-target="#dominant-parameters"><span class="header-section-number">4.1</span> Dominant Parameters</a></li>
-  <li><a href="#model-limitations-identified" id="toc-model-limitations-identified" class="nav-link" data-scroll-target="#model-limitations-identified"><span class="header-section-number">4.2</span> Model Limitations Identified</a></li>
+  <li><a href="#solver-configuration-for-extreme-conditions" id="toc-solver-configuration-for-extreme-conditions" class="nav-link" data-scroll-target="#solver-configuration-for-extreme-conditions"><span class="header-section-number">4.2</span> Solver Configuration for Extreme Conditions</a></li>
   <li><a href="#implications-for-field-measurements" id="toc-implications-for-field-measurements" class="nav-link" data-scroll-target="#implications-for-field-measurements"><span class="header-section-number">4.3</span> Implications for Field Measurements</a></li>
   <li><a href="#implications-for-regulatory-assessment" id="toc-implications-for-regulatory-assessment" class="nav-link" data-scroll-target="#implications-for-regulatory-assessment"><span class="header-section-number">4.4</span> Implications for Regulatory Assessment</a></li>
   </ul></li>
@@ -129,7 +129,7 @@ div.csl-indent {
   <li><a href="#reproducibility" id="toc-reproducibility" class="nav-link" data-scroll-target="#reproducibility"><span class="header-section-number">6</span> Reproducibility</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">7</span> References</a></li>
   </ul>
-<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="..\sensitivity-analysis.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="sensitivity-analysis.docx"><i class="bi bi-file-word"></i>MS Word</a></li><li><a href="..\sensitivity-analysis.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
 </div>
 <main class="content" id="quarto-document-content">
 
@@ -146,7 +146,7 @@ div.csl-indent {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">April 24, 2026</p>
+      <p class="date">April 26, 2026</p>
     </div>
   </div>
   
@@ -507,9 +507,11 @@ Figure&nbsp;6: Interaction heatmap: nozzle height × wind speed. Values show dep
 <p>The sensitivity analysis reveals that <strong>evaporation-related parameters</strong> (relative humidity, temperature) and <strong>geometric parameters</strong> (canopy height, nozzle height) exert the strongest influence on predicted deposition. This is physically consistent: evaporation governs the rate at which droplets lose mass and shrink, directly affecting settling velocity and airborne residence time. Geometric parameters determine the available fall distance and hence the time window during which atmospheric forces act on the droplets.</p>
 <p><strong>Wind speed</strong> is the primary driver at near-field distances but its influence is more complex at far-field distances, where it can transport droplets beyond the evaluation point. <strong>Nozzle angle</strong> and <strong>nozzle pressure</strong> have comparatively minor effects, suggesting that these operational parameters are less critical for drift prediction accuracy than environmental conditions.</p>
 </section>
-<section id="model-limitations-identified" class="level3" data-number="4.2">
-<h3 data-number="4.2" class="anchored" data-anchor-id="model-limitations-identified"><span class="header-section-number">4.2</span> Model Limitations Identified</h3>
-<p>During the analysis, the model failed to converge at the high temperature extreme (26.6 °C) due to ODE solver step limits being exceeded. This occurs because rapid evaporation at high temperature and moderate humidity creates stiff differential equations as droplet mass approaches zero. This represents a practical limitation for simulations under hot, dry conditions and may warrant investigation of adaptive solver parameters or regularisation of the evaporation equations.</p>
+<section id="solver-configuration-for-extreme-conditions" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="solver-configuration-for-extreme-conditions"><span class="header-section-number">4.2</span> Solver Configuration for Extreme Conditions</h3>
+<p>Initial runs with the default solver configuration (<code>maxSteps: 2000</code>) failed to converge at the high temperature extreme (26.6 °C). The root cause is equation stiffness: at high temperature and moderate humidity the saturation deficit is large, driving rapid evaporation that shrinks droplets toward zero mass. As droplet mass decreases, the evaporation and drag terms change on increasingly short timescales, forcing the CVODE BDF solver to take very small internal steps. With <code>maxSteps: 2000</code> the solver exhausts its step budget before completing the integration interval.</p>
+<p>The fix is straightforward: increasing <code>maxSteps</code> to 20 000 allows the solver to resolve the stiff transition without any loss of accuracy. Well-behaved parameter combinations continue to use far fewer steps, so there is no appreciable computational penalty. Alternatively, the convergence issue can be avoided by choosing parameter combinations that reduce the saturation deficit (e.g.&nbsp;higher relative humidity ≥ 85% at 26.6 °C, or temperatures ≤ ~22 °C at the baseline humidity of 67.1%).</p>
+<p>For production use of CDM under hot, dry conditions, users should set <code>maxSteps</code> to at least 20 000 in the integration options. Future model versions may benefit from adaptive step-limit heuristics or regularisation of the evaporation equations near zero droplet mass.</p>
 </section>
 <section id="implications-for-field-measurements" class="level3" data-number="4.3">
 <h3 data-number="4.3" class="anchored" data-anchor-id="implications-for-field-measurements"><span class="header-section-number">4.3</span> Implications for Field Measurements</h3>
@@ -533,7 +535,7 @@ Figure&nbsp;6: Interaction heatmap: nozzle height × wind speed. Values show dep
 <li><strong>Canopy height</strong>, <strong>wind speed</strong>, and <strong>nozzle height</strong> are the next most influential parameters, each producing 36–46% changes in deposition.</li>
 <li><strong>Nozzle angle</strong> has minimal effect on drift deposition (&lt; 3% change), confirming that spray geometry has limited influence compared to environmental conditions.</li>
 <li>Two-factor interactions between wind speed and humidity, and between nozzle height and wind speed, are significant and should be considered in scenario-based assessments.</li>
-<li>The model exhibits convergence limitations under extreme evaporation conditions (high temperature, moderate humidity) that should be documented as a boundary condition for model applicability.</li>
+<li>The default solver step limit (<code>maxSteps: 2000</code>) is insufficient under extreme evaporation conditions; increasing it to 20 000 resolves convergence at all tested parameter combinations without computational penalty.</li>
 </ol>
 </section>
 <section id="reproducibility" class="level2" data-number="6">

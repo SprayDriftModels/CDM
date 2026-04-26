@@ -118,7 +118,12 @@ def load_base_config() -> dict:
         if idx >= 0:
             line = line[:idx]
         lines.append(line)
-    return json.loads("\n".join(lines))
+    config = json.loads("\n".join(lines))
+    # Increase maxSteps to handle stiff ODEs under extreme evaporation conditions
+    case_key = list(config.keys())[0]
+    config[case_key].setdefault("integrationOptions", {})
+    config[case_key]["integrationOptions"]["maxSteps"] = 20000
+    return config
 
 
 def set_nested(d: dict, keys: list, value):

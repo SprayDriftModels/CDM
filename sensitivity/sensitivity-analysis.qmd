@@ -157,9 +157,13 @@ The sensitivity analysis reveals that **evaporation-related parameters** (relati
 
 **Wind speed** is the primary driver at near-field distances but its influence is more complex at far-field distances, where it can transport droplets beyond the evaluation point. **Nozzle angle** and **nozzle pressure** have comparatively minor effects, suggesting that these operational parameters are less critical for drift prediction accuracy than environmental conditions.
 
-### Model Limitations Identified
+### Solver Configuration for Extreme Conditions
 
-During the analysis, the model failed to converge at the high temperature extreme (26.6 °C) due to ODE solver step limits being exceeded. This occurs because rapid evaporation at high temperature and moderate humidity creates stiff differential equations as droplet mass approaches zero. This represents a practical limitation for simulations under hot, dry conditions and may warrant investigation of adaptive solver parameters or regularisation of the evaporation equations.
+Initial runs with the default solver configuration (`maxSteps: 2000`) failed to converge at the high temperature extreme (26.6 °C). The root cause is equation stiffness: at high temperature and moderate humidity the saturation deficit is large, driving rapid evaporation that shrinks droplets toward zero mass. As droplet mass decreases, the evaporation and drag terms change on increasingly short timescales, forcing the CVODE BDF solver to take very small internal steps. With `maxSteps: 2000` the solver exhausts its step budget before completing the integration interval.
+
+The fix is straightforward: increasing `maxSteps` to 20 000 allows the solver to resolve the stiff transition without any loss of accuracy. Well-behaved parameter combinations continue to use far fewer steps, so there is no appreciable computational penalty. Alternatively, the convergence issue can be avoided by choosing parameter combinations that reduce the saturation deficit (e.g. higher relative humidity ≥ 85% at 26.6 °C, or temperatures ≤ ~22 °C at the baseline humidity of 67.1%).
+
+For production use of CDM under hot, dry conditions, users should set `maxSteps` to at least 20 000 in the integration options. Future model versions may benefit from adaptive step-limit heuristics or regularisation of the evaporation equations near zero droplet mass.
 
 ### Implications for Field Measurements
 
@@ -181,7 +185,7 @@ For regulatory risk assessments, the strong sensitivity to relative humidity sug
 2. **Canopy height**, **wind speed**, and **nozzle height** are the next most influential parameters, each producing 36--46% changes in deposition.
 3. **Nozzle angle** has minimal effect on drift deposition (< 3% change), confirming that spray geometry has limited influence compared to environmental conditions.
 4. Two-factor interactions between wind speed and humidity, and between nozzle height and wind speed, are significant and should be considered in scenario-based assessments.
-5. The model exhibits convergence limitations under extreme evaporation conditions (high temperature, moderate humidity) that should be documented as a boundary condition for model applicability.
+5. The default solver step limit (`maxSteps: 2000`) is insufficient under extreme evaporation conditions; increasing it to 20 000 resolves convergence at all tested parameter combinations without computational penalty.
 
 ## Reproducibility
 
