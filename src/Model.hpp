@@ -1,9 +1,25 @@
-// Copyright (c) 2021 John Buonagurio <jbuonagurio@exponent.com>
-// Copyright (c) 2021 Ed Casanova <eduardo.casanova@bayer.com>
+std::array<bool, constants::ns> sflags {true};          // [INPUT] Enable processing of selected streamlines, default true for NS=11
 
-#pragma once
+    // Vertical Profile Options
+    bool vpEnabled = false;                                 // [INPUT] Enable vertical drift profile output
+    std::vector<double> vpDistances = {3, 5, 10, 20, 30, 50}; // [INPUT] Downwind distances for vertical profile [m]
+    double vpBinWidth = 0.25;                               // [INPUT] Height bin width [m]
+    double vpMaxHeight = 5.0;                               // [INPUT] Maximum height for vertical profile [m]
 
-#include <array>
+    // Vertical Profile Output
+    struct VerticalProfileBin {
+        double heightMin;   // Lower bound of height bin [m]
+        double heightMax;   // Upper bound of height bin [m]
+        double pctIAR;      // % IAR in this bin
+    };
+    struct VerticalProfileAtDistance {
+        double distance;    // Downwind distance [m]
+        std::vector<VerticalProfileBin> bins;
+    };
+    std::vector<VerticalProfileAtDistance> verticalProfile;  // [OUTPUT] Vertical drift profile
+};
+
+} // namespace cdmde <array>
 #include <memory>
 #include <optional>
 #include <utility>

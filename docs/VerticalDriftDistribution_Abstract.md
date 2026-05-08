@@ -28,3 +28,28 @@ In conclusion, the Casanova drift model represents a valuable tool for addressin
 
 **Date:** November 2025  
 **Version:** 1.0
+
+
+## Notes 2026-05-07
+
+In the standard Casanova/spray drift model output:
+
+- **Ground deposition** = % IAR deposited per unit ground area at each downwind distance
+- **Vertical profile** (the new optional output) = % IAR passing through a vertical plane per height bin at each downwind distance
+
+Both use the same normalisation (mass fraction of what was applied), so they are directly comparable and their relationship is:
+
+> **Total airborne drift at distance *d*** = sum of vertical profile bins at *d* = applied – ground deposition integrated from 0 to *d*
+
+This consistency is a key design advantage — the vertical profile is essentially decomposing the airborne fraction (complement of ground deposition) into height bands.
+
+---
+
+**Summary of output suite:**
+
+| Output | Unit | Always/Optional |
+|--------|------|-----------------|
+| Ground deposition curve | % IAR vs. distance | Always |
+| Vertical drift profile | % IAR vs. height, per distance | Optional |
+| Total airborne at distance | % IAR (scalar per distance) | Optional (sum of vertical bins) |
+| Per-size-class breakdown | % IAR per bin per class | Diagnostic |

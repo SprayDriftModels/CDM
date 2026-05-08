@@ -1,0 +1,268 @@
+---
+title: "Vertical Drift Profile Output — Development Specification"
+author: ""
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    theme: cosmo
+  docx:
+    toc: true
+    number-sections: true
+---
+
+## Objective
+
+Extend the Casanova Drift Model (CDM) to output **vertical drift concentration profiles** at user-specified downwind distances. This data is required for regulatory risk assessment of non-target arthropods (NTAs) and non-target terrestrial plants (NTTPs), which are exposed to airborne spray at various heights above ground — not only to ground-level deposition.
+
+## Background
+
+### Current Behaviour
+
+CDM currently tracks the full 6-component trajectory $(Z, X, V_z, V_x, M_w, V_{vwx})$ for each combination of droplet size class (23 classes) and streamline angle (11 angles, −40° to −140°). However, the only spatial output recorded is the **horizontal distance at ground impact** (`dropletTransportDistance` matrix). All intermediate trajectory data — including the droplet's height, mass, and velocity at any point during its flight — is computed but discarded.
+
+The deposition output (`deposition` array) provides ground-level spray deposit as %IAR versus downwind distance. This is sufficient for ground deposition risk assessment but not for airborne exposure assessment.
+
+### What Is Missing
+
+There is no output describing the **vertical distribution of airborne spray** at a given downwind distance. Regulatory risk assessment for NTAs and NTTPs requires knowing how much spray mass is passing through the air at different heights (e.g., at 0.5 m, 1.0 m, 2.0 m above ground) at specific distances from the field edge.
+
+## Requirements
+
+### R1: User-Specified Evaluation Distances
+
+The user SHALL be able to specify one or more downwind distances at which vertical profiles are extracted.
+
+**Proposed input (within the existing JSON config):**
+
+```json
+"verticalProfile": {
+    "enable": true,
+    "distances": [5.0, 10.0, 20.0, 50.0]
+}
+```
+
+- `distances` — array of downwind distances in metres
+- When `enable` is `false` or the section is absent, no vertical profiles are computed (backward compatible)
+
+### R2: Height Discretisation
+
+The output SHALL report airborne spray mass in height bins. The user MAY optionally specify bin edges; otherwise a default set is used.
+
+**Optional input:**
+
+```json
+"verticalProfile": {
+    "enable": true,
+    "distances": [5.0, 10.0, 20.0],
+    "heightBins": [0.0, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]
+}
+```
+
+**Default height bins (metres):** `[0.0, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0]`
+
+### R3: Output Format
+
+The output SHALL be included in the existing JSON output under a new key `verticalDriftProfile`:
+
+```json
+"verticalDriftProfile": {
+    "distances": [5.0, 10.0, 20.0],
+    "heightBins": [0.0, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0],
+    "unit": "fractionAirborne",
+    "profiles": [
+        [0.00, 0.12, 0.35, 0.28, 0.15, 0.06, 0.02, 0.01, 0.00, 0.00],
+        [0.00, 0.08, 0.22, 0.20, 0.14, 0.09, 0.05, 0.02, 0.01, 0.00],
+        [0.00, 0.03, 0.10, 0.12, 0.11, 0.08, 0.05, 0.03, 0.01, 0.00]
+    ]
+}
+```
+
+- `profiles[i][j]` — fraction of total airborne spray mass in height bin $j$ at distance $i$
+- Each row sums to 1.0 (normalised across height bins)
+- If no mass is airborne at a given distance (all droplets have deposited), the row is all zeros
+
+### R4: Console Report
+
+When vertical profiles are enabled, the console report SHALL include a summary section:
+
+```
+Vertical Drift Profile
+Distance   Height   Fraction
+5.0        0.25     0.12
+5.0        0.50     0.35
+...
+```
+
+### R5: Backward Compatibility
+
+When `verticalProfile` is absent or `enable` is `false`:
+
+- No vertical profile computation is performed
+- No `verticalDriftProfile` key appears in the JSON output
+- No performance impact on existing simulations
+
+## Implementation Approach
+
+### Recommended: CVODE Root-Finding (Option B)
+
+#### Concept
+
+CVODE already supports root-finding during integration. CDM uses this to detect ground impact: a root function $g(t) = Z(t) - h_C$ triggers when the droplet reaches canopy height.
+
+The same mechanism can detect when a droplet crosses a target downwind distance. For each evaluation distance $x_i$, define an additional root function:
+
+$$g_i(t) = X(t) - x_i$$
+
+When $g_i(t) = 0$, the solver has found the exact moment the droplet passes through the vertical plane at distance $x_i$. At that instant, the solver provides the precise state:
+
+| Variable | Meaning |
+|----------|---------|
+| $Z(t)$ | Height above ground |
+| $M_w(t)$ | Remaining water mass |
+| $d_p(t)$ | Current droplet diameter (derived from $M_w$) |
+
+This is analogous to placing **virtual measurement screens** at each target distance. Every droplet that passes through a screen has its height and mass recorded.
+
+#### Advantages
+
+| Property | Root-finding | Post-processing alternative |
+|----------|-------------|---------------------------|
+| Accuracy | Exact to solver tolerance | Interpolation error between stored steps |
+| Memory | No trajectory storage needed | Must store all steps for all trajectories |
+| Performance | Minimal overhead (few extra roots) | Significant I/O and memory overhead |
+| Code complexity | Moderate (extend existing pattern) | Low (but adds large data handling) |
+
+### Implementation Steps
+
+#### Step 1: Parse New Input
+
+**File:** `Serialization.cpp`
+
+- Parse the optional `verticalProfile` section from JSON input
+- Store `enable`, `distances`, and `heightBins` in the `Model` struct
+- Validate: distances must be positive and sorted; height bins must be non-negative and sorted
+
+#### Step 2: Add Root Functions
+
+**File:** `DropletTransport.cpp` / `CVodeIntegrator.hpp`
+
+- When vertical profiles are enabled, register additional root functions $g_i(t) = X(t) - x_i$ with CVODE
+- The number of root functions increases from 1 (ground crossing) to $1 + N_{distances}$
+- In the root handler, check which root was triggered:
+  - If ground crossing → existing behaviour (record deposition)
+  - If distance crossing → record $(z, m_w)$ into accumulator, continue integration
+
+#### Step 3: Accumulate Vertical Profile Data
+
+**File:** `Deposition.cpp` (or new file `VerticalProfile.cpp`)
+
+Create a profile accumulator:
+
+```cpp
+struct VerticalProfileAccumulator {
+    std::vector<double> distances;      // target distances
+    std::vector<double> heightBins;     // bin edges
+    // profiles[dist_idx][height_bin_idx] = accumulated mass fraction
+    std::vector<std::vector<double>> profiles;
+
+    void record(int distIdx, double z, double mass, double volumeFraction);
+    void normalise();  // normalise each row to sum to 1.0
+};
+```
+
+For each root-finding event at distance $x_i$:
+
+1. Determine which height bin $z$ falls into
+2. Add the droplet's mass contribution (weighted by its volume fraction in the DSD) to that bin
+3. After all droplet sizes and streamlines are processed, normalise each row
+
+#### Step 4: Serialise Output
+
+**File:** `Serialization.cpp`
+
+- Add `verticalDriftProfile` to the JSON output
+- Include in console report when verbose
+
+#### Step 5: Update C API
+
+**File:** `CDM.h` / `CDM.cpp`
+
+No new API functions required — the vertical profile data is included in the existing `cdm_get_output_string()` JSON output. Downstream consumers (R package, CLI) automatically receive it.
+
+### Testing
+
+#### Unit Tests
+
+- Verify root functions trigger at correct distances
+- Verify height binning assigns mass to correct bins
+- Verify row normalisation sums to 1.0
+- Verify empty rows when all droplets deposit before reaching the target distance
+
+#### Integration Tests
+
+- Run Case B with `verticalProfile.distances = [3, 10, 30]`
+- Verify profiles are physically plausible:
+  - Mass concentrated near nozzle height at short distances
+  - Mass spreads and shifts downward at longer distances
+  - Small droplets dominate at far distances and higher elevations
+- Verify backward compatibility: output without `verticalProfile` input matches existing output exactly
+
+#### Validation
+
+- Compare vertical profiles against field measurements if available (e.g., vertical sampler arrays)
+- Cross-check: integrating each vertical profile over height should be consistent with the total airborne mass at that distance (i.e., 1.0 minus cumulative ground deposition up to that distance)
+
+## Data Flow Diagram
+
+
+
+```{mermaid}
+%%{init: {'flowchart': {'layout': 'elk'}}}%%
+flowchart TD
+    subgraph TopRow[" "]
+        direction LR
+        A["<div style='text-align:left'>Input JSON<br/>verticalProfile<br/>distances: [5, 10, 20]<br/>heightBins: [0, .25, .5, ...]</div>"]
+        B["<div style='text-align:left'>CVODE Integration Loop<br/><br/>For each droplet size × streamline:<br/>Root g₀: $X(t)=hC$ → ground deposition<br/>Root g₁: $X(t)=5$ → record (z, mw)<br/>Root g₂: $X(t)=10$ → record (z, mw)<br/>Root g₃: $X(t)=20$ → record (z, mw)</div>"]
+        A --> B
+    end
+
+    B --> C["<div style='text-align:left'>Vertical Profile Accumulator<br/>Bin (z, mw) by height for each distance<br/>Normalise rows → fraction of airborne</div>"]
+    C --> D["<div style='text-align:left'>JSON Output<br/>&quot;verticalDriftProfile&quot;: { ... }</div>"]
+
+    style TopRow fill:none,stroke:none
+```
+
+## Files to Modify
+
+| File | Change |
+|------|--------|
+| `src/Model.hpp` | Add `VerticalProfileConfig` struct to model state |
+| `src/Serialization.cpp` | Parse `verticalProfile` input; serialise `verticalDriftProfile` output |
+| `src/CVodeIntegrator.hpp` | Support variable number of root functions |
+| `src/DropletTransport.cpp` | Register distance-crossing root functions; handle root events |
+| `src/Deposition.cpp` | Add `VerticalProfileAccumulator`; accumulate and normalise |
+| `include/cdm/CDM.h` | No changes (output included in existing `cdm_get_output_string`) |
+| `tests/Case_B.json` | Add example `verticalProfile` section (optional, for testing) |
+
+## Acceptance Criteria
+
+1. Running Case B with `verticalProfile.distances = [5, 10, 30]` produces a `verticalDriftProfile` in the JSON output
+2. Each profile row sums to 1.0 (within floating-point tolerance)
+3. Profiles are physically plausible (mass concentrated near nozzle height at short distances, dispersing at longer distances)
+4. Running Case B without `verticalProfile` produces identical output to the current version
+5. No measurable performance regression when vertical profiles are disabled
+6. Console report includes vertical profile summary when enabled
+
+## Timeline Estimate
+
+| Phase | Effort |
+|-------|--------|
+| Input parsing + model config | 0.5 day |
+| Root function extension | 1 day |
+| Accumulator + normalisation | 1 day |
+| Output serialisation + report | 0.5 day |
+| Testing + validation | 1 day |
+| **Total** | **4 days** |
