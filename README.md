@@ -9,6 +9,7 @@ The Casanova Drift Model (CDM) is a mechanistic model that simulates the traject
 ## License
 
 CDM is licensed under the GNU Affero General Public License version 3. See [LICENSE](LICENSE) for details.
+Third-party dependency notices are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Samples
 
