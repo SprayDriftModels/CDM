@@ -6,6 +6,10 @@ The Casanova Drift Model (CDM) is a mechanistic model that simulates the traject
 
 **Recent Research**: See [Vertical Drift Distribution Abstract](docs/VerticalDriftDistribution_Abstract.md) for information on enhancing CDM with vertical drift profile extraction capabilities for improved non-target organism risk assessment.
 
+## License
+
+CDM is licensed under the GNU Affero General Public License version 3. See [LICENSE](LICENSE) for details.
+
 ## Samples
 
 Model input files are included for the following SETAC DRAW test cases:

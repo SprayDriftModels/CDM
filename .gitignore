@@ -7,3 +7,5 @@ R/cdm/src/*.so
 R/cdm/src/*.dll
 R/cdm/src/*.dylib
 .DS_Store
+docs/SETAC_poster_files/
+sensitivity/
