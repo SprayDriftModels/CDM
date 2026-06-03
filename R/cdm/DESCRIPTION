@@ -6,5 +6,5 @@ Date: 2024-02-06
 Author: Ed Casanova [aut], John Buonagurio [aut, cre]
 Maintainer: John Buonagurio <jbuonagurio@exponent.com>
 Description: R interface to Casanova Drift Model.
-License: file LICENSE
+License: AGPL-3
 Imports: jsonlite
