@@ -1,0 +1,243 @@
+write out the CDM equations in manuscript-ready form, organized by physical process
+
+1. Atmospheric Properties
+Saturation Vapor Pressure (Antoine equation)
+$$P_{sw}(T) = \exp\left(A_w + \frac{B_w}{T + 273.15 + C_w}\right)$$
+
+where $A_w = 18.927$, $B_w = -4169.63$, $C_w = -33.57$, and $P_{sw}$ is in mmHg.
+
+Density of Wet Air
+$$\rho_A = \frac{M_w , P_{sw}(T, RH) + M_a \left(1 - P_{sw}(T, RH)\right)}{82.061 \left(T + 273.15\right)}$$
+
+where $M_w = 18.015$ g/mol (water), $M_a = 28.851$ g/mol (air), and:
+
+$$P_{sw}(T, RH) = \frac{1}{760}\exp\left(A_w + \ln\frac{RH}{100} + \frac{B_w}{T + 273.15 + C_w}\right) \quad \text{[atm]}$$
+
+Dynamic Viscosity of Wet Air
+$$\mu_A = K_0 + K_1 T + K_2 P_{sw}(T, RH)$$
+
+where $K_0 = 1.765 \times 10^{-4}$, $K_1 = 4.752 \times 10^{-7}$, $K_2 = -1.478 \times 10^{-4}$ [g cm$^{-1}$ s$^{-1}$].
+
+Dew Point Temperature
+$$T_{dp} = \frac{B_w}{\ln\left(P_{sw}(T, RH) \cdot 760\right) - A_w} - 273.15 - C_w$$
+
+Wet Bulb Temperature
+$T_{wb}$ is obtained by solving iteratively (TOMS 748 root-finding):
+
+$$P_{sw}(T_{dp}) - P_{sw}(T_{wb}) - P \frac{M_a}{M_w} \frac{C_{pa}(T_{wb}) \left(T_{wb} - T\right)}{\Delta H_v(T_{wb})} = 0$$
+
+where the heat capacity of air is:
+
+$$C_{pa}(T) = \frac{A + BT + CT^2 + DT^3}{M_a} \quad \text{[cal g$^{-1}$ °C$^{-1}$]}$$
+
+with $A = 6.917$, $B = 9.911 \times 10^{-4}$, $C = 7.627 \times 10^{-7}$, $D = -4.696 \times 10^{-10}$, and the heat of vaporization is:
+
+$$\Delta H_v(T) = \Delta H_0 \left(1 - \frac{T + 273.15}{647.3}\right)^N \quad \text{[cal g$^{-1}$]}$$
+
+with $\Delta H_0 = 717.22$ and $N = 0.332$.
+
+Wet Bulb Temperature Depression
+$$\Delta T_{wb} = T - T_{wb}$$
+
+2. Wind Velocity Profile
+Logarithmic Wind Profile
+$$u(z) = \frac{U_f}{\kappa} \ln\frac{z - h_C}{z_0}$$
+
+where $\kappa = 0.40$ (von Kármán constant), $h_C$ is canopy height [m], and $z_0$ is friction height [m].
+
+Friction Height
+$$z_0 = 0.00341 + 0.1245 , h_C$$
+
+Friction Velocity (single measurement)
+$$U_f = \frac{u(z_1) , \kappa}{\ln\left(\frac{z_1 - h_C}{z_0}\right)}$$
+
+Friction Velocity (multiple measurements)
+$$U_f = \frac{\kappa \sum_{i} u_i}{\sum_{i} \ln(z_i / z_0)}$$
+
+Richardson Number (atmospheric stability)
+$$Ri = \frac{g}{\overline{T} + 273.15} \cdot \frac{\partial T / \partial z}{\left(\partial u / \partial z\right)^2}$$
+
+where $\overline{T}$ is the mean temperature between measurement heights.
+
+Horizontal Wind Variation (ψψψ)
+Entered directly, interpolated from a Richardson number lookup table, or computed via the SDTF empirical relationship:
+
+$$\psi\psi\psi = 0.524 , h_C + 69.398 , |Ri|$$
+
+3. Droplet Size Distribution
+Bi-modal Normal CDF Model
+The cumulative volume fraction is modeled as a mixture of two normal distributions:
+
+$$F(d_p) = w_1 \left[\Phi\left(\frac{d_p - \mu_1}{\sigma_1}\right) - \Phi\left(\frac{d_{p,\min} - \mu_1}{\sigma_1}\right)\right] + (1 - w_1) \left[\Phi\left(\frac{d_p - \mu_2}{\sigma_2}\right) - \Phi\left(\frac{d_{p,\min} - \mu_2}{\sigma_2}\right)\right]$$
+
+where $\Phi$ is the standard normal CDF, and parameters $\mu_1, \mu_2, \sigma_1, \sigma_2, w_1$ are fitted by non-linear least squares (Levenberg–Marquardt).
+
+Probability Density Function
+$$f(d_p) = w_1 , \phi\left(\frac{d_p - \mu_1}{\sigma_1}\right) \frac{1}{\sigma_1} + (1 - w_1) , \phi\left(\frac{d_p - \mu_2}{\sigma_2}\right) \frac{1}{\sigma_2}$$
+
+where $\phi$ is the standard normal PDF.
+
+4. Nozzle Velocity
+Spray Exit Velocity (Bernoulli)
+$$v_i = \sqrt{\frac{2 P_N}{\rho_L}}$$
+
+where $P_N$ is nozzle pressure [Pa] and $\rho_L$ is solution density [kg m$^{-3}$].
+
+Streamline Geometry
+The spray fan (angle $\theta$) is discretized into $N_s = 11$ streamlines. For the $i$-th streamline:
+
+$$\alpha = \frac{180° - \theta}{2}, \quad \Delta\theta = \frac{\theta}{N_s}, \quad \theta_i = -\alpha - \frac{\Delta\theta}{2} - i , \Delta\theta$$
+
+Initial Velocity Components
+$$V_{z,0}^{(i)} = v_i \sin\theta_i, \qquad V_{x,0}^{(i)} = v_i \cos\theta_i$$
+
+5. Droplet Transport (Governing ODE System)
+The trajectory of each droplet is described by a system of six coupled ODEs. The state vector is $\mathbf{y} = [Z, X, V_z, V_x, M_w, V_{vwx}]^\top$:
+
+Kinematic Equations
+$$\frac{dZ}{dt} = V_z$$
+
+$$\frac{dX}{dt} = V_x$$
+
+Vertical Momentum (gravity + buoyancy + drag + evaporation thrust)
+$$\frac{dV_z}{dt} = \frac{1}{M_w + M_s}\left[\frac{\pi}{8} C_D(Re_z) , \rho_A , D^2 , (-V_z)|V_z| + V_z , W + V_D , g \left(\rho_A - \frac{M_w + M_s}{V_D}\right)\right]$$
+
+Horizontal Momentum (wind drag + evaporation thrust)
+$$\frac{dV_x}{dt} = \frac{1}{M_w + M_s}\left[\frac{\pi}{8} C_D(Re_x) , \rho_A , D^2 , (V_{vwx} - V_x)|V_{vwx} - V_x| + V_x , W\right]$$
+
+(set to zero when $V_{vwx} \leq 0$)
+
+Evaporation
+$$\frac{dM_w}{dt} = -W$$
+
+Local Wind Velocity
+$$\frac{dV_{vwx}}{dt} = \begin{cases} V_z \dfrac{U_f}{\kappa(Z - h_C)} & \text{if } Z > z_0 \ 0 & \text{otherwise} \end{cases}$$
+
+Auxiliary Quantities
+Droplet volume:
+$$V_D = \frac{M_w}{\rho_W} + \frac{M_s}{\rho_S}$$
+
+Droplet diameter:
+$$D = \left(\frac{6 V_D}{\pi}\right)^{1/3}$$
+
+Reynolds number:
+$$Re = \frac{\rho_A , D , \sqrt{V_z^2 + (V_{vwx} - V_x)^2}}{\mu_A}$$
+
+Termination Condition
+Integration stops when $Z \leq z_0 + h_C$ (droplet reaches canopy/ground).
+
+6. Drag Coefficient
+Clift and Gauvin (1970) correlation:
+
+$$C_D(Re) = \frac{24}{Re}\left(1 + 0.197 , Re^{0.63} + 2.6 \times 10^{-4} , Re^{1.38}\right)$$
+
+7. Evaporation Rate
+Ranz–Marshall mass transfer correlation:
+
+$$W(M_w, Re) = \frac{3\pi^{2/3}}{2 \cdot 6^{2/3}} , \lambda_w , \Delta T_{wb} , \rho_W \left(\frac{M_s}{\rho_S} + \frac{M_w}{\rho_W}\right)^{1/3} \left(1 + 0.276\sqrt{Re}\right) \frac{M_w}{M_s + M_w}$$
+
+where $\lambda_w = 76.4 \times 10^{-8}$ cm$^2$ s$^{-1}$ °C$^{-1}$ is the evaporation coefficient.
+
+8. Terminal Velocity
+$V_t$ is solved iteratively from:
+
+$$V_t = \sqrt{\frac{4 , d_p , g , (\rho_L - \rho_A)}{3 , \rho_A , C_D(Re_t)}}$$
+
+where $Re_t = \rho_A V_t d_p / \mu_A$.
+
+The maximum deposition time is:
+
+$$t_{\max} = \delta \cdot \frac{h_N}{V_t}$$
+
+where $\delta = 60$ (default scale factor).
+
+9. Initial Conditions
+For droplet diameter $d_p$ on streamline $i$:
+
+$$Z(0) = h_N - \delta_L, \quad X(0) = 0$$
+
+$$V_z(0) = V_{z,0}^{(i)}, \quad V_x(0) = V_{x,0}^{(i)}$$
+
+$$M_w(0) = \frac{\pi}{6} d_p^3 , \frac{1 - x_{s,0}}{x_{s,0}/\rho_S + (1 - x_{s,0})/\rho_W}$$
+
+$$M_s = \frac{\pi}{6} d_p^3 , \frac{x_{s,0}}{x_{s,0}/\rho_S + (1 - x_{s,0})/\rho_W}$$
+
+$$V_{vwx}(0) = \frac{U_f}{\kappa} \ln\frac{h_N - h_C}{z_0}$$
+
+where $\delta_L = 0.1016$ m (liquid sheet offset) and $x_{s,0}$ is the initial mass fraction of dissolved solids.
+
+10. Deposition Calculation
+Domain Discretization
+The field is divided into spray segments ($N_{sa}$) and drift segments ($N_{da}$):
+
+$$N_{sa} = \frac{F_D}{d_N}, \quad N_{da} = \lambda , N_{sa}$$
+
+with segment widths $\Delta W_{sa} = F_D / N_{sa}$ and $\Delta W_{da} = \Delta W_{sa}$.
+
+Segment midpoints:
+
+$$x_j = \begin{cases} \Delta W_{sa}(0.5 + j) & j < N_{sa} \ F_D + \Delta W_{da}(0.5 + j - N_{sa}) & j \geq N_{sa} \end{cases}$$
+
+Spray Volume Distribution
+$$V_{sprayed} = \frac{IAR \cdot A}{\rho_L \cdot x_{active}}$$
+
+Partial volume for droplet size class $i$:
+
+$$SVP_i = f(d_{p,i}) , \Delta d_p , \frac{V_{sprayed}}{N_{sa}}$$
+
+where $\Delta d_p = 0.5$ μm.
+
+Concentration Matrix (plume spreading)
+For each streamline $n$, droplet class $i$, and segment $j$:
+
+$$CM_{i,j} = \sum_{n=0}^{N_s - 1} \frac{SVP_i / N_s}{\Delta W_j \left(P_L + 2 , x_j \tan(\psi\psi\psi \cdot \zeta)\right)}$$
+
+where $\zeta = 2.5$ (one-sigma multiplier for directional spread), and the term in parentheses represents the crosswind plume width at distance $x_j$.
+
+Ground Deposition Profile
+$$D(x) = \frac{\sum_i CM_{i,\text{seg}(x)}}{IAR / 10000} \times 100 \quad [% \text{ IAR}]$$
+
+Output at intervals $\Delta x$ from $0$ to $L_{\max}$.
+
+11. Numerical Integration
+The ODE system is solved using CVODE (SUNDIALS) with:
+- BDF method (order up to 5)
+- 10,000 output steps per droplet trajectory
+- Relative tolerance: $10^{-4}$
+- Absolute tolerances: $[10^{-8}, 10^{-8}, 10^{-8}, 10^{-8}, 10^{-10}, 10^{-8}]$ for $[Z, X, V_z, V_x, M_w, V_{vwx}]$
+
+Symbol Table
+
+| Symbol          | Definition                                  | Unit                |
+|-----------------|---------------------------------------------|---------------------|
+| $T$             | Dry air temperature                         | °C                  |
+| $P$             | Barometric pressure                         | Pa                  |
+| $RH$            | Relative humidity                           | %                   |
+| $\rho_A$        | Wet air density                             | g cm$^{-3}$         |
+| $\mu_A$         | Dynamic viscosity of wet air                | g cm$^{-1}$ s$^{-1}$|
+| $\rho_W$        | Density of water                            | g cm$^{-3}$         |
+| $\rho_S$        | Density of dissolved solids                 | g cm$^{-3}$         |
+| $\rho_L$        | Solution mixture density                    | g cm$^{-3}$         |
+| $U_f$           | Friction velocity                           | m s$^{-1}$          |
+| $z_0$           | Friction height (roughness length)          | m                   |
+| $h_C$           | Canopy height                               | m                   |
+| $h_N$           | Nozzle height above ground                  | m                   |
+| $P_N$           | Nozzle pressure                             | Pa                  |
+| $\theta$        | Nozzle spray angle                          | degrees             |
+| $d_p$           | Droplet diameter                            | μm                  |
+| $M_w$           | Mass of water in droplet                    | g                   |
+| $M_s$           | Mass of dissolved solids in droplet         | g                   |
+| $x_{s,0}$       | Initial mass fraction of solids             | —                   |
+| $\kappa$        | von Kármán constant (0.40)                  | —                   |
+| $g$             | Gravitational acceleration (980.7 cm s$^{-2}$)| cm s$^{-2}$      |
+| $\lambda_w$     | Evaporation coefficient                     | cm$^2$ s$^{-1}$ °C$^{-1}$ |
+| $IAR$           | Intended application rate                    | kg ha$^{-1}$        |
+| $F_D$           | Downwind field depth                        | m                   |
+| $P_L$           | Crosswind field width                       | m                   |
+| $d_N$           | Nozzle spacing                              | m                   |
+| $N_s$           | Number of streamlines (11)                   | —                  |
+| $\delta$        | Deposition time scale factor (60)            | —                  |
+| $\psi\psi\psi$  | Horizontal wind direction variation          | degrees            |
+| $\zeta$         | Directional spread multiplier (2.5)          | —                  |
+
+These are the complete equations as implemented in the CDM source.
