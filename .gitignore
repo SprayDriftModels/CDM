@@ -11,5 +11,7 @@ sensitivity/
 sensitivity/vertical-profile-spec.qmd
 sensitivity/sensitivity-analysis.pdf
 __pycache__/
+scripts/batch_sweep/results/
+scripts/batch_sweep/samplespace.csv
 docs/SETAC_poster_files/
 docs/SETAC_poster.html

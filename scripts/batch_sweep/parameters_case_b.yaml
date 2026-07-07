@@ -1,0 +1,76 @@
+# SETAC Case B parameter definitions for batch_sweep.
+# Canonical source: scripts/batch_sweep/cdm_common.py PARAMETERS dict.
+# This file documents bounds for LHS / custom sweeps; values match
+# sensitivity/sensitivity-analysis.qmd and sensitivity/run_sensitivity.py.
+
+base_case: tests/Case_B.json
+field_depth_m: 24.0
+eval_distances: [3, 10, 30]
+
+# Use parameter keys from cdm_common.PARAMETERS (wind_speed, nozzle_height, ...)
+# For LHS, samples are drawn uniformly in [low, high] per parameter.
+
+parameters:
+  wind_speed:
+    path: windVelocityProfile.velocityMeasurements.0.1
+    baseline: 2.436272531
+    low: 1.22
+    high: 3.65
+    label: Wind Speed
+    unit: m/s
+
+  nozzle_height:
+    path: dropletTransport.nozzleHeight
+    baseline: 0.8016
+    low: 0.60
+    high: 1.00
+    label: Nozzle Height
+    unit: m
+
+  nozzle_pressure:
+    path: dropletTransport.nozzlePressure
+    baseline: 250000.0
+    low: 150000.0
+    high: 350000.0
+    label: Nozzle Pressure
+    unit: Pa
+
+  nozzle_angle:
+    path: dropletTransport.nozzleAngle
+    baseline: 110.0
+    low: 90.0
+    high: 130.0
+    label: Nozzle Angle
+    unit: deg
+
+  temperature:
+    path: dryAirTemperature
+    baseline: 16.6
+    low: 6.6
+    high: 26.6
+    label: Temperature
+    unit: degC
+
+  relative_humidity:
+    path: relativeHumidity
+    baseline: 67.1
+    low: 30.0
+    high: 95.0
+    label: Relative Humidity
+    unit: "%"
+
+  canopy_height:
+    path: dropletTransport.canopyHeight
+    baseline: 0.15
+    low: 0.0
+    high: 0.50
+    label: Canopy Height
+    unit: m
+
+  horizontal_variation:
+    path: windVelocityProfile.horizontalVariation
+    baseline: 10.7
+    low: 0.0
+    high: 25.0
+    label: Wind Direction Variation
+    unit: deg

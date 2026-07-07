@@ -16,6 +16,7 @@ import subprocess
 import copy
 import tempfile
 import os
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -24,10 +25,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # ---------------------------------------------------------------------------
-# Configuration
+# Configuration — pre-built CDM 1.2.0 release (not a local CMake build)
 # ---------------------------------------------------------------------------
 
-CDMCLI = r"c:\Users\gbbfx\OneDrive - Bayer\Projects\Casanova\Versions\windows-latest\cdm-1.2.0-win64\bin\cdmcli.exe"
+sys.path.insert(0, str(Path(__file__).parent.parent / "scripts" / "batch_sweep"))
+from cdm_common import resolve_cdm_cli  # noqa: E402
+
+CDMCLI = str(resolve_cdm_cli())
 BASE_CASE = Path(__file__).parent.parent / "tests" / "Case_B.json"
 OUTPUT_DIR = Path(__file__).parent / "results"
 

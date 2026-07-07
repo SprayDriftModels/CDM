@@ -145,7 +145,16 @@ flowchart LR
     style Results fill:#e8f5e9,stroke:#2e7d32,color:#24292f
 ```
 
-### 4. Research Documentation
+### 4. External Model Assessment
+**File:** [driftml_assessment.md](driftml_assessment.md)
+
+Assessment of the external [driftml](https://github.com/klotzd/driftml) repository (OpenFOAM CFD + ML surrogate for wind-tunnel spray drift) relative to CDM. Includes scope decision and links to:
+
+- [driftml_setac_harmonization.md](driftml_setac_harmonization.md) — SETAC Case B ↔ driftml parameter mapping for CFD cross-checks
+- [scripts/batch_sweep/](../scripts/batch_sweep/) — CDM-native LHS batch runner (inspired by driftml workflow)
+- [scripts/openfoam_vertical_plane_extractor.py](../scripts/openfoam_vertical_plane_extractor.py) — OpenFOAM vertical profile reference extractor
+
+### 5. Research Documentation
 **File:** [VerticalDriftDistribution_Abstract.md](VerticalDriftDistribution_Abstract.md)
 
 This document presents research on enhancing the Casanova Drift Model with vertical drift distribution extraction capabilities. It addresses:
