@@ -3,16 +3,22 @@
 
 #pragma once
 
+#include <array>
 #include <memory>
+#include <vector>
 
 #include "CVodeIntegrator.hpp"
-#include "Model.hpp"
 
 namespace cdm {
+
+struct Model;
 
 class DropletTransport
 {
 public:
+    using PositionXZM = std::array<double, 3>; // [x, z, mass] where [x, z] are in meters and mass is in grams
+    using TrajectoryXZ = std::vector<PositionXZM>;
+
     struct Params {
         double z0;     /**< Friction height [cm] */
         double Uf;     /**< Friction velocity [cm/s] */
@@ -35,7 +41,7 @@ public:
     /**
      * Calculates derived values and initializes CVODE solver.
      */
-    DropletTransport(const cdm::Model &m);
+    DropletTransport(const Model& m);
 
     /**
      * Calculates droplet transport distance for a given droplet size and velocity.
@@ -45,6 +51,28 @@ public:
      * \return Distance [m]
      */
     double operator()(double Vz, double Vx0, double dp0);
+
+    /**
+     * Calculates droplet transport trajectory for a given droplet size and velocity.
+          * The returned vector begins with the initial [x, z, mass] point at t=0,
+          * followed by one [x, z, mass] point per model output timestep.
+     * 
+     * \param[in] Vz0 Vertical component of nozzle velocity [m/s]
+     * \param[in] Vx0 Horizontal component of nozzle velocity [m/s]
+     * \param[in] dp0 Droplet diameter [μm]
+      * \return Trajectory points [x, z, mass] where [x, z] are in meters and mass is in grams
+     */
+    TrajectoryXZ trajectory(double Vz0, double Vx0, double dp0);
+
+    /**
+     * Calculates droplet transport distance and trajectory.
+     * \param[in] Vz0 Vertical component of nozzle velocity [m/s]
+     * \param[in] Vx0 Horizontal component of nozzle velocity [m/s]
+     * \param[in] dp0 Droplet diameter [μm]
+    * \param[out] outTrajectory Trajectory points [x, z, mass] where [x, z] are in meters and mass is in grams
+     * \return Distance [m]
+     */
+    double trajectory(double Vz0, double Vx0, double dp0, TrajectoryXZ& outTrajectory);
 
     /**
      * Returns the current solution vector (Z, X, Vz, Vx, Mw, Vvwx).
@@ -59,6 +87,8 @@ public:
         { return cvi.getIntegratorStats(); }
 
 private:
+    double integrate(double Vz0, double Vx0, double dp, TrajectoryXZ* xzTrajectory);
+
     cvode::Integrator<6> cvi;
     Params params;
 };

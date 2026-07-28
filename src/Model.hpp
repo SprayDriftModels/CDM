@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <cstdint>
 #include <memory>
 #include <optional>
 #include <utility>
@@ -15,6 +16,19 @@ namespace cdm {
 
 struct DropletSizeModel;
 struct NozzleVelocity;
+
+struct VerticalProfileCellCrossingBin {
+    double height;                                          // Current height upper bound [m]
+    double previousHeight;                                  // Previous height bound [m]
+    double percentApplied;                                  // Percent applied in this 2D cell [%IAR]
+    uint64_t hitCount;                                      // Number of trajectory hits that crossed this 2D cell
+};
+
+struct VerticalProfileByDistanceCellCrossing {
+    double distance;                                        // Current distance upper bound [m]
+    double previousDistance;                                // Previous distance bound [m]
+    std::vector<VerticalProfileCellCrossingBin> bins;       // One cell bin per height interval
+};
 
 enum class PPPMethod {
     ENTERED = 0,
@@ -69,6 +83,8 @@ struct Model
     std::array<double, constants::ns> nvz;                  // [DERIVED] Nozzle velocity, vertical components [m/s]
     std::array<double, constants::ns> nvx;                  // [DERIVED] Nozzle velocity, horizontal components [m/s]
     std::array<std::vector<double>, constants::ns> xdist;   // [DERIVED] Transport distances [m]
+    std::array<std::vector<std::vector<std::array<double, 3>>>, constants::ns> xzByTimestep;
+                                                        // [DERIVED] Transport trajectory [streamline][droplet class][timestep] => [x, z, mass] where [x, z] are in m and mass is in g
 
     // Deposition
     double IAR;                                             // [INPUT] Intended application rate [kg/ha]
@@ -80,6 +96,12 @@ struct Model
     double lambda = 1;                                      // [INPUT] Scale factor for number of drift segments (λ), ≥1
     double dx = 0.5;                                        // [INPUT] Distance interval for deposition output [m]
     std::vector<std::pair<double, double>> applume;         // [DERIVED] Deposition output [m, %IAR]
+
+    // Vertical Profile
+    std::optional<std::vector<double>> vpHeights;
+    std::optional<std::vector<double>> vpDistances;
+    std::optional<std::vector<VerticalProfileByDistanceCellCrossing>> vpResultsByDistanceCellCrossing;
+    std::optional<std::vector<VerticalProfileByDistanceCellCrossing>> vpResultsByDistanceCellCrossingSingleNozzle;
 
     // CVODE Integration Options
     double cvreltol = 1e-4;                                 // [INPUT] Relative error tolerance

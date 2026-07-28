@@ -1,0 +1,86 @@
+{
+    "Case_B": {
+        "dropletSizeDistribution": [
+            [18, 4.772e-05],
+            [22, 1.185e-03],
+            [26, 2.874e-03],
+            [30, 4.877e-03],
+            [36, 8.392e-03],
+            [44, 1.423e-02],
+            [52, 2.166e-02],
+            [62, 3.351e-02],
+            [74, 5.180e-02],
+            [86, 7.467e-02],
+            [100, 1.067e-01],
+            [120, 1.611e-01],
+            [150, 2.553e-01],
+            [180, 3.555e-01],
+            [210, 4.540e-01],
+            [250, 5.742e-01],
+            [300, 6.992e-01],
+            [360, 8.106e-01],
+            [410, 8.758e-01],
+            [500, 9.472e-01],
+            [600, 9.837e-01],
+            [720, 9.983e-01],
+            [860, 1.000e+00]
+        ],
+        "dryAirTemperature": 16.6,
+        "barometricPressure": 101325,
+        "relativeHumidity": 67.1,
+        "windVelocityProfile": {
+            "velocityMeasurements": [
+                [2.0, 2.436272531]
+            ],
+            "temperatureMeasurements": [],
+            "horizontalVariation": 10.7,
+            "horizontalVariationMethod": 0
+        },
+        "dropletTransport": {
+            "nozzleHeight": 0.8016,
+            "canopyHeight": 0.15,
+            "nozzlePressure": 250000.0,
+            "nozzleAngle": 110.0,
+            "waterDensity": 1.0,
+            "solidsDensity": 1.6,
+            "solidsFraction": 0.0079761,
+            "ddd": 60
+        },
+        "verticalProfile": {
+
+            "heights": [
+                0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 
+                1.0, 1.1, 1.2, 1.3, 1.4, 1.5
+            ],
+            "distances": [ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
+       18, 19, 20]
+        },
+        "deposition": {
+            "dsdCurveFitting": true,
+            "applicationRate": 0.83886,
+            "concentrationAI": 0.0079761,
+            "downwindFieldDepth": 24.0,
+            "crosswindFieldDepth": 72.0,
+            "nozzleSpacing": 0.5,
+            "minDropletSize": 17.831,
+            "maxDropletSize": 600.0,
+            "maxDriftDistance": 20.0,
+            "lambda": 4,
+            "outputInterval": 1.0
+        },
+        "integrationOptions": {
+            "relativeTolerance": 1e-5,
+            "absoluteTolerances": [1e-8, 1e-8, 1e-8, 1e-8, 1e-10, 1e-8],
+            "maxOrder": 5,
+            "maxSteps": 2000,
+            "stabilityLimitDetection": false,
+            "maxErrorTestFailures": 10,
+            "maxNonlinearIterations": 3,
+            "maxConvergenceFailures": 20,
+            "convergenceCoefficient": 0.1
+        },
+        "experimentalOptions": {
+            "enableStreamlines": [true, true, true, true, true, true, true, true, true, true, true]
+        }
+    }
+}

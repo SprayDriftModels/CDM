@@ -21,6 +21,54 @@ Model input files are included for the following SETAC DRAW test cases:
 | G    | NL_1_660  | XR 11004    | 300 kPa (44 psig) | Agral      | [Case_G.json](tests/Case_G.json) |
 | I    | DE_4_006  | XR 11004    | 250 kPa (36 psig) | None       | [Case_I.json](tests/Case_I.json) |
 
+## Built-in DSD Profiles
+
+Built-in droplet-size distributions are stored in [config/dsd_profiles.json](config/dsd_profiles.json) for easy editing and extension.
+
+The defaults currently supplied with the code are:
+
+1. ASABE Very Fine to Fine (11001)
+2. ASABE Fine to Medium (11003)
+3. ASABE Medium to Coarse (11006)
+4. ASABE Coarse to Very Coarse (8008)
+5. ASABE Very Coarse to Extra Coarse (6510)
+6. ASABE Extra Coarse to Ultra Coarse (6515)
+
+Profile selection supports two paths:
+
+1. CLI profile selection:
+
+```
+cdmcli -i tests/Case_B.json --dsd-profile "ASABE Fine to Medium" --dsd-library config/dsd_profiles.json
+```
+
+You can also select by nozzle number:
+
+```
+cdmcli -i tests/Case_B.json --dsd-profile 11003 --dsd-library config/dsd_profiles.json
+```
+
+To list available defaults and valid selectors:
+
+```
+cdmcli --list-dsd-profiles --dsd-library config/dsd_profiles.json
+```
+
+2. Case JSON profile field:
+
+```json
+{
+	"Case_B": {
+		"dropletSizeDistributionProfile": "ASABE Fine to Medium",
+		"dryAirTemperature": 16.6
+	}
+}
+```
+
+If `--dsd-profile` is provided, it overrides any DSD/profile values in the case JSON.
+
+If no profile is selected and the case JSON includes `dropletSizeDistribution`, that in-file DSD is used directly and `--dsd-library` is not required.
+
 ## Build on Windows with vcpkg
 
 Download and install [Visual Studio](https://visualstudio.microsoft.com/). In the Visual Studio installer, Workloads tab, select the **Desktop development with C++** workload. Under Individual components tab, select **Git for Windows**.

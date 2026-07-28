@@ -59,6 +59,27 @@ CDM_EXPORT cdm_error_handler_t cdm_set_error_handler(cdm_error_handler_t handler
 CDM_EXPORT cdm_model_t * cdm_create_model(const char *config);
 
 /**
+ * Initialize a new CDM model object from JSON-formatted configuration data with optional DSD profile selection.
+ *
+ * Resolution precedence:
+ * 1) dsdProfile argument (CLI override)
+ * 2) dropletSizeDistribution in case JSON (custom)
+ * 3) dropletSizeDistributionProfile in case JSON
+ *
+ * If a profile is selected, profile values are loaded from dsdLibraryPath,
+ * CDM_DSD_LIBRARY, or default lookup paths.
+ *
+ * \param[in] config JSON
+ * \param[in] dsdProfile Profile name selected from the DSD library (or nullptr)
+ * \param[in] dsdLibraryPath Path to DSD library JSON file (or nullptr)
+ * \return CDM model object
+ */
+CDM_EXPORT cdm_model_t * cdm_create_model_with_dsd_profile(
+  const char *config,
+  const char *dsdProfile,
+  const char *dsdLibraryPath);
+
+/**
  * Free memory associated with a CDM model object.
  * \param[in] model CDM model object
  */

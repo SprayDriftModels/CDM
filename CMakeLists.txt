@@ -80,10 +80,13 @@ add_library(cdm
   ${CMAKE_CURRENT_SOURCE_DIR}/src/CDM.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/AtmosphericProperties.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Deposition.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/DsdWeighting.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/DropletSizeModel.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/DropletTransport.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/NozzleVelocity.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Serialization.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/VerticalProfileCellCrossing.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/VerticalProfileCellCrossingSingleNozzle.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/WindVelocityProfile.cpp)
 
 add_library(cdm::cdm ALIAS cdm)

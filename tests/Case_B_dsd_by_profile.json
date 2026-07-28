@@ -1,0 +1,39 @@
+{
+  "Case_B_Profile": {
+    "dropletSizeDistributionProfile": "ASABE Fine to Medium (11003)",
+    "dryAirTemperature": 16.6,
+    "barometricPressure": 101325,
+    "relativeHumidity": 67.1,
+    "windVelocityProfile": {
+      "velocityMeasurements": [
+        [2.0, 2.436272531]
+      ],
+      "temperatureMeasurements": [],
+      "horizontalVariation": 10.7,
+      "horizontalVariationMethod": 0
+    },
+    "dropletTransport": {
+      "nozzleHeight": 0.8016,
+      "canopyHeight": 0.15,
+      "nozzlePressure": 250000.0,
+      "nozzleAngle": 110.0,
+      "waterDensity": 1.0,
+      "solidsDensity": 1.6,
+      "solidsFraction": 0.0079761,
+      "ddd": 60
+    },
+    "deposition": {
+      "dsdCurveFitting": true,
+      "applicationRate": 0.83886,
+      "concentrationAI": 0.0079761,
+      "downwindFieldDepth": 24.0,
+      "crosswindFieldDepth": 72.0,
+      "nozzleSpacing": 0.5,
+      "minDropletSize": 17.831,
+      "maxDropletSize": 600.0,
+      "maxDriftDistance": 60.96,
+      "lambda": 4,
+      "outputInterval": 0.6096
+    }
+  }
+}

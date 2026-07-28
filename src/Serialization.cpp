@@ -33,6 +33,25 @@ struct adl_serializer<std::optional<T>>
 
 namespace cdm {
 
+void to_json(nlohmann::ordered_json& json, const VerticalProfileCellCrossingBin& p)
+{
+    json = nlohmann::ordered_json{
+        {"height", p.height},
+        {"previousHeight", p.previousHeight},
+        {"percentApplied", p.percentApplied},
+        {"hitCount", p.hitCount}
+    };
+}
+
+void to_json(nlohmann::ordered_json& json, const VerticalProfileByDistanceCellCrossing& p)
+{
+    json = nlohmann::ordered_json{
+        {"distance", p.distance},
+        {"previousDistance", p.previousDistance},
+        {"bins", p.bins}
+    };
+}
+
 void to_json(nlohmann::ordered_json& json, const std::unique_ptr<DropletSizeModel>& p)
 {
     if (p && p->valid()) {
@@ -79,6 +98,10 @@ void to_json(nlohmann::ordered_json& json, const Model& m)
                 {"solidsFraction", m.xs0},
                 {"ddd", m.ddd}
             }},
+            {"verticalProfile", {
+                {"heights", m.vpHeights},
+                {"distances", m.vpDistances}
+            }},
             {"deposition", {
                 {"dsdCurveFitting", m.dsdfit},
                 {"applicationRate", m.IAR},
@@ -121,7 +144,13 @@ void to_json(nlohmann::ordered_json& json, const Model& m)
                 {"nozzleVelocityX", m.nvx},
                 {"dropletSize", m.dp},
                 {"dropletTransportDistance", m.xdist},
-                {"deposition", m.applume}
+                {"deposition", m.applume},
+                {"verticalProfile", {
+                    {"heights", m.vpHeights},
+                    {"distances", m.vpDistances},
+                    {"resultsByDistanceCellCrossing", m.vpResultsByDistanceCellCrossing},
+                    {"resultsByDistanceCellCrossingSingleNozzle", m.vpResultsByDistanceCellCrossingSingleNozzle}
+                }}
             }}
         }
     };
@@ -180,11 +209,22 @@ void from_json(const nlohmann::ordered_json& json, Model& m)
     if (j2.count("maxDriftDistance") != 0) {
         j2.at("maxDriftDistance").get_to(m.Lmax);
     }
+    
     if (j2.count("lambda") != 0) {
         j2.at("lambda").get_to(m.lambda);
     }
     if (j2.count("outputInterval") != 0) {
         j2.at("outputInterval").get_to(m.dx);
+    }
+
+    if (j.count("verticalProfile") != 0) {
+        auto jV = j.at("verticalProfile");
+        if (jV.count("heights") != 0) {
+            jV.at("heights").get_to(m.vpHeights);
+        }
+        if (jV.count("distances") != 0) {
+            jV.at("distances").get_to(m.vpDistances);
+        }
     }
 
     if (j.count("integrationOptions") != 0) {

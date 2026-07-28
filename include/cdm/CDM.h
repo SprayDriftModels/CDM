@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <stddef.h>
+
 // The cdm library version in the form major * 10000 + minor * 100 + patch.
 // CDM_VERSION % 100 is the patch level
 // CDM_VERSION / 100 % 100 is the minor version
@@ -59,6 +61,27 @@ CDM_EXPORT cdm_error_handler_t cdm_set_error_handler(cdm_error_handler_t handler
 CDM_EXPORT cdm_model_t * cdm_create_model(const char *config);
 
 /**
+ * Initialize a new CDM model object from JSON-formatted configuration data with optional DSD profile selection.
+ * 
+ * Resolution precedence:
+ * 1) dsdProfile argument (CLI override)
+ * 2) dropletSizeDistribution in case JSON (custom)
+ * 3) dropletSizeDistributionProfile in case JSON
+ * 
+ * If a profile is selected, profile values are loaded from dsdLibraryPath,
+ * CDM_DSD_LIBRARY, or default lookup paths.
+ * 
+ * \param[in] config JSON
+ * \param[in] dsdProfile Profile name selected from the DSD library (or nullptr)
+ * \param[in] dsdLibraryPath Path to DSD library JSON file (or nullptr)
+ * \return CDM model object
+ */
+CDM_EXPORT cdm_model_t * cdm_create_model_with_dsd_profile(
+  const char *config,
+  const char *dsdProfile,
+  const char *dsdLibraryPath);
+
+/**
  * Free memory associated with a CDM model object.
  * \param[in] model CDM model object
  */
@@ -85,10 +108,28 @@ CDM_EXPORT void cdm_print_report(cdm_model_t *model);
 CDM_EXPORT char * cdm_get_output_string(cdm_model_t *model);
 
 /**
+ * Allocate and return a binary blob with trajectory results.
+ *
+ * Binary format uses little-endian encoding and stores full-precision
+ * coordinates without quantization.
+ *
+ * \param[in] model CDM model object
+ * \param[out] size Number of bytes in returned buffer
+ * \return Binary buffer (free with cdm_free_buffer), or nullptr on error
+ */
+CDM_EXPORT unsigned char * cdm_get_trajectories_binary(cdm_model_t *model, size_t *size);
+
+/**
  * Free memory associated with a string allocated by the CDM library.
  * \param[in] s string
  */
 CDM_EXPORT void cdm_free_string(char *s);
+
+/**
+ * Free memory associated with a binary buffer allocated by the CDM library.
+ * \param[in] buffer Binary buffer
+ */
+CDM_EXPORT void cdm_free_buffer(unsigned char *buffer);
 
 /**
  * Return the CDM library version string.

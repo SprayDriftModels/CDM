@@ -14,6 +14,8 @@
 #include "CVodeIntegrator.hpp"
 #include "DropletTransport.hpp"
 #include "Constants.hpp"
+#include "Model.hpp"
+
 
 namespace cdm {
 
@@ -63,6 +65,7 @@ static int RhsFn(double t, N_Vector nvx, N_Vector nvdxdt, void *userdata)
                (lw * dTwb) * rhoW * pow(Ms/rhoS + Mw/rhoW, 1./3.) *
                (1. + 0.276 * sqrt(Re)) * Mw / (Ms + Mw);
     };
+
 
     if (Z <= z0 + hC) {
         std::fill_n(dxdt, 6, 0.);
@@ -120,7 +123,7 @@ static double EstimateVt(double dp, double rhoL, double rhoA, double muA)
     }
 }
 
-DropletTransport::DropletTransport(const cdm::Model &m)
+DropletTransport::DropletTransport(const cdm::Model& m)
 {
     params.z0 = m.z0 * 100.; // m to cm
     params.Uf = m.Uf * 100.; // m/s to cm/s
@@ -136,7 +139,7 @@ DropletTransport::DropletTransport(const cdm::Model &m)
     params.ddd = m.ddd;
     params.Ms0 = 0;
     params.Mw0 = 0;
-
+    
     // Adjust nozzle height for distance to liquid sheet.
     params.hN = params.hN - constants::liquid_sheet_offset * 100.;
     
@@ -153,12 +156,12 @@ DropletTransport::DropletTransport(const cdm::Model &m)
     cvi.setMaxNumSteps(m.cvmxsteps);
     cvi.setStabLimDet(m.cvstldet);
     cvi.setMaxErrTestFails(m.cvmaxnef);
-    cvi.setMaxNonlinIters(m.cvmaxcor); 
+    cvi.setMaxNonlinIters(m.cvmaxcor);
     cvi.setMaxConvFails(m.cvmaxncf);
     cvi.setNonlinConvCoef(m.cvnlscoef);
 }
 
-double DropletTransport::operator()(double Vz0, double Vx0, double dp)
+double DropletTransport::integrate(double Vz0, double Vx0, double dp, TrajectoryXZ* xzTrajectory)
 {
     using boost::math::double_constants::sixth_pi;
 
@@ -184,10 +187,23 @@ double DropletTransport::operator()(double Vz0, double Vx0, double dp)
     double tmax = params.ddd * params.hN / Vt; // Time for deposition, s
     double step = tmax / constants::nout;
     double tout = step;
+
+    if (xzTrajectory != nullptr) {
+        xzTrajectory->clear();
+        xzTrajectory->reserve(constants::nout + 1);
+
+        // Include the initial state (t=0) before integrating output timesteps.
+        auto y0 = cvi.solution();
+        xzTrajectory->push_back({y0[1] / 100., y0[0] / 100., y0[4] + params.Ms0}); // [cm to m, cm to m, g]
+    }
     
     // Solve ODE. May throw cvode::system_error.
     for (size_t i = 0; i < constants::nout; ++i) {
         cvi.step(tout);
+        if (xzTrajectory != nullptr) {
+            auto ystep = cvi.solution();
+            xzTrajectory->push_back({ystep[1] / 100., ystep[0] / 100., ystep[4] + params.Ms0}); // [cm to m, cm to m, g]
+        }
         tout += step;
     }
     
@@ -208,8 +224,24 @@ double DropletTransport::operator()(double Vz0, double Vx0, double dp)
     //int nnfails = cvi.getNumNonlinSolvConvFails();
 
     auto y = cvi.solution();
-    double xdist = y[1] / 100.; // cm to m
-    return xdist;
+    return y[1] / 100.; // cm to m
+}
+
+double DropletTransport::operator()(double Vz0, double Vx0, double dp)
+{
+    return integrate(Vz0, Vx0, dp, nullptr);
+}
+
+DropletTransport::TrajectoryXZ DropletTransport::trajectory(double Vz0, double Vx0, double dp)
+{
+    TrajectoryXZ xz;
+    integrate(Vz0, Vx0, dp, &xz);
+    return xz;
+}
+
+double DropletTransport::trajectory(double Vz0, double Vx0, double dp, TrajectoryXZ& outTrajectory)
+{
+    return integrate(Vz0, Vx0, dp, &outTrajectory);
 }
 
 } // namespace cdm

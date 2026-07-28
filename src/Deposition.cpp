@@ -10,24 +10,26 @@
 #include <vector>
 
 #include <boost/math/constants/constants.hpp>
-#include <boost/math/differentiation/finite_difference.hpp>
-
 #include <blaze/Math.h>
 
 #include "Deposition.hpp"
+#include "DsdWeighting.hpp"
 #include "Interpolate1D.hpp"
 
 namespace cdm {
 
-std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, double FD, double PL, double dN, double ppp, double rhoL,
-                                                  const std::vector<double>& dp,
-                                                  const std::array<std::vector<double>, constants::ns>& xdist,
-                                                  const std::vector<std::pair<double, double>>& dsd,
-                                                  const std::unique_ptr<DropletSizeModel>& dsdmodel,
-                                                  double dpmin, double dpmax, std::optional<double> Lmax, double lambda, double dx,
-                                                  const std::array<bool, constants::ns>& sflags)
-{
-    using namespace boost::math::differentiation;
+std::vector<std::pair<double, double>> Deposition(
+        double IAR, double xactive, double FD, double PL, 
+        double dN, double ppp, double rhoL,
+        const std::vector<double>& dp,
+        const std::array<std::vector<double>, constants::ns>& xdist,
+        const std::vector<std::pair<double, double>>& dsd,
+        const std::unique_ptr<DropletSizeModel>& dsdmodel,
+        double dpmin, double dpmax, std::optional<double> Lmax, 
+        double lambda, double dx,
+        const std::array<bool, constants::ns>& sflags
+    )
+    {
     using boost::math::double_constants::degree;
     using constants::zeta;
 
@@ -79,30 +81,19 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
     const double dwsa = FD / Nsa;
     const double dwda = dwsa; // previously Lmax / Nda
 
-    // 1 ha = 10000 m²
     // 1 g/cm³ = 1000 kg/m³
-    const double sprayedArea = 0.0001 * FD * PL; // ha
-    const double volumeSprayed = IAR * sprayedArea / (rhoL * xactive); // L
-    const double volumeAppRate = volumeSprayed / sprayedArea; // L/ha
+    const double volumeSprayed = ComputeVolumeSprayed(IAR, xactive, FD, PL, rhoL); // L
+    const double volumeAppRate = IAR / (rhoL * xactive); // L/ha
 
     // Calculate partial volume for each droplet size.
-    blaze::DynamicVector<double> SVP(dpavg.size(), 0);
-    if (dsdmodel) {
-        // Use non-linear least squares curve fit.
-        for (size_t i = 1; i < SVP.size(); ++i) {
-            double y = dsdmodel->pdf(dpavg[i]);
-            SVP[i] = y * ddp * volumeSprayed / Nsa;
-        }
-    }
-    else {
-        // Approximation using finite differences. Use extrapolation, and clamp estimates to [0, 1].
-        // May throw std::domain_error.
-        const auto dsdfunc = Interpolate1D<true>(dsd, 0, 1);
-        for (size_t i = 1; i < SVP.size(); ++i) {
-            double y = finite_difference_derivative<decltype(dsdfunc), double, 1>(dsdfunc, dpavg[i]);
-            SVP[i] = y * ddp * volumeSprayed / Nsa;
-        }
-    }
+    std::vector<double> dpavgVec(dpavg.size(), 0.0);
+    for (size_t i = 0; i < dpavgVec.size(); ++i)
+        dpavgVec[i] = dpavg[i];
+
+    const auto svpVec = ComputePartialVolumesFromPdfSamples(volumeSprayed, Nsa, dpavgVec, ddp, dsd, dsdmodel);
+    blaze::DynamicVector<double> SVP(dpavg.size(), 0.0);
+    for (size_t i = 0; i < SVP.size(); ++i)
+        SVP[i] = svpVec[i];
     
     // Width of each segment.
     blaze::DynamicVector<double> dwx = blaze::generate(Nsa+Nda, [=](size_t i)
@@ -162,7 +153,6 @@ std::vector<std::pair<double, double>> Deposition(double IAR, double xactive, do
     //fmt::print("Spray Segment Width (ΔWsa) = {}\n", dwsa);
     //fmt::print("Drift Segment Width (ΔWda) = {}\n", dwda);
     //fmt::print("Max. Drift Distance (Lmax) = {}\n", *Lmax);
-    //fmt::print("Sprayed Area               = {}\n", sprayedArea);
     //fmt::print("Volume Sprayed             = {}\n", volumeSprayed);
     //fmt::print("Σ(SVP) × Nsa               = {}\n", blaze::sum(SVP) * Nsa);
     //fmt::print("Σ(VPS[0…Nsa+Nda])          = {}\n", blaze::sum(VPS));
