@@ -101,5 +101,5 @@ This is an expected model-scope difference, not necessarily a post-processing bu
 ## Related documents
 
 - [vertical-profile-spec.md](vertical-profile-spec.md) — calculation spec and validation
-- [vertical-profile-design-notes.md](vertical-profile-design-notes.md) — design rationale
+- Design notes: `docs/private/` (private remote only)
 - [parameter-reference.md](parameter-reference.md) — ODE state variables and coordinates

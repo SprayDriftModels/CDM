@@ -116,9 +116,9 @@ flowchart TB
 
     subgraph Outputs["📤 Outputs"]
         DEPO["Deposition Profile<br/><i>distance vs %IAR</i>"]
-        VERT["Vertical Drift<br/>Profile<br/><i>concentration at<br/>downwind distances</i>"]
-        REPORT["Summary Report<br/><i>atmospheric props,<br/>wind profile,<br/>mass balance</i>"]
-        JSONOUT["JSON Results<br/><i>full input echo +<br/>all outputs</i>"]
+        VERT["Vertical Drift<br/>Profile (planned)<br/><i>concentration at<br/>downwind distances</i>"]
+        REPORT["Summary Report<br/><i>atmospheric props,<br/>wind profile</i>"]
+        JSONOUT["JSON Results<br/><i>full input echo +<br/>deposition output</i>"]
     end
 
     subgraph Interfaces["🔗 Interfaces"]
@@ -152,7 +152,7 @@ flowchart TB
     ODE --> DEP
 
     DEP --> DEPO
-    DEP --> VERT
+    DEP -.-> VERT
     DEP --> REPORT
     DEP --> JSONOUT
 
@@ -166,6 +166,7 @@ flowchart TB
     style Transport fill:#fce4ec,stroke:#c62828,color:#24292f
     style Outputs fill:#e8f5e9,stroke:#2e7d32,color:#24292f
     style Interfaces fill:#f3e5f5,stroke:#7b1fa2,color:#24292f
+    style VERT fill:#f0f0f0,stroke:#888,stroke-dasharray: 5 5,color:#555
 ```
 
 ### 2.2 Layer Responsibilities

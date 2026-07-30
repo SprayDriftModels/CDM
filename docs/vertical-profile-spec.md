@@ -527,7 +527,7 @@ These items must be resolved (or explicitly accepted) before treating §6 normal
 ## Related documents
 
 - [vertical-profile-glossary.md](vertical-profile-glossary.md) — terminology (Lagrangian, lofting, collectors, SVP, etc.)
-- [vertical-profile-design-notes.md](vertical-profile-design-notes.md) — design rationale and regulatory context
+- Design notes / manuscript drafts: `docs/private/` (private remote only)
 - [parameter-reference.md](parameter-reference.md) — ODE state variables and coordinate conventions
 - [FunctionalSpecification.md](FunctionalSpecification.md) — Deposition algorithm (§4.6)
 - [`scripts/reconcile_case_b.py`](../scripts/reconcile_case_b.py) — Case B ground-drift reconciliation (§7.5)

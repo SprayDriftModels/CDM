@@ -127,8 +127,8 @@ flowchart LR
 
     subgraph Results["Outputs"]
         DEP["Ground Deposition<br/><i>spray deposit vs<br/>downwind distance</i>"]
-        VERT["Airborne Drift<br/><i>vertical concentration<br/>at distance</i>"]
-        MASS["Mass Balance<br/><i>on-field vs off-field<br/>spray fate</i>"]
+        VERT["Airborne Drift (planned)<br/><i>vertical concentration<br/>at distance</i>"]
+        MASS["Mass Balance (planned)<br/><i>on-field vs off-field<br/>spray fate</i>"]
     end
 
     SPRAY --> RELEASE
@@ -137,12 +137,14 @@ flowchart LR
     FIELD --> TRAJECTORY
 
     TRAJECTORY --> DEP
-    TRAJECTORY --> VERT
-    TRAJECTORY --> MASS
+    TRAJECTORY -.-> VERT
+    TRAJECTORY -.-> MASS
 
     style Inputs fill:#e8f4fd,stroke:#0969da,color:#24292f
     style Physics fill:#fff8e1,stroke:#d4a017,color:#24292f
     style Results fill:#e8f5e9,stroke:#2e7d32,color:#24292f
+    style VERT fill:#f0f0f0,stroke:#888,stroke-dasharray: 5 5,color:#555
+    style MASS fill:#f0f0f0,stroke:#888,stroke-dasharray: 5 5,color:#555
 ```
 
 ### 4. External Model Assessment
@@ -154,23 +156,12 @@ Assessment of the external [driftml](https://github.com/klotzd/driftml) reposito
 - [scripts/batch_sweep/](../scripts/batch_sweep/) — CDM-native LHS batch runner (inspired by driftml workflow)
 - [scripts/openfoam_vertical_plane_extractor.py](../scripts/openfoam_vertical_plane_extractor.py) — OpenFOAM vertical profile reference extractor
 
-### 5. Research Documentation
-**File:** [VerticalDriftDistribution_Abstract.md](VerticalDriftDistribution_Abstract.md)
+### 5. Vertical profile (planned)
+**File:** [vertical-profile-spec.md](vertical-profile-spec.md)
 
-This document presents research on enhancing the Casanova Drift Model with vertical drift distribution extraction capabilities. It addresses:
+Specification for airborne vertical drift profiles at downwind distances (regulatory % IAR by height bin). Related public notes: [vertical-profile-glossary.md](vertical-profile-glossary.md).
 
-- **Background**: Importance of spray drift modeling for regulatory assessment of non-target organisms (NTAs and NTTPs)
-- **Current Limitations**: Existing models primarily generate deposition curves without vertical distribution data
-- **Enhancement Approach**: Integration of vertical drift profiles to improve risk assessment
-- **Key Factors**: Analysis of droplet size, wind speed, and application technique influences
-- **Preliminary Results**: Short-range aerial drift pattern representation
-- **Regulatory Impact**: Improved risk analysis and regulatory compliance for crop protection management
-
-**Target Audience:**
-- Agricultural researchers studying spray drift dynamics
-- Regulatory scientists assessing environmental risks
-- Environmental risk assessors evaluating non-target organism exposure
-- Pesticide application specialists optimizing drift mitigation strategies
+Manuscript drafts, errata, and research abstracts live under `docs/private/` on the private development remote only (not published on this branch).
 
 ## Reading Guide
 
@@ -182,7 +173,7 @@ Start with the **User Requirements Specification (URS)** to understand:
 - Performance expectations
 - Validation approach
 
-For research context and future enhancements, see the **Vertical Drift Distribution Abstract** to understand ongoing work on vertical drift profile extraction for improved non-target organism risk assessment.
+For planned vertical-profile output, see the **vertical-profile-spec**.
 
 ### For Integrators and Application Developers
 Read the **Functional Specification** to understand:

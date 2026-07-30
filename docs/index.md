@@ -16,8 +16,8 @@ The Casanova Drift Model (CDM) is a mechanistic model that simulates the traject
     <p>Predicts ground deposition as a function of downwind distance, validated against SETAC DRAW test cases.</p>
   </div>
   <div class="feature-card">
-    <h3>🌬️ Vertical Drift Profiles</h3>
-    <p>Extracts vertical drift concentration profiles at specified downwind distances for non-target organism risk assessment.</p>
+    <h3>🌬️ Vertical Drift Profiles (planned)</h3>
+    <p>Planned extension: vertical drift concentration profiles at downwind distances for non-target organism risk assessment. See <a href="vertical-profile-spec">vertical-profile-spec</a>.</p>
   </div>
   <div class="feature-card">
     <h3>🔗 Multiple Interfaces</h3>
@@ -32,11 +32,13 @@ The Casanova Drift Model (CDM) is a mechanistic model that simulates the traject
 - **Wind Profile**: Characterized by friction velocity and friction height
 - **Spray Fan Geometry**: Multiple streamline vectors spanning ejection angles from −40° to −140°
 - **Evaporation**: Droplet evaporation modeled via wet bulb temperature depression calculations
-- **Deposition**: Ground and canopy deposition accounting for size-dependent transport
+- **Deposition**: Ground deposition (% IAR vs downwind distance); canopy interception not modeled (conservative for drift)
 
 ## How It Works
 
 ![Physical processes in the Casanova Drift Model](assets/images/physical-processes.png)
+
+*Ground deposition is implemented in v1.2.0. Airborne drift (vertical profiles) and explicit mass-balance summaries are planned — see [vertical-profile-spec](vertical-profile-spec).*
 
 ## Test Cases
 

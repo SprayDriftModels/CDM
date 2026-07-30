@@ -424,7 +424,7 @@ dVvwx/dt = Vz * (Uf/κ) / (Z - hC)  if Z > z₀, else 0
 ```
 
 **Where:**
-- CD(Re) = Drag coefficient (Clift & Gauvin correlation)
+- CD(Re) = Drag coefficient (Langmuir & Blodgett / AGDISP correlation)
 - W(Mw, Re) = Evaporation rate (Ranz-Marshall correlation)
 - V = Droplet volume
 - D = Droplet diameter
@@ -437,7 +437,7 @@ dVvwx/dt = Vz * (Uf/κ) / (Z - hC)  if Z > z₀, else 0
 CD(Re) = 24/Re * (1 + 0.197 * Re^0.63 + 0.00026 * Re^1.38)
 ```
 
-Valid for Re < 2×10⁵ (Clift & Gauvin, 1970)
+Valid for Re < 2×10⁵ (Langmuir and Blodgett, 1949; as used in AGDISP — Bilanin et al., 1989)
 
 #### 4.5.3 Evaporation Rate
 ```
@@ -665,13 +665,10 @@ Volume Sprayed:             105.2 L
 Volume Application Rate:    521.7 L/ha
 
 Deposition Summary:
-  On-Field Deposition:      85.2% of IAR
-  Off-Field Drift:          14.8% of IAR
+  Profile points:           (see APPlume table)
   Maximum Drift Distance:   60.96 m
 
-Mass Balance:
-  Total Recovered:          100.0%
-  Error:                    0.0%
+(Note: explicit on/off-field mass-balance totals are planned; v1.2.0 reports the deposition profile only.)
 
 Integration Statistics:
   Average Steps/Droplet:    234
@@ -1005,7 +1002,7 @@ Individual components are tested with known inputs and expected outputs:
 - Atmospheric property calculations against psychrometric charts
 - Wind profile fitting against synthetic data
 - ODE integration against analytical solutions
-- Deposition calculation against mass balance
+- Deposition calculation consistency (profile sums; explicit mass-balance check planned)
 
 ### 10.2 Integration Testing
 Complete model runs are compared against:
@@ -1017,8 +1014,7 @@ Complete model runs are compared against:
 A model run is considered successful when:
 - All input validation passes
 - No numerical errors occur during integration
-- Mass balance is conserved within 1%
-- Results satisfy physical constraints
+- Results satisfy physical constraints (explicit mass-balance conservation check planned)
 - Output is generated in correct format
 
 ---
@@ -1028,6 +1024,7 @@ A model run is considered successful when:
 | Version | Date | Author | Description |
 |---------|------|--------|-------------|
 | 1.0 | 2025-10-30 | CDM Team | Initial Functional Specification |
+| 1.1 | 2026-07-29 | CDM Team | Correct drag-coefficient citation to Langmuir & Blodgett (1949) / AGDISP (Bilanin et al., 1989); was mis-attributed to Clift & Gauvin (1970) |
 
 ---
 

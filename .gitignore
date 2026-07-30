@@ -13,9 +13,14 @@ sensitivity/sensitivity-analysis.pdf
 __pycache__/
 scripts/batch_sweep/results/
 scripts/batch_sweep/samplespace.csv
-docs/SETAC_poster_files/
-docs/SETAC_poster.html
-docs/manuscript_errata.html
-docs/manuscript_errata_files/
-docs/manuscript_model_description.html
-docs/manuscript_model_description_files/
+
+# Quarto / pandoc render artefacts — keep .md / .qmd (and Jekyll layout) only
+docs/**/*.html
+!docs/_layouts/
+!docs/_layouts/**
+docs/**/*_files/
+docs/**/*.docx
+docs/**/*.pdf
+
+# Manuscript / research WIP — tracked only on private remote (git add -f)
+docs/private/

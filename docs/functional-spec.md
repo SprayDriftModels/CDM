@@ -78,8 +78,8 @@ Structured JSON containing:
 - Input echo (all configuration parameters)
 - Derived properties (atmospheric, wind profile)
 - Deposition results (distance–%IAR pairs)
-- Summary statistics (mass balance, on/off-field totals)
 
+**Planned (not in v1.2.0):** vertical drift profiles; summary mass-balance / on–off-field fate totals.
 ### Console Report
 
 Human-readable summary including:

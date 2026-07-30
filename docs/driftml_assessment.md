@@ -2,7 +2,7 @@
 
 **Status:** Archived assessment (July 2026)  
 **External repo:** [klotzd/driftml](https://github.com/klotzd/driftml) at `C:\Users\gbbfx\GitProjects\driftml`  
-**Related CDM docs:** [vertical-profile-spec.md](vertical-profile-spec.md), [manuscript_model_description.md](manuscript_model_description.md)
+**Related CDM docs:** [vertical-profile-spec.md](vertical-profile-spec.md)
 
 ---
 
@@ -52,7 +52,7 @@ flowchart TB
 | Aspect | driftml | CDM |
 |--------|---------|-----|
 | **Purpose** | CFD training data + ML surrogates for spatial deposition | Regulatory mechanistic simulator for % IAR vs downwind distance |
-| **Physics** | 3D E/L: k-ε turbulence, MPPIC collisions, cone injection, Rosin-RRammler DSD | 1D trajectory ODEs: Clift-Gauvin drag, Ranz-Marshall evaporation, log-law wind |
+| **Physics** | 3D E/L: k-ε turbulence, MPPIC collisions, cone injection, Rosin-RRammler DSD | 1D trajectory ODEs: Langmuir–Blodgett/AGDISP drag, Ranz-Marshall evaporation, log-law wind |
 | **Inputs** | 5 scalars: theta, phi, U0, Uwind, alpha | Full atmospheric state, measured DSD, field geometry, canopy, nozzle pressure |
 | **Output** | `(xgrid, zgrid, n_timesteps)` numpy tensors | `[distance_m, pctIAR]` curve + drift distance matrix |
 | **Speed** | Hours per CFD case | Seconds per run |

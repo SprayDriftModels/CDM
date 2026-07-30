@@ -447,6 +447,8 @@ CDM is designed to support:
 #### VR-2.1: Mass Balance Verification
 **Requirement:** The system SHALL verify that total deposited mass equals the applied mass within numerical tolerance.
 
+**Status:** Planned (not implemented in v1.2.0 — deposition profile is reported without an explicit mass-balance summary).
+
 **Rationale:** Mass conservation is a fundamental physical constraint.
 
 **Acceptance Criteria:**
