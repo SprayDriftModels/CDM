@@ -1,37 +1,15 @@
-    /**
-     * Initializes root-finding for the integrator.
-     * \param[in] g C function which computes the root functions.
-     * \param[in] nrtfn Number of root functions.
-     */
-    void initRootFinding(CVRootFn g, int nrtfn)
-    {
-        CVodeRootInit(mem_, nrtfn, g);
-        cb_.throw_if_error();
-    }
+// Copyright (c) 2021 John Buonagurio <jbuonagurio@exponent.com>
 
-    /**
-     * Returns root information after a CV_ROOT_RETURN.
-     * \param[out] rootsfound Array of length nrtfn indicating which roots were found.
-     */
-    void getRootInfo(int *rootsfound)
-    {
-        CVodeGetRootInfo(mem_, rootsfound);
-        cb_.throw_if_error();
-    }
+#pragma once
 
-    /**
-     * Integrates the ODE over an interval in `t`.
-     * Returns the CVODE return flag (CV_SUCCESS, CV_ROOT_RETURN, etc.).
-     * \param[in] tout The next time at which a computed solution is desired.
-     */
-    int step(double tout)
-    {
-        int flag = CVode(mem_, tout, y_.get(), &t_, CV_NORMAL);
-        if (flag != CV_ROOT_RETURN) {
-            cb_.throw_if_error();
-        }
-        return flag;
-    }r_serial.h>
+#include <array>
+#include <memory>
+#include <utility>
+
+#include <sundials/sundials_config.h>
+#include <sundials/sundials_context.h>
+#include <cvode/cvode.h>
+#include <nvector/nvector_serial.h>
 #include <sunlinsol/sunlinsol_dense.h>
 #include <sunmatrix/sunmatrix_dense.h>
 
@@ -442,13 +420,38 @@ struct Integrator
     }
 
     /**
+     * Initializes root-finding for the integrator.
+     * \param[in] g C function which computes the root functions.
+     * \param[in] nrtfn Number of root functions.
+     */
+    void initRootFinding(CVRootFn g, int nrtfn)
+    {
+        CVodeRootInit(mem_, nrtfn, g);
+        cb_.throw_if_error();
+    }
+
+    /**
+     * Returns root information after a CV_ROOT_RETURN.
+     * \param[out] rootsfound Array of length nrtfn indicating which roots were found.
+     */
+    void getRootInfo(int *rootsfound)
+    {
+        CVodeGetRootInfo(mem_, rootsfound);
+        cb_.throw_if_error();
+    }
+
+    /**
      * Integrates the ODE over an interval in `t`.
+     * Returns the CVODE return flag (CV_SUCCESS, CV_ROOT_RETURN, etc.).
      * \param[in] tout The next time at which a computed solution is desired.
      */
-    void step(double tout)
+    int step(double tout)
     {
-        CVode(mem_, tout, y_.get(), &t_, CV_NORMAL);
-        cb_.throw_if_error();
+        int flag = CVode(mem_, tout, y_.get(), &t_, CV_NORMAL);
+        if (flag != CV_ROOT_RETURN) {
+            cb_.throw_if_error();
+        }
+        return flag;
     }
 
     /**
