@@ -21,6 +21,30 @@ Model input files are included for the following SETAC DRAW test cases:
 | G    | NL_1_660  | XR 11004    | 300 kPa (44 psig) | Agral      | [Case_G.json](tests/Case_G.json) |
 | I    | DE_4_006  | XR 11004    | 250 kPa (36 psig) | None       | [Case_I.json](tests/Case_I.json) |
 
+## Vertical-profile report interpretation
+
+With vertical-profile heights and distances configured, the verbose CLI report
+prints separate multi-nozzle cell-occupancy and plane-crossing tables.
+`OccSum` is a diagnostic occupancy sum: one droplet can contribute to several
+height bins, so it is not an airborne mass fraction. `Air` sums initial-volume
+weights crossing a distance plane within the configured height range; it is not
+the remaining liquid volume after evaporation. These crossings use raw 2D
+trajectories without the ground-deposition model's lateral plume spreading.
+
+`Dep` and the original `APPlume` output remain local ground-deposition percentages
+relative to the intended application rate, not fractions of total applied mass.
+They must not be summed directly across distances or added to `Air` to test
+conservation. A cumulative deposited fraction requires spatial integration with
+consistent area weighting and normalization. The former `TotDep` row is omitted
+because it summed local percentages without that conversion.
+
+Vertical-profile volume tables are normalized by sprayed field area, not by
+vertical-plane area. JSON retains all four cell/plane and multi/single-nozzle
+outputs.
+
+For the DSD selector, final-fate ledger, and migration from Alex's patch, see
+[Vertical-profile follow-up](docs/vertical-profile-followup.md).
+
 ## Build on Windows with vcpkg
 
 Download and install [Visual Studio](https://visualstudio.microsoft.com/). In the Visual Studio installer, Workloads tab, select the **Desktop development with C++** workload. Under Individual components tab, select **Git for Windows**.

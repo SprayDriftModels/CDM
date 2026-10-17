@@ -11,6 +11,12 @@
 
 namespace cdm {
 
+void to_json(nlohmann::ordered_json& json, const VerticalProfileCellCrossingBin& p);
+
+void to_json(nlohmann::ordered_json& json, const VerticalProfileByDistanceCellCrossing& p);
+
+void to_json(nlohmann::ordered_json& json, const DepositionMassBalance& mb);
+
 void to_json(nlohmann::ordered_json& json, const std::unique_ptr<DropletSizeModel>& p);
 
 void to_json(nlohmann::ordered_json& json, const Model& m);

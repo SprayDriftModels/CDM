@@ -80,10 +80,15 @@ add_library(cdm
   ${CMAKE_CURRENT_SOURCE_DIR}/src/CDM.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/AtmosphericProperties.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Deposition.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/DepositionMassBalance.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/DsdWeighting.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/DropletSizeModel.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/DropletTransport.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/NozzleVelocity.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Serialization.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/VerticalProfileCellCrossing.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/VerticalProfileCellCrossingSingleNozzle.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/VerticalProfilePlaneCrossing.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/WindVelocityProfile.cpp)
 
 add_library(cdm::cdm ALIAS cdm)
@@ -129,7 +134,24 @@ target_link_libraries(cdm PRIVATE
 add_executable(cdmcli ${CMAKE_CURRENT_SOURCE_DIR}/src/CDMCLI.cpp)
 set_property(TARGET cdmcli PROPERTY CXX_STANDARD 17)
 set_property(TARGET cdmcli PROPERTY CXX_STANDARD_REQUIRED ON)
-target_link_libraries(cdmcli PRIVATE cdm::cdm fmt::fmt)
+target_link_libraries(cdmcli PRIVATE cdm::cdm fmt::fmt nlohmann_json::nlohmann_json)
+
+include(CTest)
+if(BUILD_TESTING)
+  add_executable(vertical_profile_followup_tests tests/VerticalProfileFollowup.cpp)
+  target_compile_features(vertical_profile_followup_tests PRIVATE cxx_std_17)
+  target_link_libraries(vertical_profile_followup_tests PRIVATE cdm::cdm nlohmann_json::nlohmann_json)
+  add_test(NAME vertical_profile_followup
+    COMMAND vertical_profile_followup_tests
+      "${CMAKE_CURRENT_SOURCE_DIR}/tests/Case_B_vertical_profile_distances.json"
+      "${CMAKE_CURRENT_SOURCE_DIR}/tests/dsd_profiles_test.json")
+  add_test(NAME vertical_profile_report
+    COMMAND "${CMAKE_COMMAND}"
+      "-DCLI=$<TARGET_FILE:cdmcli>"
+      "-DCASE=${CMAKE_CURRENT_SOURCE_DIR}/tests/Case_B_vertical_profile_distances.json"
+      "-DLIBRARY=${CMAKE_CURRENT_SOURCE_DIR}/tests/dsd_profiles_test.json"
+      -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/VerticalProfileReport.cmake")
+endif()
 
 #-------------------------------------------------------------------------------
 # Install

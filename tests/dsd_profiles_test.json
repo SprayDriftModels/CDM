@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "test": {
+      "label": "Test fixture only",
+      "nozzle": "TEST",
+      "dropletSizeDistribution": [
+        [18, 0.0],
+        [200, 0.5],
+        [600, 1.0]
+      ]
+    }
+  }
+}

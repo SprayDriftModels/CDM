@@ -1,36 +1,36 @@
-std::array<bool, constants::ns> sflags {true};          // [INPUT] Enable processing of selected streamlines, default true for NS=11
+// Copyright (c) 2021 John Buonagurio <jbuonagurio@exponent.com>
+// Copyright (c) 2021 Ed Casanova <eduardo.casanova@bayer.com>
 
-    // Vertical Profile Options
-    bool vpEnabled = false;                                 // [INPUT] Enable vertical drift profile output
-    std::vector<double> vpDistances = {3, 5, 10, 20, 30, 50}; // [INPUT] Downwind distances for vertical profile [m]
-    double vpBinWidth = 0.25;                               // [INPUT] Height bin width [m]
-    double vpMaxHeight = 5.0;                               // [INPUT] Maximum height for vertical profile [m]
+#pragma once
 
-    // Vertical Profile Output
-    struct VerticalProfileBin {
-        double heightMin;   // Lower bound of height bin [m]
-        double heightMax;   // Upper bound of height bin [m]
-        double pctIAR;      // % IAR in this bin
-    };
-    struct VerticalProfileAtDistance {
-        double distance;    // Downwind distance [m]
-        std::vector<VerticalProfileBin> bins;
-    };
-    std::vector<VerticalProfileAtDistance> verticalProfile;  // [OUTPUT] Vertical drift profile
-};
-
-} // namespace cdmde <array>
+#include <array>
+#include <cstdint>
 #include <memory>
 #include <optional>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "Constants.hpp"
+#include "DepositionMassBalance.hpp"
 
 namespace cdm {
 
 struct DropletSizeModel;
 struct NozzleVelocity;
+
+struct VerticalProfileCellCrossingBin {
+    double height;                                          // Current height upper bound [m]
+    double previousHeight;                                  // Previous height bound [m]
+    double percentApplied;                                  // Initial-volume percent; interpretation depends on cell/plane method
+    uint64_t hitCount;                                      // Source/streamline/class contributions to this bin
+};
+
+struct VerticalProfileByDistanceCellCrossing {
+    double distance;                                        // Current distance upper bound [m]
+    double previousDistance;                                // Previous distance bound [m]
+    std::vector<VerticalProfileCellCrossingBin> bins;       // One cell bin per height interval
+};
 
 enum class PPPMethod {
     ENTERED = 0,
@@ -85,6 +85,8 @@ struct Model
     std::array<double, constants::ns> nvz;                  // [DERIVED] Nozzle velocity, vertical components [m/s]
     std::array<double, constants::ns> nvx;                  // [DERIVED] Nozzle velocity, horizontal components [m/s]
     std::array<std::vector<double>, constants::ns> xdist;   // [DERIVED] Transport distances [m]
+    std::array<std::vector<std::vector<std::array<double, 3>>>, constants::ns> xzByTimestep;
+                                                        // [DERIVED] Transport trajectory [streamline][droplet class][timestep] => [x, z, mass] where [x, z] are in m and mass is in g
 
     // Deposition
     double IAR;                                             // [INPUT] Intended application rate [kg/ha]
@@ -96,6 +98,17 @@ struct Model
     double lambda = 1;                                      // [INPUT] Scale factor for number of drift segments (λ), ≥1
     double dx = 0.5;                                        // [INPUT] Distance interval for deposition output [m]
     std::vector<std::pair<double, double>> applume;         // [DERIVED] Deposition output [m, %IAR]
+
+    // Vertical Profile
+    std::optional<std::vector<double>> vpHeights;
+    std::optional<std::vector<double>> vpDistances;
+    std::optional<std::vector<VerticalProfileByDistanceCellCrossing>> vpResultsByDistanceCellCrossing;
+    std::optional<std::vector<VerticalProfileByDistanceCellCrossing>> vpResultsByDistanceCellCrossingSingleNozzle;
+    std::optional<std::vector<VerticalProfileByDistanceCellCrossing>> vpResultsByDistancePlaneCrossing;
+    std::optional<std::vector<VerticalProfileByDistanceCellCrossing>> vpResultsByDistancePlaneCrossingSingleNozzle;
+
+    // Closed volume balance (deposited / airborne / evaporated)
+    std::optional<DepositionMassBalance> massBalance;
 
     // CVODE Integration Options
     double cvreltol = 1e-4;                                 // [INPUT] Relative error tolerance
