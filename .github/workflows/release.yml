@@ -1,0 +1,112 @@
+name: release
+
+# Build platform packages and attach them to a GitHub Release for the pushed tag.
+# Example:
+#   git tag v1.2.1
+#   git push private v1.2.1
+# Assets: cdm-<tag>-ubuntu-latest.tar.gz, …-macos-latest.tar.gz, …-windows-latest.tar.gz
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.allow-failure || false }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            triplet: x64-linux
+          - os: macos-latest
+            triplet: arm64-osx
+            allow-failure: true
+          - os: windows-latest
+            triplet: x64-windows-static
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      VCPKG_FEATURE_FLAGS: dependencygraph
+      VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite'
+      VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
+
+    steps:
+    - uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
+    - uses: ilammy/msvc-dev-cmd@v1
+      if: runner.os == 'Windows'
+
+    - uses: lukka/get-cmake@latest
+
+    - name: Install dependencies and configure project
+      run: cmake --preset multi-vcpkg
+
+    - name: Build all targets
+      run: cmake --build --preset default
+
+    - name: Generate package
+      working-directory: ./build
+      run: cpack -G TGZ -C Release
+
+    - name: Stage package for release
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p dist
+        shopt -s nullglob
+        files=(build/*.tar.gz)
+        if [ ${#files[@]} -eq 0 ]; then
+          echo "No cpack .tar.gz found under build/" >&2
+          ls -la build || true
+          exit 1
+        fi
+        out="dist/cdm-${GITHUB_REF_NAME}-${{ matrix.os }}.tar.gz"
+        cp "${files[0]}" "$out"
+        ls -la dist
+
+    - name: Upload package artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: cdm-${{ github.ref_name }}-${{ matrix.os }}
+        path: dist/*.tar.gz
+        if-no-files-found: error
+
+  publish:
+    name: publish-release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download all packages
+      uses: actions/download-artifact@v4
+      with:
+        path: packages
+        pattern: cdm-${{ github.ref_name }}-*
+        merge-multiple: true
+
+    - name: List release assets
+      run: ls -la packages
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.ref_name }}
+        name: CDM ${{ github.ref_name }}
+        generate_release_notes: true
+        fail_on_unmatched_files: true
+        files: packages/*.tar.gz

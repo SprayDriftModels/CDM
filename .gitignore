@@ -14,6 +14,10 @@ __pycache__/
 scripts/batch_sweep/results/
 scripts/batch_sweep/samplespace.csv
 
+# Model run outputs — trajectory dumps run to tens of MB, keep them out of git
+runs/
+*.trajectories.bin
+
 # Quarto / pandoc render artefacts — keep .md / .qmd (and Jekyll layout) only
 docs/**/*.html
 !docs/_layouts/
