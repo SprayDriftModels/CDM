@@ -7,9 +7,10 @@ ledger from that patch.
 
 ## Shared collaboration baseline
 
-`vertical-profile-dev` in `SprayDriftModels/CDM` combines Alex's DSD-selection
-and final-fate accounting work with Zhenglei's separate occupancy and
-plane-crossing outputs. It is built on the public `publication` branch using
+`vertical-profile-dev` in `SprayDriftModels/CDM` combines Alex's occupancy and
+plane-crossing calculations, DSD selection and final-fate accounting with
+Zhenglei's follow-up, which gives the two calculations separate output keys and
+adds the units, reporting and test changes described below. It is built on the public `publication` branch using
 selected code, tests and documentation, without merging private development
 history.
 
