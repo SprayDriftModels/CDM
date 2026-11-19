@@ -7,20 +7,20 @@ ledger from that patch.
 
 ## Shared collaboration baseline
 
-`collab/alex-vertical-profile` combines Alex's DSD-selection and final-fate
-accounting work with Zhenglei's separate occupancy and plane-crossing outputs.
-It is prepared from the public `publication` baseline using selected code,
-tests and documentation, without merging private development history.
+`vertical-profile-dev` in `SprayDriftModels/CDM` combines Alex's DSD-selection
+and final-fate accounting work with Zhenglei's separate occupancy and
+plane-crossing outputs. It is built on the public `publication` branch using
+selected code, tests and documentation, without merging private development
+history.
 
 This branch already contains both contributions: do not apply Alex's original
 patch or the follow-up patch to it again. The patch application order above is
 only for reconstructing the integration from the older shared base.
 
-Before exchanging further changes, record the agreed baseline with
-`git rev-parse HEAD` and share that exact commit ID. Start individual feature
-branches from that commit and keep manuscript drafts, research notes, local
-configuration and generated distributions out of collaboration commits.
-The prepared branch is local until explicitly published or exchanged.
+Further work happens on feature branches created from `vertical-profile-dev`
+and merged back through pull requests, instead of exchanging patches. Keep
+manuscript drafts, research notes, local configuration and generated
+distributions out of collaboration commits.
 
 ## Output migration
 
