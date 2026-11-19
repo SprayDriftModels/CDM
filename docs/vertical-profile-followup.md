@@ -88,6 +88,42 @@ follow-up includes a calibrated default library. Supply Alex's library separatel
 with `--dsd-library`, `CDM_DSD_LIBRARY`, or his default lookup paths. Do not treat
 the test case's DSD as a newly validated default.
 
+## Display and smoothing policy
+
+Plane crossings are discrete representative-trajectory results, not a continuous
+concentration field. In Case B, 23 droplet classes and 11 fan streamlines each
+contribute whole class weights to one height bin at a plane. Empty bins mean no
+represented crossing, not proof of physically zero spray concentration.
+
+`scripts/plot_vertical_profile_diagnostics.py` preserves raw cell/plane and
+multi/single-nozzle diagnostics and adds
+`03_plane_crossing_presentation_multi.png`. This is display-only log-space
+interpolation with a trajectory-support opacity fade. It changes neither model
+JSON nor accounting, adds no trajectories, and is not turbulent dispersion.
+The image explicitly labels this distinction. Its log scale is independent of
+the raw heatmaps' `--color-scale` setting.
+
+Three levels must remain separate:
+
+1. Presentation rendering: colors only; raw JSON remains authoritative.
+2. Refined numerical profiles: potential future interpolation between diameter
+   trajectories, requiring convergence, aggregation and accounting tests.
+3. Physical dispersion: future model-science work requiring specification and
+   independent validation. A smooth image alone is not this physics.
+
+The plotting helper is currently a Case B diagnostic (including its plot limits
+and titles), not a general collector-loading predictor. It requires Python 3.10+
+with NumPy and Matplotlib. For a CLI export containing all four profile arrays:
+
+```text
+python scripts/plot_vertical_profile_diagnostics.py case_b_vp.json -o figures
+```
+
+It writes five PNGs and `summary.csv`. CSV column names containing `airborne`
+are retained for compatibility: cell rows are occupancy sums, while plane rows
+are initial-volume crossing sums over the reported height range, not final
+airborne fate. Optional trajectory overlays need the companion binary export.
+
 ## Validation
 
 `tests/Case_B_vertical_profile_distances.json` enables the four outputs.
